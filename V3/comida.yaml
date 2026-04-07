@@ -1,0 +1,21 @@
+train: /content/test/train/images
+val: /content/test/val/images
+
+# Número de classes
+nc: 12
+
+# Nomes das classes (na ordem oficial)
+names: [
+  'beans',
+  'beef',
+  'broccoli',
+  'carrot',
+  'chicken',
+  'corn',
+  'egg',
+  'noodles',
+  'potato',
+  'rice',
+  'salad',
+  'vegetables'
+]
