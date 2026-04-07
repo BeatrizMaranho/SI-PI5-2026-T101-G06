@@ -1,0 +1,18 @@
+train: /content/dataset_final_yolo/train/images
+val: /content/dataset_final_yolo/val/images
+
+# Número de classes
+nc: 9
+
+# Nomes das classes (na ordem oficial)
+names: [
+  'beans',
+  'beef',
+  'carrot',
+  'chicken',
+  'corn',
+  'fries',
+  'noodles',
+  'rice',
+  'salad'
+]
