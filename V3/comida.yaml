@@ -1,6 +1,6 @@
-train: /content/test/train/images
-val: /content/test/val/images
-
+path: ./dataset  # Caminho base
+train: train/images  # Onde estão as fotos de treino
+val: train/images
 # Número de classes
 nc: 12
 

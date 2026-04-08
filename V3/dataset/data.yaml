@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 12
+names: ['beans', 'beef', 'broccoli', 'carrot', 'chicken', 'corn', 'egg', 'noodles', 'potato', 'rice', 'salad', 'vegetables']
+
+roboflow:
+  workspace: julias-workspace-mtqoy
+  project: julias-workspace-mtqoy
+  version: dataset
+  license: Private
+  url: https://app.roboflow.com/julias-workspace-mtqoy/julias-workspace-mtqoy/dataset
