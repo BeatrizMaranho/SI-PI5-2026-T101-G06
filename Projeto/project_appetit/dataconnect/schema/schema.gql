@@ -1,0 +1,51 @@
+# 1. Definição de Usuários
+type Usuario @table {
+  id: UUID! @default(expr: "uuidV4()")
+  nome: String!
+  email: String! @unique
+  senhaHash: String!
+  tipo: String!
+  criadoEm: Timestamp! @default(expr: "request.time")
+}
+
+# 2. Definição de Pacientes
+type Paciente @table {
+  id: UUID! @default(expr: "uuidV4()")
+  nome: String!
+  responsavel: Usuario! 
+  nascimento: Date
+}
+
+# 3. Tabela de Relacionamento Nutricionista-Paciente
+type NutricionistaPaciente @table(key: ["nutricionista", "paciente"]) {
+  nutricionista: Usuario!
+  paciente: Paciente!
+}
+
+# 4. Definição de Refeições
+type Refeicao @table {
+  id: UUID! @default(expr: "uuidV4()")
+  paciente: Paciente!
+  dataHora: Timestamp! @default(expr: "request.time")
+  status: String! 
+  urlFotoAntes: String!
+  urlFotoDepois: String
+}
+
+# 5. Catálogo de Alimentos
+type Alimento @table {
+  id: UUID! @default(expr: "uuidV4()")
+  label: String!
+  categoria: String
+}
+
+# 6. Resultados da IA 
+type DeteccaoAlimento @table {
+  id: UUID! @default(expr: "uuidV4()")
+  refeicao: Refeicao!
+  alimento: Alimento!
+  percentualConsumido: Float!
+  aceito: Boolean! @default(value: false) 
+  cor: String
+  textura: String
+}

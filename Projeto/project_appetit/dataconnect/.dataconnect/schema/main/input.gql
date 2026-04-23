@@ -1,0 +1,1498 @@
+"""
+✨ `Alimento_KeyOutput` returns the primary key fields of table type `Alimento`.
+
+It has the same format as `Alimento_Key`, but is only used as mutation return value.
+"""
+scalar Alimento_KeyOutput
+"""
+✨ `DeteccaoAlimento_KeyOutput` returns the primary key fields of table type `DeteccaoAlimento`.
+
+It has the same format as `DeteccaoAlimento_Key`, but is only used as mutation return value.
+"""
+scalar DeteccaoAlimento_KeyOutput
+"""
+✨ `NutricionistaPaciente_KeyOutput` returns the primary key fields of table type `NutricionistaPaciente`.
+
+It has the same format as `NutricionistaPaciente_Key`, but is only used as mutation return value.
+"""
+scalar NutricionistaPaciente_KeyOutput
+"""
+✨ `Paciente_KeyOutput` returns the primary key fields of table type `Paciente`.
+
+It has the same format as `Paciente_Key`, but is only used as mutation return value.
+"""
+scalar Paciente_KeyOutput
+"""
+✨ `Refeicao_KeyOutput` returns the primary key fields of table type `Refeicao`.
+
+It has the same format as `Refeicao_Key`, but is only used as mutation return value.
+"""
+scalar Refeicao_KeyOutput
+"""
+✨ `Usuario_KeyOutput` returns the primary key fields of table type `Usuario`.
+
+It has the same format as `Usuario_Key`, but is only used as mutation return value.
+"""
+scalar Usuario_KeyOutput
+"""
+✨ Generated data input type for table 'Alimento'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Alimento_Data {
+  """
+  ✨ Generated from Field `Alimento`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Alimento`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Alimento`.`categoria` of type `String`
+  """
+  categoria: String
+  """
+  ✨ `_expr` server value variant of `categoria` (✨ Generated from Field `Alimento`.`categoria` of type `String`)
+  """
+  categoria_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Alimento`.`label` of type `String!`
+  """
+  label: String
+  """
+  ✨ `_expr` server value variant of `label` (✨ Generated from Field `Alimento`.`label` of type `String!`)
+  """
+  label_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Alimento'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Alimento_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Alimento_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Alimento_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Alimento_Filter!]
+  """
+  ✨ Generated from Field `Alimento`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Alimento`.`categoria` of type `String`
+  """
+  categoria: String_Filter
+  """
+  ✨ Generated from Field `Alimento`.`label` of type `String!`
+  """
+  label: String_Filter
+  """
+  ✨ Generated from Field `Alimento`.`deteccaoAlimentos_on_alimento` of type `[DeteccaoAlimento!]!`
+  """
+  deteccaoAlimentos_on_alimento: DeteccaoAlimento_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Alimento'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Alimento_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Alimento_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Alimento_Filter
+}
+"""
+✨ Generated having input type for table 'Alimento'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Alimento_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Alimento_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Alimento_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Alimento_Having!]
+  """
+  ✨ Generated from Field `Alimento`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Alimento`.`categoria_count` of type `Int!`
+  """
+  categoria_count: Int_Filter
+  """
+  ✨ Generated from Field `Alimento`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Alimento`.`label_count` of type `Int!`
+  """
+  label_count: Int_Filter
+}
+"""
+✨ Generated key input type for table 'Alimento'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Alimento_Key {
+  """
+  ✨ Generated from Field `Alimento`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Alimento`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Alimento'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Alimento_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Alimento_Filter
+}
+"""
+✨ Generated order input type for table 'Alimento'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Alimento_Order {
+  """
+  ✨ Generated from Field `Alimento`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`categoria` of type `String`
+  """
+  categoria: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`label` of type `String!`
+  """
+  label: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`categoria_count` of type `Int!`
+  """
+  categoria_count: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Alimento`.`label_count` of type `Int!`
+  """
+  label_count: OrderDirection
+}
+"""
+✨ Generated data input type for table 'DeteccaoAlimento'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input DeteccaoAlimento_Data {
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimentoId` of type `UUID!`
+  """
+  alimentoId: UUID
+  """
+  ✨ `_expr` server value variant of `alimentoId` (✨ Generated from Field `DeteccaoAlimento`.`alimentoId` of type `UUID!`)
+  """
+  alimentoId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicaoId` of type `UUID!`
+  """
+  refeicaoId: UUID
+  """
+  ✨ `_expr` server value variant of `refeicaoId` (✨ Generated from Field `DeteccaoAlimento`.`refeicaoId` of type `UUID!`)
+  """
+  refeicaoId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimento` of type `Alimento!`
+  """
+  alimento: Alimento_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicao` of type `Refeicao!`
+  """
+  refeicao: Refeicao_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`aceito` of type `Boolean!`
+  """
+  aceito: Boolean
+  """
+  ✨ `_expr` server value variant of `aceito` (✨ Generated from Field `DeteccaoAlimento`.`aceito` of type `Boolean!`)
+  """
+  aceito_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`cor` of type `String`
+  """
+  cor: String
+  """
+  ✨ `_expr` server value variant of `cor` (✨ Generated from Field `DeteccaoAlimento`.`cor` of type `String`)
+  """
+  cor_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido` of type `Float!`
+  """
+  percentualConsumido: Float
+  """
+  ✨ `_expr` server value variant of `percentualConsumido` (✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido` of type `Float!`)
+  """
+  percentualConsumido_expr: Float_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `percentualConsumido` (✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido` of type `Float!`)
+  """
+  percentualConsumido_update: [Float_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`textura` of type `String`
+  """
+  textura: String
+  """
+  ✨ `_expr` server value variant of `textura` (✨ Generated from Field `DeteccaoAlimento`.`textura` of type `String`)
+  """
+  textura_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'DeteccaoAlimento'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input DeteccaoAlimento_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [DeteccaoAlimento_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: DeteccaoAlimento_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [DeteccaoAlimento_Filter!]
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimentoId` of type `UUID!`
+  """
+  alimentoId: UUID_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicaoId` of type `UUID!`
+  """
+  refeicaoId: UUID_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimento` of type `Alimento!`
+  """
+  alimento: Alimento_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicao` of type `Refeicao!`
+  """
+  refeicao: Refeicao_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`aceito` of type `Boolean!`
+  """
+  aceito: Boolean_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`cor` of type `String`
+  """
+  cor: String_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido` of type `Float!`
+  """
+  percentualConsumido: Float_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`textura` of type `String`
+  """
+  textura: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'DeteccaoAlimento'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input DeteccaoAlimento_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [DeteccaoAlimento_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: DeteccaoAlimento_Filter
+}
+"""
+✨ Generated having input type for table 'DeteccaoAlimento'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input DeteccaoAlimento_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [DeteccaoAlimento_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: DeteccaoAlimento_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [DeteccaoAlimento_Having!]
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`aceito_count` of type `Int!`
+  """
+  aceito_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimentoId_count` of type `Int!`
+  """
+  alimentoId_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`cor_count` of type `Int!`
+  """
+  cor_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_count` of type `Int!`
+  """
+  percentualConsumido_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicaoId_count` of type `Int!`
+  """
+  refeicaoId_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`textura_count` of type `Int!`
+  """
+  textura_count: Int_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_sum` of type `Float`
+  """
+  percentualConsumido_sum: Float_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_avg` of type `Float`
+  """
+  percentualConsumido_avg: Float_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_min` of type `Float`
+  """
+  percentualConsumido_min: Float_Filter
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_max` of type `Float`
+  """
+  percentualConsumido_max: Float_Filter
+}
+"""
+✨ Generated key input type for table 'DeteccaoAlimento'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input DeteccaoAlimento_Key {
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'DeteccaoAlimento'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input DeteccaoAlimento_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: DeteccaoAlimento_Filter
+}
+"""
+✨ Generated order input type for table 'DeteccaoAlimento'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input DeteccaoAlimento_Order {
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimentoId` of type `UUID!`
+  """
+  alimentoId: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicaoId` of type `UUID!`
+  """
+  refeicaoId: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimento` of type `Alimento!`
+  """
+  alimento: Alimento_Order
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicao` of type `Refeicao!`
+  """
+  refeicao: Refeicao_Order
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`aceito` of type `Boolean!`
+  """
+  aceito: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`cor` of type `String`
+  """
+  cor: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido` of type `Float!`
+  """
+  percentualConsumido: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`textura` of type `String`
+  """
+  textura: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`aceito_count` of type `Int!`
+  """
+  aceito_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`alimentoId_count` of type `Int!`
+  """
+  alimentoId_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`cor_count` of type `Int!`
+  """
+  cor_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_count` of type `Int!`
+  """
+  percentualConsumido_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`refeicaoId_count` of type `Int!`
+  """
+  refeicaoId_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`textura_count` of type `Int!`
+  """
+  textura_count: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_sum` of type `Float`
+  """
+  percentualConsumido_sum: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_avg` of type `Float`
+  """
+  percentualConsumido_avg: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_min` of type `Float`
+  """
+  percentualConsumido_min: OrderDirection
+  """
+  ✨ Generated from Field `DeteccaoAlimento`.`percentualConsumido_max` of type `Float`
+  """
+  percentualConsumido_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'NutricionistaPaciente'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input NutricionistaPaciente_Data {
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`
+  """
+  nutricionistaId: UUID
+  """
+  ✨ `_expr` server value variant of `nutricionistaId` (✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`)
+  """
+  nutricionistaId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: UUID
+  """
+  ✨ `_expr` server value variant of `pacienteId` (✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`)
+  """
+  pacienteId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionista` of type `Usuario!`
+  """
+  nutricionista: Usuario_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Key @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'NutricionistaPaciente'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input NutricionistaPaciente_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [NutricionistaPaciente_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: NutricionistaPaciente_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [NutricionistaPaciente_Filter!]
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`
+  """
+  nutricionistaId: UUID_Filter
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: UUID_Filter
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionista` of type `Usuario!`
+  """
+  nutricionista: Usuario_Filter
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Filter
+}
+"""
+✨ Generated first-row input type for table 'NutricionistaPaciente'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input NutricionistaPaciente_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [NutricionistaPaciente_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: NutricionistaPaciente_Filter
+}
+"""
+✨ Generated having input type for table 'NutricionistaPaciente'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input NutricionistaPaciente_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [NutricionistaPaciente_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: NutricionistaPaciente_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [NutricionistaPaciente_Having!]
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId_count` of type `Int!`
+  """
+  nutricionistaId_count: Int_Filter
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId_count` of type `Int!`
+  """
+  pacienteId_count: Int_Filter
+}
+"""
+✨ Generated key input type for table 'NutricionistaPaciente'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input NutricionistaPaciente_Key {
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`
+  """
+  nutricionistaId: UUID
+  """
+  ✨ `_expr` server value variant of `nutricionistaId` (✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`)
+  """
+  nutricionistaId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: UUID
+  """
+  ✨ `_expr` server value variant of `pacienteId` (✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`)
+  """
+  pacienteId_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'NutricionistaPaciente'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input NutricionistaPaciente_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: NutricionistaPaciente_Filter
+}
+"""
+✨ Generated order input type for table 'NutricionistaPaciente'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input NutricionistaPaciente_Order {
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId` of type `UUID!`
+  """
+  nutricionistaId: OrderDirection
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: OrderDirection
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionista` of type `Usuario!`
+  """
+  nutricionista: Usuario_Order
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Order
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`nutricionistaId_count` of type `Int!`
+  """
+  nutricionistaId_count: OrderDirection
+  """
+  ✨ Generated from Field `NutricionistaPaciente`.`pacienteId_count` of type `Int!`
+  """
+  pacienteId_count: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Paciente'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Paciente_Data {
+  """
+  ✨ Generated from Field `Paciente`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Paciente`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paciente`.`responsavelId` of type `UUID!`
+  """
+  responsavelId: UUID
+  """
+  ✨ `_expr` server value variant of `responsavelId` (✨ Generated from Field `Paciente`.`responsavelId` of type `UUID!`)
+  """
+  responsavelId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paciente`.`responsavel` of type `Usuario!`
+  """
+  responsavel: Usuario_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paciente`.`nascimento` of type `Date`
+  """
+  nascimento: Date
+  """
+  ✨ `_date` server value variant of `nascimento` (✨ Generated from Field `Paciente`.`nascimento` of type `Date`)
+  """
+  nascimento_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `nascimento` (✨ Generated from Field `Paciente`.`nascimento` of type `Date`)
+  """
+  nascimento_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `nascimento` (✨ Generated from Field `Paciente`.`nascimento` of type `Date`)
+  """
+  nascimento_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Paciente`.`nome` of type `String!`
+  """
+  nome: String
+  """
+  ✨ `_expr` server value variant of `nome` (✨ Generated from Field `Paciente`.`nome` of type `String!`)
+  """
+  nome_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Paciente'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Paciente_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Paciente_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Paciente_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Paciente_Filter!]
+  """
+  ✨ Generated from Field `Paciente`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Paciente`.`responsavelId` of type `UUID!`
+  """
+  responsavelId: UUID_Filter
+  """
+  ✨ Generated from Field `Paciente`.`responsavel` of type `Usuario!`
+  """
+  responsavel: Usuario_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nascimento` of type `Date`
+  """
+  nascimento: Date_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nome` of type `String!`
+  """
+  nome: String_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nutricionistaPacientes_on_paciente` of type `[NutricionistaPaciente!]!`
+  """
+  nutricionistaPacientes_on_paciente: NutricionistaPaciente_ListFilter
+  """
+  ✨ Generated from Field `Paciente`.`refeicaos_on_paciente` of type `[Refeicao!]!`
+  """
+  refeicaos_on_paciente: Refeicao_ListFilter
+  """
+  ✨ Generated from Field `Paciente`.`usuarios_via_NutricionistaPaciente` of type `[Usuario!]!`
+  """
+  usuarios_via_NutricionistaPaciente: Usuario_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Paciente'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Paciente_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Paciente_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Paciente_Filter
+}
+"""
+✨ Generated having input type for table 'Paciente'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Paciente_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Paciente_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Paciente_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Paciente_Having!]
+  """
+  ✨ Generated from Field `Paciente`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Paciente`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_count` of type `Int!`
+  """
+  nascimento_count: Int_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nome_count` of type `Int!`
+  """
+  nome_count: Int_Filter
+  """
+  ✨ Generated from Field `Paciente`.`responsavelId_count` of type `Int!`
+  """
+  responsavelId_count: Int_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_min` of type `Date`
+  """
+  nascimento_min: Date_Filter
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_max` of type `Date`
+  """
+  nascimento_max: Date_Filter
+}
+"""
+✨ Generated key input type for table 'Paciente'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Paciente_Key {
+  """
+  ✨ Generated from Field `Paciente`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Paciente`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Paciente'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Paciente_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Paciente_Filter
+}
+"""
+✨ Generated order input type for table 'Paciente'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Paciente_Order {
+  """
+  ✨ Generated from Field `Paciente`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`responsavelId` of type `UUID!`
+  """
+  responsavelId: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`responsavel` of type `Usuario!`
+  """
+  responsavel: Usuario_Order
+  """
+  ✨ Generated from Field `Paciente`.`nascimento` of type `Date`
+  """
+  nascimento: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`nome` of type `String!`
+  """
+  nome: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_count` of type `Int!`
+  """
+  nascimento_count: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`nome_count` of type `Int!`
+  """
+  nome_count: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`responsavelId_count` of type `Int!`
+  """
+  responsavelId_count: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_min` of type `Date`
+  """
+  nascimento_min: OrderDirection
+  """
+  ✨ Generated from Field `Paciente`.`nascimento_max` of type `Date`
+  """
+  nascimento_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Refeicao'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Refeicao_Data {
+  """
+  ✨ Generated from Field `Refeicao`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Refeicao`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: UUID
+  """
+  ✨ `_expr` server value variant of `pacienteId` (✨ Generated from Field `Refeicao`.`pacienteId` of type `UUID!`)
+  """
+  pacienteId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`
+  """
+  dataHora: Timestamp
+  """
+  ✨ `_expr` server value variant of `dataHora` (✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`)
+  """
+  dataHora_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `dataHora` (✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`)
+  """
+  dataHora_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `dataHora` (✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`)
+  """
+  dataHora_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`status` of type `String!`
+  """
+  status: String
+  """
+  ✨ `_expr` server value variant of `status` (✨ Generated from Field `Refeicao`.`status` of type `String!`)
+  """
+  status_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoAntes` of type `String!`
+  """
+  urlFotoAntes: String
+  """
+  ✨ `_expr` server value variant of `urlFotoAntes` (✨ Generated from Field `Refeicao`.`urlFotoAntes` of type `String!`)
+  """
+  urlFotoAntes_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoDepois` of type `String`
+  """
+  urlFotoDepois: String
+  """
+  ✨ `_expr` server value variant of `urlFotoDepois` (✨ Generated from Field `Refeicao`.`urlFotoDepois` of type `String`)
+  """
+  urlFotoDepois_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Refeicao'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Refeicao_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Refeicao_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Refeicao_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Refeicao_Filter!]
+  """
+  ✨ Generated from Field `Refeicao`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: UUID_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`
+  """
+  dataHora: Timestamp_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`status` of type `String!`
+  """
+  status: String_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoAntes` of type `String!`
+  """
+  urlFotoAntes: String_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoDepois` of type `String`
+  """
+  urlFotoDepois: String_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`deteccaoAlimentos_on_refeicao` of type `[DeteccaoAlimento!]!`
+  """
+  deteccaoAlimentos_on_refeicao: DeteccaoAlimento_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Refeicao'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Refeicao_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Refeicao_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Refeicao_Filter
+}
+"""
+✨ Generated having input type for table 'Refeicao'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Refeicao_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Refeicao_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Refeicao_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Refeicao_Having!]
+  """
+  ✨ Generated from Field `Refeicao`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_count` of type `Int!`
+  """
+  dataHora_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`pacienteId_count` of type `Int!`
+  """
+  pacienteId_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`status_count` of type `Int!`
+  """
+  status_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoAntes_count` of type `Int!`
+  """
+  urlFotoAntes_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoDepois_count` of type `Int!`
+  """
+  urlFotoDepois_count: Int_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_min` of type `Timestamp`
+  """
+  dataHora_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_max` of type `Timestamp`
+  """
+  dataHora_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Refeicao'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Refeicao_Key {
+  """
+  ✨ Generated from Field `Refeicao`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Refeicao`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Refeicao'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Refeicao_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Refeicao_Filter
+}
+"""
+✨ Generated order input type for table 'Refeicao'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Refeicao_Order {
+  """
+  ✨ Generated from Field `Refeicao`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`pacienteId` of type `UUID!`
+  """
+  pacienteId: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`paciente` of type `Paciente!`
+  """
+  paciente: Paciente_Order
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora` of type `Timestamp!`
+  """
+  dataHora: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`status` of type `String!`
+  """
+  status: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoAntes` of type `String!`
+  """
+  urlFotoAntes: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoDepois` of type `String`
+  """
+  urlFotoDepois: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_count` of type `Int!`
+  """
+  dataHora_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`pacienteId_count` of type `Int!`
+  """
+  pacienteId_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`status_count` of type `Int!`
+  """
+  status_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoAntes_count` of type `Int!`
+  """
+  urlFotoAntes_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`urlFotoDepois_count` of type `Int!`
+  """
+  urlFotoDepois_count: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_min` of type `Timestamp`
+  """
+  dataHora_min: OrderDirection
+  """
+  ✨ Generated from Field `Refeicao`.`dataHora_max` of type `Timestamp`
+  """
+  dataHora_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Usuario'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Usuario_Data {
+  """
+  ✨ Generated from Field `Usuario`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Usuario`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`
+  """
+  criadoEm: Timestamp
+  """
+  ✨ `_expr` server value variant of `criadoEm` (✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`)
+  """
+  criadoEm_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `criadoEm` (✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`)
+  """
+  criadoEm_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `criadoEm` (✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`)
+  """
+  criadoEm_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Usuario`.`email` of type `String!`
+  """
+  email: String
+  """
+  ✨ `_expr` server value variant of `email` (✨ Generated from Field `Usuario`.`email` of type `String!`)
+  """
+  email_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Usuario`.`nome` of type `String!`
+  """
+  nome: String
+  """
+  ✨ `_expr` server value variant of `nome` (✨ Generated from Field `Usuario`.`nome` of type `String!`)
+  """
+  nome_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Usuario`.`senhaHash` of type `String!`
+  """
+  senhaHash: String
+  """
+  ✨ `_expr` server value variant of `senhaHash` (✨ Generated from Field `Usuario`.`senhaHash` of type `String!`)
+  """
+  senhaHash_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Usuario`.`tipo` of type `String!`
+  """
+  tipo: String
+  """
+  ✨ `_expr` server value variant of `tipo` (✨ Generated from Field `Usuario`.`tipo` of type `String!`)
+  """
+  tipo_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'Usuario'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Usuario_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Usuario_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Usuario_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Usuario_Filter!]
+  """
+  ✨ Generated from Field `Usuario`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`
+  """
+  criadoEm: Timestamp_Filter
+  """
+  ✨ Generated from Field `Usuario`.`email` of type `String!`
+  """
+  email: String_Filter
+  """
+  ✨ Generated from Field `Usuario`.`nome` of type `String!`
+  """
+  nome: String_Filter
+  """
+  ✨ Generated from Field `Usuario`.`senhaHash` of type `String!`
+  """
+  senhaHash: String_Filter
+  """
+  ✨ Generated from Field `Usuario`.`tipo` of type `String!`
+  """
+  tipo: String_Filter
+  """
+  ✨ Generated from Field `Usuario`.`nutricionistaPacientes_on_nutricionista` of type `[NutricionistaPaciente!]!`
+  """
+  nutricionistaPacientes_on_nutricionista: NutricionistaPaciente_ListFilter
+  """
+  ✨ Generated from Field `Usuario`.`pacientes_on_responsavel` of type `[Paciente!]!`
+  """
+  pacientes_on_responsavel: Paciente_ListFilter
+  """
+  ✨ Generated from Field `Usuario`.`pacientes_via_NutricionistaPaciente` of type `[Paciente!]!`
+  """
+  pacientes_via_NutricionistaPaciente: Paciente_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Usuario'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Usuario_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Usuario_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Usuario_Filter
+}
+"""
+✨ Generated having input type for table 'Usuario'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Usuario_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Usuario_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Usuario_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Usuario_Having!]
+  """
+  ✨ Generated from Field `Usuario`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_count` of type `Int!`
+  """
+  criadoEm_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`email_count` of type `Int!`
+  """
+  email_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`nome_count` of type `Int!`
+  """
+  nome_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`senhaHash_count` of type `Int!`
+  """
+  senhaHash_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`tipo_count` of type `Int!`
+  """
+  tipo_count: Int_Filter
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_min` of type `Timestamp`
+  """
+  criadoEm_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_max` of type `Timestamp`
+  """
+  criadoEm_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Usuario'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Usuario_Key {
+  """
+  ✨ Generated from Field `Usuario`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Usuario`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Usuario'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Usuario_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Usuario_Filter
+}
+"""
+✨ Generated order input type for table 'Usuario'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Usuario_Order {
+  """
+  ✨ Generated from Field `Usuario`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm` of type `Timestamp!`
+  """
+  criadoEm: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`email` of type `String!`
+  """
+  email: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`nome` of type `String!`
+  """
+  nome: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`senhaHash` of type `String!`
+  """
+  senhaHash: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`tipo` of type `String!`
+  """
+  tipo: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_count` of type `Int!`
+  """
+  criadoEm_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`email_count` of type `Int!`
+  """
+  email_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`nome_count` of type `Int!`
+  """
+  nome_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`senhaHash_count` of type `Int!`
+  """
+  senhaHash_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`tipo_count` of type `Int!`
+  """
+  tipo_count: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_min` of type `Timestamp`
+  """
+  criadoEm_min: OrderDirection
+  """
+  ✨ Generated from Field `Usuario`.`criadoEm_max` of type `Timestamp`
+  """
+  criadoEm_max: OrderDirection
+}
