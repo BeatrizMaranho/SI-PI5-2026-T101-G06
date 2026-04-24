@@ -102,7 +102,12 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   Widget _buildInitialSelection() {
     return Column(
       children: [
-        _buildInstructionCard(),
+        const Text(
+          "Como deseja adicionar a foto?",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        _buildInstructionCard(), // card com ícone de maça
         const SizedBox(height: 16),
         _buildOptionCard(
           icon: Icons.camera_alt_outlined,
@@ -121,15 +126,23 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
 
   Widget _buildInstructionCard() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFF7A082)),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Text(
-        "Tire uma foto ou envie uma imagem da refeição. Você pode adicionar várias fotos para uma mesma refeição!",
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 13, color: Colors.black87),
+      child: Column(
+        children: [
+          // ÍCONE DA MAÇÃ (Você pode usar um Icon de comida ou uma imagem)
+          const Icon(Icons.apple, color: Colors.black54, size: 30), 
+          const SizedBox(height: 8),
+          const Text(
+            "Tire uma foto ou envie uma imagem da refeição. Você pode adicionar várias fotos para uma mesma refeição!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.black87),
+          ),
+        ],
       ),
     );
   }
