@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 // Removido o import do bottom_nav_bar pois esta tela não o utiliza
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../config/routes.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
