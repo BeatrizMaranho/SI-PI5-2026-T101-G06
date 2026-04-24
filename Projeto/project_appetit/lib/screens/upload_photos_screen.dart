@@ -29,12 +29,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // O BackButton vai funcionar pois está usando Navigator.push
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "Registrar refeições", 
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
-        ),
+        title: const Text("Registrar refeições", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
