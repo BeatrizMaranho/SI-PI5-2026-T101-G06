@@ -1,16 +1,13 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
-import 'config/routes.dart';
-import 'widgets/main_layout.dart';
-import 'screens/home_screen.dart';
+import 'components/main_screen.dart';
 
 void main() => runApp(
-  DevicePreview(
-    enabled: true,
-    builder: (context) => MyApp(), 
-  ),
-);
-
+      DevicePreview(
+        enabled: true,
+        builder: (context) => const MyApp(),
+      ),
+    );
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -26,8 +23,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      initialRoute: '/',
-      routes: AppRoutes.getRoutes(),
+      home: const MainScreen(),
     );
   }
 }
