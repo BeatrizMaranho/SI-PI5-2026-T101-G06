@@ -1,0 +1,14 @@
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+**/build/
+**/.dart_tool/
+**/android/build/
+
+dataconnect/.dataconnect/
+pgliteData/
+*-debug.log
+
+dataconnect_generated/
