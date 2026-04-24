@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav_bar.dart';
-import '../config/routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,4 +11,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-

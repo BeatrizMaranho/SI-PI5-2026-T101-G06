@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import '../config/routes.dart';
 
 class BottomNavBar extends StatelessWidget {
-  final String currentRoute;
+  final int currentIndex;
+  final Function(int) onTap;
 
   const BottomNavBar({
     super.key,
-    required this.currentRoute,
+    required this.currentIndex,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      shape: const CircularNotchedRectangle(), // Faz o recorte para o botão central
+      shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       child: Container(
         height: 60,
@@ -21,32 +23,28 @@ class BottomNavBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Lado Esquerdo
-            _buildNavItem(context, Icons.home_outlined, AppRoutes.home, currentRoute == AppRoutes.home),
-            _buildNavItem(context, Icons.people_outline, AppRoutes.people, currentRoute == AppRoutes.people),
+            _buildNavItem(Icons.home_outlined, 0, currentIndex == 0),
+            _buildNavItem(Icons.people_outline, 1, currentIndex == 1),
             
-            const SizedBox(width: 40), // Espaço para o FloatingActionButton central
+            const SizedBox(width: 40), // Espaço para o botão da câmera
 
             // Lado Direito
-            _buildNavItem(context, Icons.description_outlined, AppRoutes.documents, currentRoute == AppRoutes.documents),
-            _buildNavItem(context, Icons.person_outline, AppRoutes.profile, currentRoute == AppRoutes.profile),
+            _buildNavItem(Icons.description_outlined, 2, currentIndex == 2),
+            _buildNavItem(Icons.person_outline, 3, currentIndex == 3),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String route, bool isSelected) {
+  Widget _buildNavItem(IconData icon, int index, bool isSelected) {
     return IconButton(
       icon: Icon(
         icon,
         color: isSelected ? const Color(0xFFFF6B4A) : Colors.grey,
         size: 28,
       ),
-      onPressed: () {
-        if (currentRoute != route) {
-          Navigator.pushReplacementNamed(context, route);
-        }
-      },
+      onPressed: () => onTap(index), // Apenas avisa o Layout Pai qual foi clicado
     );
   }
 }
