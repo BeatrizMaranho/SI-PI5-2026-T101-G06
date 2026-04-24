@@ -1,40 +1,17 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav_bar.dart';
-import '../config/routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // 1. O CONTEÚDO DA TELA
-      body: const Center(child: Text("Bem-vindo à Home")),
-
-      // 2. O BOTÃO DA CÂMERA (O segredo do design)
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        height: 65,
-        width: 65,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF7A082), Color(0xFFE35D33)],
-          ),
-        ),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.uploadPhotos),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.camera_alt, color: Colors.white, size: 30),
-        ),
+    // Retornamos apenas o que é específico desta aba.
+    // O menu e o botão laranja "flutuam" por cima disso através do MainLayout.
+    return const Center(
+      child: Text(
+        "Bem-vindo à Home",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
       ),
-
-      // 3. A BARRA QUE VOCÊ CRIOU
-      bottomNavigationBar: const BottomNavBar(currentRoute: AppRoutes.home),
     );
   }
 }
-

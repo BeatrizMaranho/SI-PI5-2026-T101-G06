@@ -1,6 +1,7 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'config/routes.dart';
+import 'widgets/main_layout.dart';
 import 'screens/home_screen.dart';
 
 void main() => runApp(
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      initialRoute: AppRoutes.home,
+      initialRoute: '/',
       routes: AppRoutes.getRoutes(),
     );
   }
