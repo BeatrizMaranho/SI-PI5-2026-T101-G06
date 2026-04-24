@@ -1,5 +1,7 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'config/routes.dart';
+import 'screens/home_screen.dart';
 
 void main() => runApp(
   DevicePreview(
@@ -18,34 +20,13 @@ class MyApp extends StatelessWidget {
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
-
       title: 'Appetit',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange), // Laranja lembra comida!
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Appetit',
-          style: TextStyle(
-            fontSize: 48,           // Tamanho grande para o tablet
-            fontWeight: FontWeight.bold,
-            color: Colors.orange,   // Cor principal do seu PI
-            letterSpacing: 2.0,
-          ),
-        ),
-      ),
+      initialRoute: AppRoutes.home,
+      routes: AppRoutes.getRoutes(),
     );
   }
 }

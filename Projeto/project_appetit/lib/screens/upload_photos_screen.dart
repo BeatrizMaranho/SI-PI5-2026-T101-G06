@@ -174,3 +174,4 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 }
+

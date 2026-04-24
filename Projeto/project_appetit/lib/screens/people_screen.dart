@@ -8,6 +8,7 @@ class PeopleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+ 
       // 1. O CONTEÚDO DA TELA
       body: const Center(child: Text("Bem-vindo à Pessoas")),
 
@@ -37,3 +38,5 @@ class PeopleScreen extends StatelessWidget {
     );
   }
 }
+
+ 
