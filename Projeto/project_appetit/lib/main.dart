@@ -1,8 +1,13 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(
+  DevicePreview(
+    enabled: true,
+    builder: (context) => MyApp(), 
+  ),
+);
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -10,7 +15,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+<<<<<<< Updated upstream
       debugShowCheckedModeBanner: false, // Remove a faixa de "Debug"
+=======
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+      debugShowCheckedModeBanner: false,
+>>>>>>> Stashed changes
       title: 'Appetit',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange), // Laranja lembra comida!
