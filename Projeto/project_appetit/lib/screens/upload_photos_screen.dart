@@ -29,7 +29,6 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
         title: const Text("Registrar refeições", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
