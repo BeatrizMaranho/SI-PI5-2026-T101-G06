@@ -15,13 +15,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-<<<<<<< Updated upstream
-      debugShowCheckedModeBanner: false, // Remove a faixa de "Debug"
-=======
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
->>>>>>> Stashed changes
+
       title: 'Appetit',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange), // Laranja lembra comida!
