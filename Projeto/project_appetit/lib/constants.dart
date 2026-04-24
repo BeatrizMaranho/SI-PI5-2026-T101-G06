@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // --- CORES (Paleta extraída da imagem) ---
   
   // Laranja vibrante principal (Botões e ícone ativo)
   static const Color primaryOrange = Color(0xFFE44A32);
