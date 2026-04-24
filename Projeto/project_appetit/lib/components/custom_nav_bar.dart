@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/constants.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -17,37 +18,33 @@ class CustomBottomNavBar extends StatelessWidget {
       height: AppConstants.navBarHeight,
       decoration: BoxDecoration(
         color: AppConstants.cardWhite,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppConstants.navBarRadius),
-          topRight: Radius.circular(AppConstants.navBarRadius),
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, -5),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNavItem(icon: Icons.home_outlined, activeIcon: Icons.home, index: 0),
-          _buildNavItem(icon: Icons.people_outline, activeIcon: Icons.people, index: 1),
-          _buildNavItem(icon: Icons.camera_alt_outlined, activeIcon: Icons.camera_alt, index: 2),
-          _buildNavItem(icon: Icons.note_add_outlined, activeIcon: Icons.note_add, index: 3),
-          _buildNavItem(icon: Icons.person_outline, activeIcon: Icons.person, index: 4),
+          _buildNavItem(name: 'home', index: 0),
+          _buildNavItem(name: 'kids', index: 1),
+          _buildNavItem(name: 'camera', index: 2),
+          _buildNavItem(name: 'arquivo', index: 3),
+          _buildNavItem(name: 'user', index: 4),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon, 
-    required IconData activeIcon, 
-    required int index
-  }) {
+  Widget _buildNavItem({required String name, required int index}) {
     final isSelected = selectedIndex == index;
+    
+    // AJUSTE AQUI: Como você não tem os arquivos 'w', 
+    // usamos o mesmo arquivo sempre.
+    final String assetPath = 'assets/icons/$name.svg';
 
     return Expanded(
       child: InkWell(
@@ -57,25 +54,43 @@ class CustomBottomNavBar extends StatelessWidget {
         child: Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
-            width: AppConstants.centralButtonSize,
-            height: AppConstants.centralButtonSize,
+            width: 55,
+            height: 55,
             decoration: BoxDecoration(
-              // Aplica o fundo vermelho apenas se estiver selecionado
-              color: isSelected ? AppConstants.primaryOrange : Colors.transparent,
               borderRadius: BorderRadius.circular(15),
+              gradient: isSelected ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFF6F3F), 
+                  Color(0xFFCD1313),
+                ],
+              ) : null,
               boxShadow: isSelected ? [
                 BoxShadow(
-                  color: AppConstants.primaryOrange.withOpacity(0.3),
+                  color: const Color(0xFFCD1313).withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
-                ),
+                )
               ] : [],
             ),
-            child: Icon(
-              isSelected ? activeIcon : icon,
-              size: 28,
-              // Ícone branco se selecionado, preto/cinza se não
-              color: isSelected ? AppConstants.iconLight : AppConstants.textBlack,
+            child: Center(
+              child: SvgPicture.asset(
+                assetPath,
+                width: 24,
+                height: 24,
+                // O segredo está aqui: o código pinta de branco se estiver selecionado
+                colorFilter: ColorFilter.mode(
+                  isSelected ? Colors.white : const Color(0xFF2D2D2D), 
+                  BlendMode.srcIn
+                ),
+                // Se der erro, mostraremos o ícone de erro padrão do Material
+                placeholderBuilder: (context) => Icon(
+                  Icons.error_outline, 
+                  size: 18, 
+                  color: isSelected ? Colors.white : Colors.red
+                ),
+              ),
             ),
           ),
         ),
