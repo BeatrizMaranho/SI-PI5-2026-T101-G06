@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav_bar.dart';
+// Removido o import do bottom_nav_bar pois esta tela não o utiliza
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../config/routes.dart';
@@ -29,8 +29,12 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // O BackButton vai funcionar pois está usando Navigator.push
         leading: const BackButton(color: Colors.black),
-        title: const Text("Registrar refeições", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Registrar refeições", 
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -39,26 +43,39 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Selecione a criança desejada", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            const Text(
+              "Selecione a criança desejada", 
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)
+            ),
             const SizedBox(height: 8),
             _buildDropdown(),
             const SizedBox(height: 24),
             
-            // Lógica para alternar entre a tela de seleção e a lista de fotos
-            _selectedImages.isEmpty ? _buildInitialSelection() : _buildPhotoList(),
+            // Lógica de exibição de fotos ou opções de seleção
+            Expanded( // Adicionado para evitar overflow se a lista crescer
+              child: SingleChildScrollView(
+                child: _selectedImages.isEmpty 
+                    ? _buildInitialSelection() 
+                    : _buildPhotoList(),
+              ),
+            ),
             
-            const Spacer(),
             if (_selectedImages.isNotEmpty)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () { /* Lógica para Analisar */ },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE35D33),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () { 
+                      // Aqui vai integrar com o modelo YOLO do Select Food depois
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE35D33),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Analisar", style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
-                  child: const Text("Analisar", style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
           ],
@@ -67,6 +84,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
+  // Métodos auxiliares (_buildDropdown, _buildInitialSelection, etc.) 
   Widget _buildDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -174,4 +192,3 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 }
-
