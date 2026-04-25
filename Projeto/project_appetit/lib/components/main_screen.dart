@@ -3,6 +3,7 @@ import 'package:project_appetit/screens/home_screen.dart';
 import 'package:project_appetit/screens/manage_children_screen.dart';
 import 'package:project_appetit/screens/profile_screen.dart';
 import 'package:project_appetit/screens/upload_photos_screen.dart';
+import 'package:project_appetit/screens/documents_screen.dart'; // 1. IMPORTAR A TELA NOVA
 import 'custom_nav_bar.dart';
 
 class MainScreen extends StatefulWidget {
@@ -50,12 +51,12 @@ class _MainScreenState extends State<MainScreen> {
         onPageChanged: _onPageChanged,
         physics: const BouncingScrollPhysics(),
         // children define a ordem das telas na Nav Bar
-        children: const [
-          HomeScreen(),               // Index 0
-          ManageChildrenScreen(),  // Index 1
-          UploadPhotosScreen(),
-          Center(child: Text("Documentos")),
-          ProfileScreen(),
+        children: [
+          const HomeScreen(),            // Index 0
+          const ManageChildrenScreen(),  // Index 1
+          const UploadPhotosScreen(),    // Index 2
+          DocumentsScreen(),             // 2. TROCAR O TEXTO PELA TELA (Index 3)
+          const ProfileScreen(),         // Index 4
         ],
       ),
       bottomNavigationBar: CustomBottomNavBar(
