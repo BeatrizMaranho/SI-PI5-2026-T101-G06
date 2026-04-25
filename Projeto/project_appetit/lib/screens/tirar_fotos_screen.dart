@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
-import 'package:project_appetit/constants.dart'; // Importante para as cores
+import 'package:project_appetit/constants.dart'; // Importante para as cores centralizadas
+import 'dart:io';
 
 class TirarFotosScreen extends StatefulWidget {
   const TirarFotosScreen({super.key});
@@ -14,11 +14,9 @@ class TirarFotosScreen extends StatefulWidget {
 class _TirarFotosScreenState extends State<TirarFotosScreen> {
   final ImagePicker _picker = ImagePicker();
   
-  // Usando XFile para manter compatibilidade com sua lógica de API
-  XFile? _fotoAntes;
-  XFile? _fotoDepois;
+  File? _fotoAntes;
+  File? _fotoDepois;
   String _selectedChild = 'Sofia';
-  bool _isAnalyzing = false;
 
   Future<void> _tirarFoto(bool isAntes) async {
     try {
@@ -30,70 +28,15 @@ class _TirarFotosScreenState extends State<TirarFotosScreen> {
       if (pickedFile != null) {
         setState(() {
           if (isAntes) {
-            _fotoAntes = pickedFile;
+            _fotoAntes = File(pickedFile.path);
           } else {
-            _fotoDepois = pickedFile;
+            _fotoDepois = File(pickedFile.path);
           }
         });
       }
     } catch (e) {
       debugPrint("Erro ao abrir a câmera: $e");
     }
-  }
-
-  // --- SUA LÓGICA DE INTEGRAÇÃO DE OURO ---
-  Future<void> _enviarParaAnalise() async {
-    if (_fotoAntes == null || _fotoDepois == null) return;
-    
-    setState(() => _isAnalyzing = true);
-    try {
-      final dio = Dio();
-      
-      // Lógica de bytes para evitar erro de Namespace na Web/Mobile
-      final bytesAntes = await _fotoAntes!.readAsBytes();
-      final bytesDepois = await _fotoDepois!.readAsBytes();
-      
-      FormData formData = FormData.fromMap({
-        "child": _selectedChild,
-        "file_antes": MultipartFile.fromBytes(bytesAntes, filename: _fotoAntes!.name),
-        "file_depois": MultipartFile.fromBytes(bytesDepois, filename: _fotoDepois!.name),
-      });
-
-      final response = await dio.post(
-        "http://127.0.0.1:8000/analisar", // Ajuste para o IP do seu servidor se necessário
-        data: formData,
-      );
-
-      if (response.statusCode == 200) {
-        _exibirResultado(response.data['analise']);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro na conexão: $e")),
-      );
-    } finally {
-      setState(() => _isAnalyzing = false);
-    }
-  }
-
-  void _exibirResultado(List dados) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Análise da $_selectedChild"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: dados.map((i) => ListTile(
-              leading: const Icon(Icons.restaurant, color: AppConstants.primaryOrange),
-              title: Text("${i['item']}"),
-              subtitle: Text("Consumo: ${i['percentual']}%"),
-            )).toList(),
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
-      ),
-    );
   }
 
   @override
@@ -103,49 +46,71 @@ class _TirarFotosScreenState extends State<TirarFotosScreen> {
       appBar: AppBar(
         backgroundColor: AppConstants.backgroundColor,
         elevation: 0,
-        title: const Text("Registrar refeições", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: SvgPicture.asset('assets/icons/back.svg', width: 24),
+          onPressed: () => Navigator.pop(context), 
+        ),
+        centerTitle: true,
+        title: const Text(
+          "Registrar refeições",
+          style: AppConstants.titleStyle,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
+            const Text(
+              "Selecione a criança desejada",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+            const SizedBox(height: 10),
             _buildDropdown(),
             const SizedBox(height: 25),
+            
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     _buildCaptureCard(
-                      label: "Tirar foto antes",
+                      label: "Tirar foto antes da refeição",
                       foto: _fotoAntes,
                       onTap: () => _tirarFoto(true),
                       onRemove: () => setState(() => _fotoAntes = null),
                     ),
                     const SizedBox(height: 20),
+                    
                     _buildCaptureCard(
-                      label: "Tirar foto depois",
+                      label: "Tirar foto depois da refeição",
                       foto: _fotoDepois,
                       onTap: () => _tirarFoto(false),
                       onRemove: () => setState(() => _fotoDepois = null),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 25),
+
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (_fotoAntes != null && _fotoDepois != null && !_isAnalyzing) 
-                            ? _enviarParaAnalise 
-                            : null,
+                        onPressed: (_fotoAntes != null && _fotoDepois != null) ? () {
+                          // Lógica de análise futura
+                        } : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppConstants.primaryOrange,
+                          disabledBackgroundColor: AppConstants.primaryOrange.withOpacity(0.5),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
-                        child: _isAnalyzing 
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text("Analisar", style: TextStyle(fontSize: 18, color: Colors.white)),
+                        child: const Text(
+                          "Analisar",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 25),
+                    _buildInfoCard(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -156,27 +121,115 @@ class _TirarFotosScreenState extends State<TirarFotosScreen> {
     );
   }
 
-  // Widgets auxiliares de UI da sua amiga...
-  Widget _buildDropdown() { /* Seu código de dropdown aqui */ return const SizedBox(); }
-  Widget _buildCaptureCard({required String label, required XFile? foto, required VoidCallback onTap, required VoidCallback onRemove}) {
+  Widget _buildDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppConstants.backgroundColor,
+        border: Border.all(color: AppConstants.borderOrange),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedChild,
+          isExpanded: true,
+          dropdownColor: AppConstants.backgroundColor,
+          icon: SvgPicture.asset(
+            'assets/icons/down.svg',
+            width: 12,
+            colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+          ),
+          items: ['Sofia', 'João', 'Maria'].map((String value) {
+            return DropdownMenuItem<String>(
+              value: value, 
+              child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black))
+            );
+          }).toList(),
+          onChanged: (val) => setState(() => _selectedChild = val!),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCaptureCard({
+    required String label, 
+    required File? foto, 
+    required VoidCallback onTap,
+    required VoidCallback onRemove,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         decoration: BoxDecoration(
           color: AppConstants.backgroundColor,
-          border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.3)),
+          border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.2), width: 1.5),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Column(
           children: [
-            const Icon(Icons.camera_alt, size: 40, color: AppConstants.primaryOrange),
-            const SizedBox(height: 10),
-            Text(foto == null ? label : foto.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (foto != null) IconButton(icon: const Icon(Icons.close), onPressed: onRemove)
+            // CÍRCULO LARANJA SÓLIDO (IGUAL AO PERFIL)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD14D28), 
+                shape: BoxShape.circle
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/camera.svg', 
+                width: 30, 
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            
+            if (foto != null) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      foto.path.split('/').last,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onRemove,
+                    child: const Icon(Icons.close, size: 18, color: Colors.redAccent),
+                  ),
+                ],
+              ),
+            ]
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppConstants.backgroundColor,
+        border: Border.all(color: AppConstants.borderOrange.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          SvgPicture.asset('assets/icons/limao.svg', width: 30),
+          const SizedBox(height: 12),
+          const Text(
+            "As fotos ficam salvas mesmo se você sair. Você pode completar as informações da refeição depois!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
+          ),
+        ],
       ),
     );
   }
