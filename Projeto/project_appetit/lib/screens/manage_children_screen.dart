@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
-
-class PeopleScreen extends StatelessWidget {
-  const PeopleScreen({Key? key}) : super(key: key);
+import 'child_registration_screen.dart';
+class ManageChildrenScreen extends StatelessWidget {
+  const ManageChildrenScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,14 @@ class PeopleScreen extends StatelessWidget {
             width: double.infinity,
             height: 55,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChildRegistrationScreen(),
+                  ),
+                );
+              },
               icon: const Icon(Icons.add, color: AppConstants.iconLight),
               label: const Text(
                 'Adicionar nova criança', 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/screens/home_screen.dart';
-import 'package:project_appetit/screens/people_screen.dart';
+import 'package:project_appetit/screens/manage_children_screen.dart';
 import 'package:project_appetit/screens/profile_screen.dart';
 import 'package:project_appetit/screens/upload_photos_screen.dart';
 import 'custom_nav_bar.dart';
@@ -51,7 +51,7 @@ class _MainScreenState extends State<MainScreen> {
         // children define a ordem das telas na Nav Bar
         children: const [
           HomeScreen(),               // Index 0
-          PeopleScreen(),  // Index 1
+          ManageChildrenScreen(),  // Index 1
           UploadPhotosScreen(),
           Center(child: Text("Documentos")),
           ProfileScreen(),
