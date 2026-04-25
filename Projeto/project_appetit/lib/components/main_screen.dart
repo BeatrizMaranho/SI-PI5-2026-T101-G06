@@ -48,6 +48,7 @@ class _MainScreenState extends State<MainScreen> {
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
         // children define a ordem das telas na Nav Bar
         children: const [
           HomeScreen(),               // Index 0
