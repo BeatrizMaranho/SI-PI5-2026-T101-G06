@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
->>>>>>> Stashed changes
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< Updated upstream
+
     // Retorna apenas o conteúdo da tela. 
     // O Scaffold com o menu e o botão de câmera já estarão em volta disso no MainLayout.
     return const Center(
       child: Text(
         "Bem-vindo ao Perfil",
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-=======
+
     final String userName = "Maria Silva";
     final String userRole = "Mãe";
     final String userEmail = "mariasilva@gmail.com";
@@ -30,6 +28,7 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         title: const Text(
           "Perfil do Responsável",
+
           style: TextStyle(
             color: AppConstants.textBlack, 
             fontWeight: FontWeight.bold, 
@@ -183,7 +182,6 @@ class ProfileScreen extends StatelessWidget {
               ),
           ],
         ),
->>>>>>> Stashed changes
       ),
     );
   }

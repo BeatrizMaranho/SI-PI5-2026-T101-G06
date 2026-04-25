@@ -1,0 +1,100 @@
+# select_food_queries.gql
+
+# 1. Buscar todos os Usuários
+query ListarUsuarios {
+  usuarios {
+    id
+    nome
+    email
+    tipo
+    criadoEm
+  }
+}
+
+# 2. Buscar Pacientes e seus Responsáveis
+query ListarPacientes {
+  pacientes {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+  }
+}
+
+# 3. Listar vínculos entre Nutricionistas e Pacientes
+query ListarNutricionistasPacientes {
+  nutricionistaPacientes {
+    nutricionista {
+      nome
+    }
+    paciente {
+      nome
+    }
+  }
+}
+
+# 4. Buscar Refeições com detalhes das fotos
+query ListarRefeicoes {
+  refeicoes {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+  }
+}
+
+# 5. Listar Catálogo de Alimentos
+query ListarCatalogoAlimentos {
+  alimentos {
+    id
+    label
+    categoria
+  }
+}
+
+# 6. RELATÓRIO COMPLETO: Ver tudo o que foi detectado por refeição
+query ListarDeteccoesCompletas {
+  deteccaoAlimentos {
+    id
+    percentualConsumido
+    aceito
+    cor
+    textura
+    alimento {
+      label
+      categoria
+    }
+    refeicao {
+      id
+      dataHora
+      paciente {
+        nome
+      }
+    }
+  }
+}
+
+# 7. Buscar dados de um Paciente Específico (por ID)
+query ObterPacientePorId($id: UUID!) {
+  paciente(id: $id) {
+    nome
+    nascimento
+    refeicoes_on_paciente {
+      dataHora
+      status
+      deteccaoAlimentos_on_refeicao {
+        alimento {
+          label
+        }
+        percentualConsumido
+      }
+    }
+  }
+}

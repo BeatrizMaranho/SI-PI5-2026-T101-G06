@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-<<<<<<< Updated upstream
+  
   // --- CORES (Paleta extraída da imagem) ---
 =======
 
@@ -11,7 +11,6 @@ class AppConstants {
 
   //Segunda
   static const Color red = Color(0xCD1313);
->>>>>>> Stashed changes
   
   // Laranja vibrante principal (Botões e ícone ativo)
   static const Color primaryOrange = Color(0xFFD14D28);
