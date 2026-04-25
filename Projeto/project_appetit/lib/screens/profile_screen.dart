@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Importe o pacote
+import 'package:flutter_svg/flutter_svg.dart';
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    // Retorna apenas o conteúdo da tela. 
+    // O Scaffold com o menu e o botão de câmera já estarão em volta disso no MainLayout.
+    return const Center(
+      child: Text(
+        "Bem-vindo ao Perfil",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+
     final String userName = "Maria Silva";
     final String userRole = "Mãe";
     final String userEmail = "mariasilva@gmail.com";
@@ -19,7 +28,12 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         title: const Text(
           "Perfil do Responsável",
-          style: AppConstants.sectionStyle,
+
+          style: TextStyle(
+            color: AppConstants.textBlack, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 22
+          ),
         ),
         centerTitle: false,
       ),
@@ -27,29 +41,30 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
           children: [
-            // --- Card de Perfil Principal (Avatar e Nome) ---
             _buildProfileCard(
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 40,
+                    radius: 45,
                     backgroundColor: Colors.transparent,
                     child: SvgPicture.asset(
                       'assets/icons/user-img.svg',
-                      fit: BoxFit.contain)
-                      ,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(userName, style: AppConstants.cardTitleStyle),
+                  const SizedBox(height: 12),
+                  Text(userName, style: AppConstants.cardTitleStyle.copyWith(fontSize: 20)),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(userRole, style: AppConstants.sectionStyle.copyWith(
+                      Text(userRole, style: const TextStyle(
                         color: AppConstants.textGrey,
+                        fontSize: 16,
                         fontWeight: FontWeight.normal
                       )),
-                      const SizedBox(width: 5),
-                      const Icon(Icons.edit_outlined, size: 16, color: AppConstants.textBlack),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.edit_outlined, size: 18, color: AppConstants.textBlack),
                     ],
                   ),
                 ],
@@ -62,30 +77,29 @@ class ProfileScreen extends StatelessWidget {
               icon: Icons.email_outlined,
               label: "Email",
               value: userEmail,
-              onEdit: () { /* Lógica de edição */ },
+              onEdit: () {},
             ),
             
             _buildInfoTile(
               icon: Icons.phone_outlined,
               label: "Telefone",
               value: userPhone,
-              onEdit: () { /* Lógica de edição */ },
+              onEdit: () {},
             ),
             
             _buildInfoTile(
               icon: Icons.lock_outline,
               label: "Senha",
               value: "********",
-              onEdit: () { /* Lógica de edição */ },
+              onEdit: () {},
             ),
 
-            // --- Botão Sair ---
             _buildInfoTile(
               icon: Icons.logout,
               label: "Sair",
               value: "",
               isLogout: true,
-              onEdit: () { /* Lógica de logout */ },
+              onEdit: () {},
             ),
           ],
         ),
@@ -93,21 +107,22 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper para criar o container com borda laranja (Card padrão do print)
   Widget _buildProfileCard({required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: AppConstants.cardWhite,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.5), width: 1),
+        color: AppConstants.backgroundColor, 
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: AppConstants.primaryOrange.withOpacity(0.3), 
+          width: 1.5
+        ),
       ),
       child: child,
     );
   }
 
-  // Widget para as linhas de informação (Email, Telefone, etc)
   Widget _buildInfoTile({
     required IconData icon,
     required String label,
@@ -116,41 +131,53 @@ class ProfileScreen extends StatelessWidget {
     bool isLogout = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.elementSpacing),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Container(
-        padding: const EdgeInsets.all(AppConstants.cardPadding),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppConstants.cardWhite,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.5), width: 1),
+          color: AppConstants.backgroundColor, 
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: AppConstants.primaryOrange.withOpacity(0.3), 
+            width: 1.5
+          ),
         ),
         child: Row(
           children: [
-            // Ícone circular laranja
+            // AJUSTE AQUI: Laranja com opacidade para não ficar escuro
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppConstants.primaryOrange.withOpacity(0.7),
+                color: AppConstants.primaryOrange.withOpacity(0.8), // 0.7 para ser vivo mas não escuro
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
+              child: Icon(
+                icon, 
+                color: Colors.white, 
+                size: 24
+              ), 
             ),
-            const SizedBox(width: 15),
-            // Textos
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: AppConstants.sectionStyle),
+                  Text(label, style: const TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold, 
+                    color: AppConstants.textBlack
+                  )),
                   if (value.isNotEmpty)
-                    Text(value, style: TextStyle(color: AppConstants.textGrey, fontSize: 14)),
+                    Text(value, style: const TextStyle(
+                      color: AppConstants.textGrey, 
+                      fontSize: 14
+                    )),
                 ],
               ),
             ),
-            // Ícone de edição (não aparece no Sair)
             if (!isLogout)
               IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 20, color: AppConstants.textBlack),
+                icon: const Icon(Icons.edit_outlined, size: 22, color: AppConstants.textBlack),
                 onPressed: onEdit,
               ),
           ],
