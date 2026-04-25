@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
+<<<<<<< Updated upstream
   // --- CORES (Paleta extraída da imagem) ---
+=======
+
+  //Cores mescladas dos botoes
+  //Primeira
+  static const Color orange = Color(0xFF6F3F3F);
+
+  //Segunda
+  static const Color red = Color(0xCD1313);
+>>>>>>> Stashed changes
   
   // Laranja vibrante principal (Botões e ícone ativo)
-  static const Color primaryOrange = Color(0xFFE44A32);
+  static const Color primaryOrange = Color(0xFFD14D28);
+
+  // Laranja mais escuro (Botões e ícone ativo)
+  static const Color secundaryOrange = Color(0xDC5830);
   
   // Fundo da página (Rosado bem claro/Off-white)
   static const Color backgroundColor = Color(0xFFFFF8F5);
@@ -14,6 +27,8 @@ class AppConstants {
   static const Color textGrey = Color(0xFF757575);  // Cinza para legendas
   static const Color iconLight = Colors.white;      // Ícones sobre fundo colorido
   static const Color cardWhite = Colors.white;      // Fundo dos cards
+  static const Color black = Color(0xFF000000); // Preto 
+
 
   // --- ESTILOS DE TEXTO ---
 
