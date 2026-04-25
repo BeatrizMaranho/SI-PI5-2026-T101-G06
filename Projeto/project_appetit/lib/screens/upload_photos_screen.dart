@@ -149,53 +149,60 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
-  // --- O COMPONENTE VISUAL QUE VOCÊ QUERIA ---
   Widget _buildOptionCard({
-    required String svgPath, 
-    required String label, 
-    required VoidCallback onTap
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 25),
-        decoration: BoxDecoration(
-          color: AppConstants.backgroundColor,
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: AppConstants.primaryOrange.withOpacity(0.2), 
-            width: 1.5
-          ),
+  required String svgPath, 
+  required String label, 
+  required VoidCallback onTap
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 30),
+      decoration: BoxDecoration(
+        color: AppConstants.backgroundColor, // 0xFFFFF8F5
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppConstants.borderOrange.withOpacity(0.3), 
+          width: 1.2,
         ),
-        child: Column(
-          children: [
-            // Círculo Laranja Sólido
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: const BoxDecoration(
-                color: Color(0xFFD14D28), // Cor forte do perfil
-                shape: BoxShape.circle,
-              ),
-              // Ícone SVG Branco
+      ),
+      child: Column(
+        children: [
+          // ESTE CONTAINER É O CÍRCULO LARANJA
+          Container(
+            height: 70, // Altura fixa garante que ele não colapse
+            width: 70,  // Largura fixa
+            decoration: const BoxDecoration(
+              color: Color(0xFFF67B55), // Usei o prefixo 0xFF para garantir opacidade total
+              shape: BoxShape.circle,
+            ),
+            // O Center garante que o ícone fique exatamente no meio
+            child: Center(
               child: SvgPicture.asset(
                 svgPath,
                 width: 35,
-                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                height: 35,
+                colorFilter: const ColorFilter.mode(
+                  Colors.white, 
+                  BlendMode.srcIn
+                ),
               ),
             ),
-            const SizedBox(height: 15),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.w600, 
-                color: AppConstants.textBlack
-              ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
   }
 }

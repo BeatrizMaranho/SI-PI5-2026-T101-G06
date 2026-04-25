@@ -162,49 +162,73 @@ class _GaleriaFotosScreenState extends State<GaleriaFotosScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+        padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
         decoration: BoxDecoration(
           color: AppConstants.backgroundColor,
-          // Borda sutil para não pesar o visual
-          border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.2), width: 1.5),
-          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: AppConstants.borderOrange.withOpacity(0.3), 
+            width: 1.2
+          ),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
           children: [
-            // CÍRCULO LARANJA SÓLIDO (Padronizado com o Perfil)
+            // CÍRCULO COM A COR PADRONIZADA (0xF67B55) - CORRIGIDO COM TAMANHO FIXO
             Container(
-              padding: const EdgeInsets.all(12),
+              height: 70, // Altura fixa para não sumir no Chrome
+              width: 70,  // Largura fixa para não sumir no Chrome
               decoration: const BoxDecoration(
-                color: Color(0xFFD14D28), 
+                color: Color(0xFFF67B55), // Forçando opacidade total
                 shape: BoxShape.circle
               ),
-              child: SvgPicture.asset(
-                'assets/icons/upload.svg', 
-                width: 30, 
-                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/upload.svg', 
+                  width: 35, 
+                  height: 35,
+                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 15),
+            Text(
+              label, 
+              style: const TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.w600,
+                color: Colors.black
+              )
+            ),
             
             if (foto != null) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      foto.path.split('/').last,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 14),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppConstants.borderOrange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        foto.path.split('/').last,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.7), 
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: onRemove,
-                    child: const Icon(Icons.close, size: 18, color: Colors.redAccent),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: onRemove,
+                      child: const Icon(Icons.cancel, size: 20, color: Colors.redAccent),
+                    ),
+                  ],
+                ),
               ),
             ]
           ],
