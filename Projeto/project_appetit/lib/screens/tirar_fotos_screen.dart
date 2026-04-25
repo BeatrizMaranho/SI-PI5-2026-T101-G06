@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project_appetit/constants.dart'; // Importante para as cores centralizadas
 import 'dart:io';
+import 'package:project_appetit/service/api_service.dart';
 
 class TirarFotosScreen extends StatefulWidget {
   const TirarFotosScreen({super.key});
@@ -13,10 +14,63 @@ class TirarFotosScreen extends StatefulWidget {
 
 class _TirarFotosScreenState extends State<TirarFotosScreen> {
   final ImagePicker _picker = ImagePicker();
-  
+  bool _loading = false;
   File? _fotoAntes;
   File? _fotoDepois;
   String _selectedChild = 'Sofia';
+
+  Future<void> _executarAnalise() async {
+  setState(() => _loading = true);
+
+  try {
+    final resultado = await ApiService.enviarFotos(
+      XFile(_fotoAntes!.path), 
+      XFile(_fotoDepois!.path)
+    );
+
+    //Garante que a tela ainda existe antes de mexer na UI
+    if (!mounted) return;
+
+    setState(() => _loading = false);
+
+    if (resultado != null) {
+      _mostrarResultado(resultado);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erro ao processar imagens. Verifique a conexão.")),
+      );
+    }
+  } catch (e) {
+    if (mounted) setState(() => _loading = false);
+    debugPrint("Erro: $e");
+  }
+}
+
+void _mostrarResultado(Map<String, dynamic> data) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text("Análise da ${data['crianca']}", style: AppConstants.titleStyle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("**Itens consumidos:**", style: TextStyle(fontWeight: FontWeight.bold)),
+          ... (data['detalhes']['consumido'] as List).map((item) => Text("• $item")),
+          const SizedBox(height: 10),
+          Text("Status: ${data['mensagem']}"),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("OK", style: TextStyle(color: AppConstants.primaryOrange)),
+        ),
+      ],
+    ),
+  );
+}
 
   Future<void> _tirarFoto(bool isAntes) async {
     try {
@@ -93,18 +147,20 @@ class _TirarFotosScreenState extends State<TirarFotosScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (_fotoAntes != null && _fotoDepois != null) ? () {
-                          // Lógica de análise futura
-                        } : null,
+                        onPressed: (_fotoAntes != null && _fotoDepois != null && !_loading) 
+                          ? _executarAnalise 
+                          : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppConstants.primaryOrange,
                           disabledBackgroundColor: AppConstants.primaryOrange.withOpacity(0.5),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
-                        child: const Text(
-                          "Analisar",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        child: _loading 
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Analisar",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),
                     ),

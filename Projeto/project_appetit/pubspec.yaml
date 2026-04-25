@@ -41,6 +41,8 @@ dependencies:
   flutter_svg: ^2.2.4
   dio: ^5.4.1 # Para fazer requisições HTTP
   path_provider: ^2.0.14 # Para acessar o sistema de arquivos
+  http: ^1.1.0  # Para chamadas de API
+  http_parser: ^4.0.2 # Para definir o tipo das imagens
 
 dev_dependencies:
   flutter_test:
