@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-// --- CLASSE DO MODELO (Colocada aqui para evitar erro de import) ---
+// --- CLASSE DO MODELO ---
 class AlimentoModel {
   final String nome;
   final String porcentagem;
@@ -35,27 +36,42 @@ class DocumentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Cor de destaque padronizada (0xFFF67B55)
+    const Color highlightOrange = Color(0xFFF67B55);
+
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
+      backgroundColor: AppConstants.backgroundColor, // 0xFFFFF8F5
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Reconhecimento refeições", style: AppConstants.titleStyle),
-        centerTitle: false,
-        automaticallyImplyLeading: false,
+        centerTitle: true, // Centralizado conforme o padrão
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/icons/back.svg', // Implementação do back.svg
+            width: 24,
+          ),
+          onPressed: () {
+            // Volta para a HomeScreen
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          "Reconhecimento refeições", 
+          style: AppConstants.titleStyle
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildChildHeader("Sofia", "5 anos"),
+            _buildChildHeader("Sofia", "5 anos", highlightOrange),
             const SizedBox(height: 25),
             Row(
               children: [
-                Expanded(child: _buildPhotoHolder()),
+                Expanded(child: _buildPhotoHolder(highlightOrange)),
                 const SizedBox(width: 15),
-                Expanded(child: _buildPhotoHolder()),
+                Expanded(child: _buildPhotoHolder(highlightOrange)),
               ],
             ),
             const SizedBox(height: 30),
@@ -80,20 +96,27 @@ class DocumentsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChildHeader(String nome, String idade) {
+  Widget _buildChildHeader(String nome, String idade, Color orangeColor) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.2), width: 1.5),
+        color: AppConstants.backgroundColor, // Fundo ajustado para não ficar branco
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: orangeColor.withOpacity(0.3), 
+          width: 1.2
+        ),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          // Substituído pelo seu SVG de perfil
+          CircleAvatar(
             radius: 30,
-            backgroundColor: AppConstants.backgroundColor,
-            child: Icon(Icons.person_outline, color: AppConstants.textBlack, size: 35),
+            backgroundColor: Colors.transparent,
+            child: SvgPicture.asset(
+              'assets/icons/user-img.svg',
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(width: 15),
           Column(
@@ -108,13 +131,16 @@ class DocumentsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoHolder() {
+  Widget _buildPhotoHolder(Color orangeColor) {
     return Container(
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.2), width: 1.5),
+        color: AppConstants.backgroundColor, // Fundo ajustado
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: orangeColor.withOpacity(0.3), 
+          width: 1.2
+        ),
       ),
       child: const Center(
         child: Icon(Icons.image_outlined, size: 45, color: Color(0xFFCCCCCC)),
@@ -128,7 +154,7 @@ class DocumentsScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: alimento.corFundo,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: alimento.corBorda, width: 1.2),
       ),
       child: Row(
@@ -148,15 +174,15 @@ class DocumentsScreen extends StatelessWidget {
       width: 105,
       padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: cor.withOpacity(0.08),
+        color: cor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: cor.withOpacity(0.4)),
+        border: Border.all(color: cor.withOpacity(0.4), width: 1.2),
       ),
       child: Column(
         children: [
-          Text(valor, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppConstants.textBlack)),
+          Text(valor, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: cor)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppConstants.textBlack, fontWeight: FontWeight.w500)),
+          Text(label, style: const TextStyle(fontSize: 12, color: AppConstants.textBlack, fontWeight: FontWeight.bold)),
         ],
       ),
     );

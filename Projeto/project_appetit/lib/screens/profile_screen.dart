@@ -13,10 +13,20 @@ class ProfileScreen extends StatelessWidget {
     final String userPhone = "(00)0000-0000";
 
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
+      backgroundColor: AppConstants.backgroundColor, // 0xFFFFF8F5
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true, // Centralizado conforme o padrão das outras telas
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'assets/icons/back.svg', // Implementação do back.svg
+            width: 24,
+          ),
+          onPressed: () {
+            Navigator.pop(context); // Volta para a tela anterior
+          },
+        ),
         title: const Text(
           "Perfil do Responsável",
           style: TextStyle(
@@ -25,7 +35,6 @@ class ProfileScreen extends StatelessWidget {
             fontSize: 22
           ),
         ),
-        centerTitle: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -105,7 +114,6 @@ class ProfileScreen extends StatelessWidget {
         color: AppConstants.backgroundColor, 
         borderRadius: BorderRadius.circular(25),
         border: Border.all(
-          // Padronizado com as outras telas
           color: AppConstants.borderOrange.withOpacity(0.3), 
           width: 1.2
         ),
@@ -121,7 +129,7 @@ class ProfileScreen extends StatelessWidget {
     required VoidCallback onEdit,
     bool isLogout = false,
   }) {
-    // Cor sólida para o círculo
+    // Cor sólida para o círculo padronizada (0xFFF67B55)
     const Color orangeColor = Color(0xFFF67B55);
 
     return Padding(
@@ -140,7 +148,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             // CÍRCULO PADRONIZADO COM O DESIGN
             Container(
-              height: 55, // Tamanho equilibrado para a lista
+              height: 55, 
               width: 55,
               decoration: const BoxDecoration(
                 color: orangeColor, 
