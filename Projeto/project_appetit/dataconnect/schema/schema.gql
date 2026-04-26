@@ -1,4 +1,5 @@
 # 1. USUARIO
+# 1. USUARIO
 type Usuario @table {
   id: UUID! @default(expr: "uuidV4()")
   nome: String!
@@ -9,12 +10,14 @@ type Usuario @table {
 }
 
 # 2. PACIENTE
+# 2. PACIENTE
 type Paciente @table {
   id: UUID! @default(expr: "uuidV4()")
   nome: String!
   responsavelId: UUID!
   responsavel: Usuario!
   nascimento: Date
+  criadoEm: Timestamp! @default(expr: "request.time")
   criadoEm: Timestamp! @default(expr: "request.time")
 }
 
@@ -25,8 +28,10 @@ type NutricionistaPaciente @table(key: ["nutricionistaId", "pacienteId"]) {
   nutricionista: Usuario!
   paciente: Paciente!
   vinculadoEm: Timestamp! @default(expr: "request.time")
+  vinculadoEm: Timestamp! @default(expr: "request.time")
 }
 
+# 4. REFEICAO
 # 4. REFEICAO
 type Refeicao @table {
   id: UUID! @default(expr: "uuidV4()")
@@ -34,17 +39,21 @@ type Refeicao @table {
   paciente: Paciente!
   dataHora: Timestamp! @default(expr: "request.time")
   status: String!
+  status: String!
   urlFotoAntes: String!
   urlFotoDepois: String
 }
 
 # 5. ALIMENTO
+# 5. ALIMENTO
 type Alimento @table {
   id: UUID! @default(expr: "uuidV4()")
+  label: String! @unique
   label: String! @unique
   categoria: String
 }
 
+# 6. DETECCAO_ALIMENTO
 # 6. DETECCAO_ALIMENTO
 type DeteccaoAlimento @table {
   id: UUID! @default(expr: "uuidV4()")
@@ -53,7 +62,9 @@ type DeteccaoAlimento @table {
   alimentoId: UUID!
   alimento: Alimento!
   confidence: Float!
+  confidence: Float!
   percentualConsumido: Float!
+  aceito: Boolean! @default(value: false)
   aceito: Boolean! @default(value: false)
   cor: String
   textura: String

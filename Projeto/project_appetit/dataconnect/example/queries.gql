@@ -56,6 +56,7 @@ query ListarMeusPacientes($responsavelId: UUID!) {
     nome
     nascimento
     criadoEm
+    criadoEm
     responsavel {
       nome
       email
@@ -131,6 +132,7 @@ query ListarPacientesVinculados($nutricionistaId: UUID!) {
     }
   ) {
     paciente {
+      id
       id
       nome
       nascimento
@@ -334,6 +336,7 @@ query ListarRelatorioPaciente(
       id
       dataHora
       urlFotoAntes
+      urlFotoAntes
     }
   }
 }
@@ -346,7 +349,17 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
     dataGeracao
     refeicao {
       id
+# 16. Obter relatório completo com contexto (refeição + detecções)
+query ObterRelatorioCompleto($relatorioId: UUID!) {
+  relatorio(id: $relatorioId) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
       dataHora
+      urlFotoAntes
+      urlFotoDepois
       urlFotoAntes
       urlFotoDepois
       status
@@ -358,8 +371,12 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
         alimento {
           label
           categoria
+          categoria
         }
         percentualConsumido
+        aceito
+        cor
+        textura
         aceito
         cor
         textura
