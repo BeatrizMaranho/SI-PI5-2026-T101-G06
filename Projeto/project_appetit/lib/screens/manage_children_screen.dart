@@ -1,80 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
+// ADICIONADO: Importação para usar SVGs
+import 'package:flutter_svg/flutter_svg.dart';
 import 'child_registration_screen.dart';
+
 class ManageChildrenScreen extends StatelessWidget {
   const ManageChildrenScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 40),
-          const Text(
-            'Gerenciar crianças',
-            style: AppConstants.titleStyle,
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Crianças cadastradas',
-            style: AppConstants.sectionStyle,
-          ),
-          const SizedBox(height: 20),
-          
-          childCard("Sofia", "5 anos", "12", "00/00/0000"),
-          const SizedBox(height: AppConstants.elementSpacing),
-          childCard("Arthur", "7 anos", "10", "00/00/0000"),
-          
-          const SizedBox(height: 30),
+    // Cor para estatísticas: Refeições/Desde (0xFFF67B55)
+    const Color statsOrange = Color(0xFFF67B55);
+    
+    // Cor para botões de ação: Câmera/Editar/Excluir/Adicionar (0xFFE35D33)
+    const Color primaryOrange = Color(0xFFE35D33);
 
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChildRegistrationScreen(),
+    return Scaffold(
+      backgroundColor: AppConstants.backgroundColor, // 0xFFFFF8F5
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+            const Text(
+              'Gerenciar crianças',
+              style: AppConstants.titleStyle,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Crianças cadastradas',
+              style: AppConstants.sectionStyle,
+            ),
+            const SizedBox(height: 20),
+            
+            // Passamos as duas cores para os cards
+            childCard(context, "Sofia", "5 anos", "12", "00/00/0000", statsOrange, primaryOrange),
+            const SizedBox(height: AppConstants.elementSpacing),
+            childCard(context, "Arthur", "7 anos", "10", "00/00/0000", statsOrange, primaryOrange),
+            
+            const SizedBox(height: 30),
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChildRegistrationScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
+                  'Adicionar nova criança', 
+                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)
+                ),
+                style: ElevatedButton.styleFrom(
+                  // AJUSTADO: Botão "Adicionar" com a cor 0xFFE35D33
+                  backgroundColor: primaryOrange, 
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)
                   ),
-                );
-              },
-              icon: const Icon(Icons.add, color: AppConstants.iconLight),
-              label: const Text(
-                'Adicionar nova criança', 
-                style: TextStyle(fontSize: 16, color: AppConstants.iconLight)
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.primaryOrange,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius)
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 30), // Respiro no final da tela
+          ],
+        ),
       ),
     );
   }
 
-  Widget childCard(String nome, String idade, String refeicoes, String data) {
+  Widget childCard(
+    BuildContext context, 
+    String nome, 
+    String idade, 
+    String refeicoes, 
+    String data, 
+    Color statsColor, // Refeições/Desde
+    Color actionColor // Câmera/Editar/Excluir
+  ) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: AppConstants.cardWhite,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        border: Border.all(color: AppConstants.primaryOrange.withOpacity(0.3)),
+        color: AppConstants.backgroundColor, // Misturado com o fundo
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          // Borda mais clara com statsColor
+          color: statsColor.withOpacity(0.3), 
+          width: 1.2,
+        ),
       ),
       child: Column(
         children: [
           Row(
             children: [
+              // ADICIONADO: CircleAvatar com o SVG user-img.svg
               CircleAvatar(
                 radius: 30,
-                backgroundColor: AppConstants.cardWhite,
-                child: const Icon(Icons.account_circle, size: 60, color: AppConstants.textBlack),
+                backgroundColor: Colors.transparent, // Transparente para o SVG
+                child: SvgPicture.asset(
+                  'assets/icons/user-img.svg', // Substitua pelo caminho correto do seu arquivo
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(width: 15),
               Column(
@@ -89,18 +121,20 @@ class ManageChildrenScreen extends StatelessWidget {
           const SizedBox(height: 15),
           Row(
             children: [
-              expandedInfoBox("Refeições", refeicoes, Icons.restaurant),
+              // MANTIDO: Estatísticas com a cor 0xFFF67B55
+              expandedInfoBox("Refeições", refeicoes, Icons.restaurant, statsColor),
               const SizedBox(width: 10),
-              expandedInfoBox("Desde", data, Icons.calendar_today),
+              expandedInfoBox("Desde", data, Icons.calendar_today, statsColor),
             ],
           ),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              actionButton(Icons.camera_alt),
-              actionButton(Icons.edit),
-              actionButton(Icons.delete),
+              // AJUSTADO: Botões de ação com a cor 0xFFE35D33
+              actionButton(Icons.camera_alt, actionColor),
+              actionButton(Icons.edit, actionColor),
+              actionButton(Icons.delete, actionColor),
             ],
           )
         ],
@@ -108,27 +142,28 @@ class ManageChildrenScreen extends StatelessWidget {
     );
   }
 
-  Widget expandedInfoBox(String label, String value, IconData icon) {
+  Widget expandedInfoBox(String label, String value, IconData icon, Color statsColor) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: AppConstants.primaryOrange.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(10),
+          color: statsColor, // Cor 0xFFF67B55
+          borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 14, color: AppConstants.iconLight),
+                Icon(icon, size: 14, color: Colors.white),
                 const SizedBox(width: 5),
-                Text(label, style: AppConstants.lightLabelStyle),
+                Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
               ],
             ),
+            const SizedBox(height: 4),
             Text(
               value, 
-              style: const TextStyle(color: AppConstants.iconLight, fontWeight: FontWeight.bold)
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)
             ),
           ],
         ),
@@ -136,15 +171,15 @@ class ManageChildrenScreen extends StatelessWidget {
     );
   }
 
-  Widget actionButton(IconData icon) {
+  Widget actionButton(IconData icon, Color actionColor) {
     return Container(
       width: 80,
-      height: 35,
+      height: 45,
       decoration: BoxDecoration(
-        color: AppConstants.primaryOrange,
-        borderRadius: BorderRadius.circular(10),
+        color: actionColor, // Cor 0xFFE35D33
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(icon, color: AppConstants.iconLight, size: 18),
+      child: Icon(icon, color: Colors.white, size: 20),
     );
   }
 }
