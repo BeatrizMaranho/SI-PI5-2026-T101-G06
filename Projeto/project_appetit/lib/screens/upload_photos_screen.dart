@@ -159,43 +159,50 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 25),
+        padding: const EdgeInsets.symmetric(vertical: 30),
         decoration: BoxDecoration(
           color: AppConstants.backgroundColor,
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: AppConstants.primaryOrange.withOpacity(0.2), 
-            width: 1.5
+            color: AppConstants.borderOrange.withOpacity(0.3), 
+            width: 1.2,
           ),
         ),
         child: Column(
           children: [
-            // Círculo Laranja Sólido
             Container(
-              padding: const EdgeInsets.all(15),
+              height: 70,
+              width: 70,
               decoration: const BoxDecoration(
-                color: Color(0xFFD14D28), // Cor forte do perfil
+                color: Color(0xFFF67B55),
                 shape: BoxShape.circle,
               ),
-              // Ícone SVG Branco
-              child: SvgPicture.asset(
-                svgPath,
-                width: 35,
-                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              child: Center(
+                child: SvgPicture.asset(
+                  svgPath,
+                  width: 35,
+                  height: 35,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white, 
+                    BlendMode.srcIn
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 18),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.w600, 
-                color: AppConstants.textBlack
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
           ],
         ),
       ),
     );
-  }
-}
+  } // <--- ESTA FECHA O MÉTODO _buildOptionCard
+
+} // <--- ESTA FECHA A CLASSE _UploadPhotosScreenState
