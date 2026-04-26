@@ -1,4 +1,4 @@
-# 1. Definição de Usuários
+# 1. USUARIO
 type Usuario @table {
   id: UUID! @default(expr: "uuidV4()")
   nome: String!
@@ -8,44 +8,65 @@ type Usuario @table {
   criadoEm: Timestamp! @default(expr: "request.time")
 }
 
-# 2. Definição de Pacientes
+# 2. PACIENTE
 type Paciente @table {
   id: UUID! @default(expr: "uuidV4()")
   nome: String!
-  responsavel: Usuario! 
+  responsavel_id: UUID!
+  responsavel: Usuario!
   nascimento: Date
+  criadoEm: Timestamp! @default(expr: "request.time")
 }
 
-# 3. Tabela de Relacionamento Nutricionista-Paciente
-type NutricionistaPaciente @table(key: ["nutricionista", "paciente"]) {
+# 3. NUTRICIONISTA_PACIENTE
+type NutricionistaPaciente @table(key: ["nutricionista_id", "paciente_id"]) {
+  nutricionista_id: UUID!
+  paciente_id: UUID!
   nutricionista: Usuario!
   paciente: Paciente!
+  vinculadoEm: Timestamp! @default(expr: "request.time")
 }
 
-# 4. Definição de Refeições
+# 4. REFEICAO
 type Refeicao @table {
   id: UUID! @default(expr: "uuidV4()")
+  paciente_id: UUID!
   paciente: Paciente!
   dataHora: Timestamp! @default(expr: "request.time")
-  status: String! 
+  status: String!
   urlFotoAntes: String!
   urlFotoDepois: String
 }
 
-# 5. Catálogo de Alimentos
+# 5. ALIMENTO
 type Alimento @table {
   id: UUID! @default(expr: "uuidV4()")
-  label: String!
+  label: String! @unique
   categoria: String
 }
 
-# 6. Resultados da IA 
+# 6. DETECCAO_ALIMENTO
 type DeteccaoAlimento @table {
   id: UUID! @default(expr: "uuidV4()")
+  refeicao_id: UUID!
   refeicao: Refeicao!
+  alimento_id: UUID!
   alimento: Alimento!
+  confidence: Float!
   percentualConsumido: Float!
-  aceito: Boolean! @default(value: false) 
+  aceito: Boolean! @default(value: false)
   cor: String
   textura: String
+  criadoEm: Timestamp! @default(expr: "request.time")
+}
+
+# 7. RELATORIO
+type Relatorio @table {
+  id: UUID! @default(expr: "uuidV4()")
+  refeicao_id: UUID!
+  refeicao: Refeicao!
+  paciente_id: UUID!
+  paciente: Paciente!
+  dataGeracao: Timestamp! @default(expr: "request.time")
+  conteudo: String!
 }

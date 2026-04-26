@@ -1,8 +1,15 @@
-# select_food_queries.gql
+# ============================================
+# APPETIT - QUERIES GRAPHQL
+# Filtradas por tipo de usuario
+# ============================================
 
-# 1. Buscar todos os Usuários
-query ListarUsuarios {
-  usuarios {
+# ==========================================
+# USUARIO - Autenticação e Perfil
+# ==========================================
+
+# 1. Obter dados do usuario autenticado
+query ObterUsuarioAtual {
+  usuario_atual {
     id
     nome
     email
@@ -11,12 +18,35 @@ query ListarUsuarios {
   }
 }
 
-# 2. Buscar Pacientes e seus Responsáveis
-query ListarPacientes {
-  pacientes {
+# 2. Buscar usuario por email (para login)
+query BuscarUsuarioPorEmail($email: String!) {
+  usuarios(where: { email: { eq: $email } }) {
+    id
+    nome
+    email
+    tipo
+    senhaHash
+    criadoEm
+  }
+}
+
+# 3. Buscar usuario por ID
+query ObterUsuarioPorId($id: UUID!) {
+  usuario(id: $id) {
+    id
+    nome
+    email
+    tipo
+    criadoEm
+  }
+}
+
+query ListarMeusPacientes {
+  pacientes(where: { responsavel: { id: { eq: "auth.uid" } } }) {
     id
     nome
     nascimento
+    criadoEm
     responsavel {
       nome
       email
@@ -24,21 +54,131 @@ query ListarPacientes {
   }
 }
 
-# 3. Listar vínculos entre Nutricionistas e Pacientes
-query ListarNutricionistasPacientes {
-  nutricionistaPacientes {
-    nutricionista {
+# 5. Obter paciente específico com todas as refeições
+query ObterPacienteComRefeicoes($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
       nome
+      email
     }
-    paciente {
-      nome
+    refeicoes(orderBy: { dataHora: "DESC" }) {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
     }
   }
 }
 
-# 4. Buscar Refeições com detalhes das fotos
-query ListarRefeicoes {
-  refeicoes {
+# 6. Obter paciente com histórico completo (refeições + relatórios)
+query ObterPacienteCompleto($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes(orderBy: { dataHora: "DESC" }) {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorio {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+# ==========================================
+# NUTRICIONISTA - Pacientes Vinculados
+# ==========================================
+
+# 7. Listar pacientes vinculados à nutricionista autenticada
+query ListarPacientesVinculados {
+  nutricionistaPacientes(where: { nutricionista: { id: { eq: "auth.uid" } } }) {
+    paciente {
+      id
+      nome
+      nascimento
+      responsavel {
+        nome
+        email
+      }
+    }
+    vinculadoEm
+  }
+}
+
+# 8. Obter paciente específico + suas refeições (para nutricionista)
+query ObterPacienteParaNutricionista($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes(orderBy: { dataHora: "DESC" }) {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorio {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+# ==========================================
+# REFEICAO - Análise de fotos
+# ==========================================
+
+# 9. Listar refeições do paciente (com filtro por status)
+query ListarRefeicoesPaciente($pacienteId: UUID!, $status: String) {
+  refeicoes(
+    where: { 
+      paciente: { id: { eq: $pacienteId } }
+      status: { eq: $status }
+    }
+    orderBy: { dataHora: "DESC" }
+  ) {
     id
     dataHora
     status
@@ -50,51 +190,229 @@ query ListarRefeicoes {
   }
 }
 
-# 5. Listar Catálogo de Alimentos
+# 10. Obter refeição específica com detecções
+query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
+  refeicao(id: $refeicaoId) {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+    deteccoes(orderBy: { percentualConsumido: "DESC" }) {
+      id
+      alimento {
+        id
+        label
+        categoria
+      }
+      percentualConsumido
+      aceito
+      cor
+      textura
+      criadoEm
+    }
+  }
+}
+
+# 11. Listar refeições PENDENTES de análise
+query ListarRefeicoesPendentes($pacienteId: UUID!) {
+  refeicoes(
+    where: { 
+      paciente: { id: { eq: $pacienteId } }
+      status: { eq: "pendente" }
+    }
+    orderBy: { dataHora: "ASC" }
+  ) {
+    id
+    dataHora
+    urlFotoAntes
+    paciente {
+      nome
+    }
+  }
+}
+
+# ==========================================
+# DETECCAO_ALIMENTO - Resultados da IA
+# ==========================================
+
+# 12. Listar detecções de uma refeição específica
+query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(where: { refeicao: { id: { eq: $refeicaoId } } }) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    aceito
+    cor
+    textura
+    criadoEm
+  }
+}
+
+# 13. Listar detecções ACEITAS de uma refeição
+query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(
+    where: { 
+      refeicao: { id: { eq: $refeicaoId } }
+      aceito: { eq: true }
+    }
+  ) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    cor
+    textura
+  }
+}
+
+# ==========================================
+# RELATORIO - Análise completa
+# ==========================================
+
+# 14. Obter relatório de uma refeição
+query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
+  relatorios(where: { refeicao: { id: { eq: $refeicaoId } } }) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+# 15. Listar relatórios do paciente (últimos 30)
+query ListarRelatorioPaciente($pacienteId: UUID!, $limite: Int = 30) {
+  relatorios(
+    where: { paciente: { id: { eq: $pacienteId } } }
+    orderBy: { dataGeracao: "DESC" }
+    limit: $limite
+  ) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+# 16. Obter relatório completo com contexto (refeição + detecções)
+query ObterRelatorioCompleto($relatorioId: UUID!) {
+  relatorio(id: $relatorioId) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+      urlFotoDepois
+      status
+      paciente {
+        nome
+      }
+      deteccoes {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+    }
+  }
+}
+
+# ==========================================
+# ALIMENTO - Catálogo
+# ==========================================
+
+# 17. Listar catálogo de alimentos
 query ListarCatalogoAlimentos {
-  alimentos {
+  alimentos(orderBy: { label: "ASC" }) {
     id
     label
     categoria
   }
 }
 
-# 6. RELATÓRIO COMPLETO: Ver tudo o que foi detectado por refeição
-query ListarDeteccoesCompletas {
-  deteccaoAlimentos {
+# 18. Buscar alimento por label
+query BuscarAlimentoPorLabel($label: String!) {
+  alimentos(where: { label: { eq: $label } }) {
     id
-    percentualConsumido
-    aceito
-    cor
-    textura
-    alimento {
-      label
-      categoria
+    label
+    categoria
+  }
+}
+
+# 19. Listar alimentos por categoria
+query ListarAlimentosPorCategoria($categoria: String!) {
+  alimentos(
+    where: { categoria: { eq: $categoria } }
+    orderBy: { label: "ASC" }
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+# ==========================================
+# RELATORIOS E ANALYTICS
+# ==========================================
+
+# 20. Resumo de refeições do paciente (últimos 7 dias)
+query ResumoRefeicoes7Dias($pacienteId: UUID!) {
+  refeicoes(
+    where: { 
+      paciente: { id: { eq: $pacienteId } }
+      dataHora: { gte: "now - 7 days" }
     }
-    refeicao {
-      id
-      dataHora
-      paciente {
-        nome
+    orderBy: { dataHora: "DESC" }
+  ) {
+    id
+    dataHora
+    status
+    deteccoes {
+      alimento {
+        categoria
       }
+      percentualConsumido
     }
   }
 }
 
-# 7. Buscar dados de um Paciente Específico (por ID)
-query ObterPacientePorId($id: UUID!) {
-  paciente(id: $id) {
-    nome
-    nascimento
-    refeicoes_on_paciente {
-      dataHora
-      status
-      deteccaoAlimentos_on_refeicao {
-        alimento {
-          label
-        }
-        percentualConsumido
+# 21. Alimentos mais detectados em período (para recomendações)
+query AlimentosMaisDetectados($pacienteId: UUID!, $diasAnteriores: Int = 30) {
+  deteccaoAlimentos(
+    where: {
+      refeicao: {
+        paciente: { id: { eq: $pacienteId } }
+        dataHora: { gte: "now - {diasAnteriores} days" }
       }
     }
+    orderBy: { percentualConsumido: "DESC" }
+  ) {
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
   }
 }
