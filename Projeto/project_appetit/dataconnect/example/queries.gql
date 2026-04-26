@@ -8,8 +8,8 @@
 # ==========================================
 
 # 1. Obter dados do usuario autenticado
-query ObterUsuarioAtual {
-  usuario_atual {
+query ObterUsuarioAtual($id: UUID!) {
+  usuario(id: $id) {
     id
     nome
     email
@@ -20,7 +20,11 @@ query ObterUsuarioAtual {
 
 # 2. Buscar usuario por email (para login)
 query BuscarUsuarioPorEmail($email: String!) {
-  usuarios(where: { email: { eq: $email } }) {
+  usuarios(
+    where: {
+      email: { eq: $email }
+    }
+  ) {
     id
     nome
     email
@@ -41,8 +45,13 @@ query ObterUsuarioPorId($id: UUID!) {
   }
 }
 
-query ListarMeusPacientes {
-  pacientes(where: { responsavel: { id: { eq: "auth.uid" } } }) {
+# 4. Listar meus pacientes
+query ListarMeusPacientes($responsavelId: UUID!) {
+  pacientes(
+    where: {
+      responsavelId: { eq: $responsavelId }
+    }
+  ) {
     id
     nome
     nascimento
@@ -64,7 +73,7 @@ query ObterPacienteComRefeicoes($pacienteId: UUID!) {
       nome
       email
     }
-    refeicoes(orderBy: { dataHora: "DESC" }) {
+    refeicoes: refeicaos_on_paciente {
       id
       dataHora
       status
@@ -84,13 +93,13 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
       nome
       email
     }
-    refeicoes(orderBy: { dataHora: "DESC" }) {
+    refeicoes: refeicaos_on_paciente {
       id
       dataHora
       status
       urlFotoAntes
       urlFotoDepois
-      deteccoes {
+      deteccoes: deteccaoAlimentos_on_refeicao {
         id
         alimento {
           label
@@ -101,7 +110,7 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
         cor
         textura
       }
-      relatorio {
+      relatorios: relatorios_on_refeicao {
         id
         conteudo
         dataGeracao
@@ -115,8 +124,12 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
 # ==========================================
 
 # 7. Listar pacientes vinculados à nutricionista autenticada
-query ListarPacientesVinculados {
-  nutricionistaPacientes(where: { nutricionista: { id: { eq: "auth.uid" } } }) {
+query ListarPacientesVinculados($nutricionistaId: UUID!) {
+  nutricionistaPacientes(
+    where: {
+      nutricionistaId: { eq: $nutricionistaId }
+    }
+  ) {
     paciente {
       id
       nome
@@ -140,13 +153,13 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
       nome
       email
     }
-    refeicoes(orderBy: { dataHora: "DESC" }) {
+    refeicoes: refeicaos_on_paciente {
       id
       dataHora
       status
       urlFotoAntes
       urlFotoDepois
-      deteccoes {
+      deteccoes: deteccaoAlimentos_on_refeicao {
         id
         alimento {
           label
@@ -157,7 +170,7 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
         cor
         textura
       }
-      relatorio {
+      relatorios: relatorios_on_refeicao {
         id
         conteudo
         dataGeracao
@@ -171,13 +184,16 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
 # ==========================================
 
 # 9. Listar refeições do paciente (com filtro por status)
-query ListarRefeicoesPaciente($pacienteId: UUID!, $status: String) {
-  refeicoes(
+query ListarRefeicoesPaciente(
+  $pacienteId: UUID!
+  $status: String
+) {
+  refeicaos(
     where: { 
-      paciente: { id: { eq: $pacienteId } }
+      pacienteId: { eq: $pacienteId }
       status: { eq: $status }
     }
-    orderBy: { dataHora: "DESC" }
+    orderBy: [{ dataHora: DESC }]
   ) {
     id
     dataHora
@@ -201,7 +217,7 @@ query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
     paciente {
       nome
     }
-    deteccoes(orderBy: { percentualConsumido: "DESC" }) {
+    deteccoes: deteccaoAlimentos_on_refeicao {
       id
       alimento {
         id
@@ -219,12 +235,12 @@ query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
 
 # 11. Listar refeições PENDENTES de análise
 query ListarRefeicoesPendentes($pacienteId: UUID!) {
-  refeicoes(
+  refeicaos(
     where: { 
-      paciente: { id: { eq: $pacienteId } }
+      pacienteId: { eq: $pacienteId }
       status: { eq: "pendente" }
     }
-    orderBy: { dataHora: "ASC" }
+    orderBy: [{ dataHora: ASC }]
   ) {
     id
     dataHora
@@ -241,7 +257,11 @@ query ListarRefeicoesPendentes($pacienteId: UUID!) {
 
 # 12. Listar detecções de uma refeição específica
 query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
-  deteccaoAlimentos(where: { refeicao: { id: { eq: $refeicaoId } } }) {
+  deteccaoAlimentos(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
     id
     alimento {
       label
@@ -259,7 +279,7 @@ query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
 query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
   deteccaoAlimentos(
     where: { 
-      refeicao: { id: { eq: $refeicaoId } }
+      refeicaoId: { eq: $refeicaoId }
       aceito: { eq: true }
     }
   ) {
@@ -280,7 +300,11 @@ query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
 
 # 14. Obter relatório de uma refeição
 query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
-  relatorios(where: { refeicao: { id: { eq: $refeicaoId } } }) {
+  relatorios(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
     id
     conteudo
     dataGeracao
@@ -292,10 +316,15 @@ query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
 }
 
 # 15. Listar relatórios do paciente (últimos 30)
-query ListarRelatorioPaciente($pacienteId: UUID!, $limite: Int = 30) {
+query ListarRelatorioPaciente(
+  $pacienteId: UUID!
+  $limite: Int = 30
+) {
   relatorios(
-    where: { paciente: { id: { eq: $pacienteId } } }
-    orderBy: { dataGeracao: "DESC" }
+    where: {
+      pacienteId: { eq: $pacienteId }
+    }
+    orderBy: [{ dataGeracao: DESC }]
     limit: $limite
   ) {
     id
@@ -324,7 +353,7 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
       paciente {
         nome
       }
-      deteccoes {
+      deteccoes: deteccaoAlimentos_on_refeicao {
         id
         alimento {
           label
@@ -345,7 +374,9 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
 
 # 17. Listar catálogo de alimentos
 query ListarCatalogoAlimentos {
-  alimentos(orderBy: { label: "ASC" }) {
+  alimentos(
+    orderBy: [{ label: ASC }]
+  ) {
     id
     label
     categoria
@@ -354,7 +385,11 @@ query ListarCatalogoAlimentos {
 
 # 18. Buscar alimento por label
 query BuscarAlimentoPorLabel($label: String!) {
-  alimentos(where: { label: { eq: $label } }) {
+  alimentos(
+    where: {
+      label: { eq: $label }
+    }
+  ) {
     id
     label
     categoria
@@ -364,8 +399,10 @@ query BuscarAlimentoPorLabel($label: String!) {
 # 19. Listar alimentos por categoria
 query ListarAlimentosPorCategoria($categoria: String!) {
   alimentos(
-    where: { categoria: { eq: $categoria } }
-    orderBy: { label: "ASC" }
+    where: {
+      categoria: { eq: $categoria }
+    }
+    orderBy: [{ label: ASC }]
   ) {
     id
     label
@@ -378,18 +415,21 @@ query ListarAlimentosPorCategoria($categoria: String!) {
 # ==========================================
 
 # 20. Resumo de refeições do paciente (últimos 7 dias)
-query ResumoRefeicoes7Dias($pacienteId: UUID!) {
-  refeicoes(
+query ResumoRefeicoes7Dias(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
+  refeicaos(
     where: { 
-      paciente: { id: { eq: $pacienteId } }
-      dataHora: { gte: "now - 7 days" }
+      pacienteId: { eq: $pacienteId }
+      dataHora: { ge: $dataLimite }
     }
-    orderBy: { dataHora: "DESC" }
+    orderBy: [{ dataHora: DESC }]
   ) {
     id
     dataHora
     status
-    deteccoes {
+    deteccoes: deteccaoAlimentos_on_refeicao {
       alimento {
         categoria
       }
@@ -399,15 +439,18 @@ query ResumoRefeicoes7Dias($pacienteId: UUID!) {
 }
 
 # 21. Alimentos mais detectados em período (para recomendações)
-query AlimentosMaisDetectados($pacienteId: UUID!, $diasAnteriores: Int = 30) {
+query AlimentosMaisDetectados(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
   deteccaoAlimentos(
     where: {
       refeicao: {
-        paciente: { id: { eq: $pacienteId } }
-        dataHora: { gte: "now - {diasAnteriores} days" }
+        pacienteId: { eq: $pacienteId }
+        dataHora: { ge: $dataLimite }
       }
     }
-    orderBy: { percentualConsumido: "DESC" }
+    orderBy: [{ percentualConsumido: DESC }]
   ) {
     alimento {
       label

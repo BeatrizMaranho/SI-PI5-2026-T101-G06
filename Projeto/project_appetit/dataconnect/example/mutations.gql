@@ -5,20 +5,14 @@ mutation CriarUsuario(
   $senhaHash: String!
   $tipo: String!  # "usuario" ou "nutricionista"
 ) {
-  insert_usuario(
+  usuario_insert(
     data: {
       nome: $nome
       email: $email
       senhaHash: $senhaHash
       tipo: $tipo
     }
-  ) {
-    id
-    nome
-    email
-    tipo
-    criadoEm
-  }
+  )
 }
 
 # 2. Atualizar perfil do usuario
@@ -27,18 +21,13 @@ mutation AtualizarPerfil(
   $nome: String
   $email: String
 ) {
-  update_usuario(
+  usuario_update(
     id: $id
     data: {
       nome: $nome
       email: $email
     }
-  ) {
-    id
-    nome
-    email
-    criadoEm
-  }
+  )
 }
 
 # 3. Atualizar senha do usuario
@@ -46,40 +35,27 @@ mutation AtualizarSenha(
   $id: UUID!
   $senhaHashNova: String!
 ) {
-  update_usuario(
+  usuario_update(
     id: $id
     data: {
       senhaHash: $senhaHashNova
     }
-  ) {
-    id
-    nome
-  }
+  )
 }
 
 # 4. Criar novo paciente
 mutation CriarPaciente(
   $nome: String!
-  $responsavel_id: UUID!
+  $responsavelId: UUID!
   $nascimento: Date
 ) {
-  insert_paciente(
+  paciente_insert(
     data: {
       nome: $nome
-      responsavel: { id: $responsavel_id }
+      responsavelId: $responsavelId
       nascimento: $nascimento
     }
-  ) {
-    id
-    nome
-    nascimento
-    criadoEm
-    responsavel {
-      id
-      nome
-      email
-    }
-  }
+  )
 }
 
 # 5. Atualizar dados do paciente
@@ -88,90 +64,59 @@ mutation AtualizarPaciente(
   $nome: String
   $nascimento: Date
 ) {
-  update_paciente(
+  paciente_update(
     id: $id
     data: {
       nome: $nome
       nascimento: $nascimento
     }
-  ) {
-    id
-    nome
-    nascimento
-  }
+  )
 }
 
 # 6. Deletar paciente
 mutation DeletarPaciente($id: UUID!) {
-  delete_paciente(id: $id) {
-    id
-    nome
-  }
+  paciente_delete(id: $id)
 }
 
 # 7. Criar vínculo entre nutricionista e paciente
 mutation VincularNutricionista(
-  $nutricionista_id: UUID!
-  $paciente_id: UUID!
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
 ) {
-  insert_nutricionistaPaciente(
+  nutricionistaPaciente_insert(
     data: {
-      nutricionista: { id: $nutricionista_id }
-      paciente: { id: $paciente_id }
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
     }
-  ) {
-    nutricionista {
-      id
-      nome
-      email
-    }
-    paciente {
-      id
-      nome
-    }
-    vinculadoEm
-  }
+  )
 }
 
 # 8. Remover vínculo entre nutricionista e paciente
 mutation DesvincularNutricionista(
-  $nutricionista_id: UUID!
-  $paciente_id: UUID!
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
 ) {
-  delete_nutricionistaPaciente(
-    id: { nutricionista_id: $nutricionista_id, paciente_id: $paciente_id }
-  ) {
-    nutricionista {
-      nome
+  nutricionistaPaciente_delete(
+    key: { 
+      nutricionistaId: $nutricionistaId, 
+      pacienteId: $pacienteId 
     }
-    paciente {
-      nome
-    }
-  }
+  )
 }
 
 # 9. Criar nova refeição (usuario tira foto)
 mutation CriarRefeicao(
-  $paciente_id: UUID!
+  $pacienteId: UUID!
   $urlFotoAntes: String!
   $status: String = "pendente"
 ) {
-  insert_refeicao(
+  refeicao_insert(
     data: {
-      paciente: { id: $paciente_id }
+      pacienteId: $pacienteId
       urlFotoAntes: $urlFotoAntes
       status: $status
     }
-  ) {
-    id
-    dataHora
-    status
-    urlFotoAntes
-    paciente {
-      id
-      nome
-    }
-  }
+  )
 }
 
 # 10. Atualizar refeição
@@ -180,100 +125,62 @@ mutation AtualizarRefeicao(
   $urlFotoDepois: String
   $status: String
 ) {
-  update_refeicao(
+  refeicao_update(
     id: $id
     data: {
       urlFotoDepois: $urlFotoDepois
       status: $status
     }
-  ) {
-    id
-    status
-    urlFotoAntes
-    urlFotoDepois
-  }
+  )
 }
 
 # 11. Deletar refeição
 mutation DeletarRefeicao($id: UUID!) {
-  delete_refeicao(id: $id) {
-    id
-  }
+  refeicao_delete(id: $id)
 }
 
 # 12. Criar detecção (Chamado após Python processar a foto)
 mutation CriarDeteccao(
-  $refeicao_id: UUID!
-  $alimento_id: UUID!
+  $refeicaoId: UUID!
+  $alimentoId: UUID!
+  $confidence: Float!
   $percentualConsumido: Float!
   $cor: String
   $textura: String
 ) {
-  insert_deteccaoAlimento(
+  deteccaoAlimento_insert(
     data: {
-      refeicao: { id: $refeicao_id }
-      alimento: { id: $alimento_id }
+      refeicaoId: $refeicaoId
+      alimentoId: $alimentoId
+      confidence: $confidence
       percentualConsumido: $percentualConsumido
       cor: $cor
       textura: $textura
       aceito: false  # Usuario confirma depois
     }
-  ) {
-    id
-    alimento {
-      id
-      label
-      categoria
-    }
-    percentualConsumido
-    aceito
-    cor
-    textura
-  }
+  )
 }
 
 # 13. Criar múltiplas detecções (batch - mais eficiente)
-# Dart chama isso UMA VEZ com todos os alimentos detectados
-mutation CriarDeteccoes(
-  $refeicao_id: UUID!
-  $deteccoes: [DeteccaoAlimentoInput!]!
-) {
-  insert_deteccaoAlimentos(
-    data: {
-      refeicao_id: $refeicao_id
-      items: $deteccoes
-    }
-  ) {
-    ids
-    count
-  }
-}
+# NOTA: Removido pois o Data Connect não suporta lista dinâmica no insertMany.
+# O Dart deve fazer um loop e chamar a mutation "CriarDeteccao" individualmente.
 
 # 14. Atualizar detecção (usuario aceita/rejeita resultado)
 mutation AtualizarDeteccao(
   $id: UUID!
   $aceito: Boolean!
 ) {
-  update_deteccaoAlimento(
+  deteccaoAlimento_update(
     id: $id
     data: {
       aceito: $aceito
     }
-  ) {
-    id
-    alimento {
-      label
-    }
-    percentualConsumido
-    aceito
-  }
+  )
 }
 
 # 15. Deletar detecção (se usuario rejeitar)
 mutation DeletarDeteccao($id: UUID!) {
-  delete_deteccaoAlimento(id: $id) {
-    id
-  }
+  deteccaoAlimento_delete(id: $id)
 }
 
 # 16. Criar novo alimento
@@ -281,16 +188,12 @@ mutation CriarAlimento(
   $label: String!
   $categoria: String
 ) {
-  insert_alimento(
+  alimento_insert(
     data: {
       label: $label
       categoria: $categoria
     }
-  ) {
-    id
-    label
-    categoria
-  }
+  )
 }
 
 # 17. Atualizar alimento (admin apenas)
@@ -299,25 +202,18 @@ mutation AtualizarAlimento(
   $label: String
   $categoria: String
 ) {
-  update_alimento(
+  alimento_update(
     id: $id
     data: {
       label: $label
       categoria: $categoria
     }
-  ) {
-    id
-    label
-    categoria
-  }
+  )
 }
 
 # 18. Deletar alimento (admin apenas)
 mutation DeletarAlimento($id: UUID!) {
-  delete_alimento(id: $id) {
-    id
-    label
-  }
+  alimento_delete(id: $id)
 }
 
 # ==========================================
@@ -332,28 +228,17 @@ mutation DeletarAlimento($id: UUID!) {
 #   "recomendacoes": "..."
 # }
 mutation CriarRelatorio(
-  $refeicao_id: UUID!
-  $paciente_id: UUID!
+  $refeicaoId: UUID!
+  $pacienteId: UUID!
   $conteudo: String!
 ) {
-  insert_relatorio(
+  relatorio_insert(
     data: {
-      refeicao: { id: $refeicao_id }
-      paciente: { id: $paciente_id }
+      refeicaoId: $refeicaoId
+      pacienteId: $pacienteId
       conteudo: $conteudo
     }
-  ) {
-    id
-    refeicao {
-      id
-      dataHora
-    }
-    paciente {
-      nome
-    }
-    conteudo
-    dataGeracao
-  }
+  )
 }
 
 # 20. Atualizar relatório (se precisar corrigir algo)
@@ -361,69 +246,40 @@ mutation AtualizarRelatorio(
   $id: UUID!
   $conteudo: String!
 ) {
-  update_relatorio(
+  relatorio_update(
     id: $id
     data: {
       conteudo: $conteudo
     }
-  ) {
-    id
-    conteudo
-    dataGeracao
-  }
+  )
 }
 
 # 21. Deletar relatório
 mutation DeletarRelatorio($id: UUID!) {
-  delete_relatorio(id: $id) {
-    id
-  }
+  relatorio_delete(id: $id)
 }
 
 # 23. Vincular nutricionista e criar primeiros dados
 mutation VincularNutricionistaComPaciente(
-  $nutricionista_id: UUID!
-  $paciente_id: UUID!
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
 ) {
-  insert_nutricionistaPaciente(
+  nutricionistaPaciente_insert(
     data: {
-      nutricionista: { id: $nutricionista_id }
-      paciente: { id: $paciente_id }
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
     }
-  ) {
-    nutricionista {
-      id
-      nome
-      email
-    }
-    paciente {
-      id
-      nome
-      refeicoes {
-        id
-        dataHora
-        status
-      }
-      relatorios {
-        id
-        dataGeracao
-      }
-    }
-    vinculadoEm
-  }
+  )
 }
 
 # 24. Marcar refeição como "analisada" após criar relatório
 mutation MarcarRefeicaoAnalisada($id: UUID!) {
-  update_refeicao(
+  refeicao_update(
     id: $id
     data: {
       status: "analisada"
     }
-  ) {
-    id
-    status
-  }
+  )
 }
 
 # 25. Rejeitar refeição 
@@ -431,20 +287,10 @@ mutation RejeitarRefeicao(
   $id: UUID!
   $motivo: String
 ) {
-  update_refeicao(
+  refeicao_update(
     id: $id
     data: {
       status: "rejeitada"
     }
-  ) {
-    id
-    status
-  }
-}
-
-input DeteccaoAlimentoInput {
-  alimento_id: UUID!
-  percentualConsumido: Float!
-  cor: String
-  textura: String
+  )
 }
