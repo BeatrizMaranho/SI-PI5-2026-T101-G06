@@ -105,8 +105,9 @@ class ProfileScreen extends StatelessWidget {
         color: AppConstants.backgroundColor, 
         borderRadius: BorderRadius.circular(25),
         border: Border.all(
-          color: AppConstants.primaryOrange.withOpacity(0.2), 
-          width: 1.5
+          // Padronizado com as outras telas
+          color: AppConstants.borderOrange.withOpacity(0.3), 
+          width: 1.2
         ),
       ),
       child: child,
@@ -120,6 +121,9 @@ class ProfileScreen extends StatelessWidget {
     required VoidCallback onEdit,
     bool isLogout = false,
   }) {
+    // Cor sólida para o círculo
+    const Color orangeColor = Color(0xFFF67B55);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
@@ -128,23 +132,26 @@ class ProfileScreen extends StatelessWidget {
           color: AppConstants.backgroundColor, 
           borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: AppConstants.primaryOrange.withOpacity(0.3), 
-            width: 1.5
+            color: AppConstants.borderOrange.withOpacity(0.3), 
+            width: 1.2
           ),
         ),
         child: Row(
           children: [
-            // AJUSTE AQUI: Laranja com opacidade para não ficar escuro
+            // CÍRCULO PADRONIZADO COM O DESIGN
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppConstants.primaryOrange.withOpacity(0.8), // 0.7 para ser vivo mas não escuro
+              height: 55, // Tamanho equilibrado para a lista
+              width: 55,
+              decoration: const BoxDecoration(
+                color: orangeColor, 
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon, 
-                color: Colors.white, 
-                size: 24
+              child: Center(
+                child: Icon(
+                  icon, 
+                  color: Colors.white, 
+                  size: 24
+                ),
               ), 
             ),
             const SizedBox(width: 20),
