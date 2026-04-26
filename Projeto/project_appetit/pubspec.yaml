@@ -43,6 +43,7 @@ dependencies:
   path_provider: ^2.0.14 # Para acessar o sistema de arquivos
   http: ^1.1.0  # Para chamadas de API
   http_parser: ^4.0.2 # Para definir o tipo das imagens
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +69,7 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/imgs/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

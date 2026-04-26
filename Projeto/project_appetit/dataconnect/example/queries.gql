@@ -8,7 +8,7 @@ query ObterUsuarioAtual($id: UUID!) {
   }
 }
 
-query BuscarUsuarioPorEmail($email: String!) {
+query BuscarUsuarioPorEmail($email: String!) @auth(level: PUBLIC) {
   usuarios(
     where: {
       email: { eq: $email }
