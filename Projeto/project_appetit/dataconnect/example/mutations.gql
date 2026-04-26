@@ -1,9 +1,8 @@
-# 1. REGISTRO
 mutation CriarUsuario(
   $nome: String!
   $email: String!
   $senhaHash: String!
-  $tipo: String!  # "usuario" ou "nutricionista"
+  $tipo: String!
 ) {
   usuario_insert(
     data: {
@@ -15,7 +14,6 @@ mutation CriarUsuario(
   )
 }
 
-# 2. Atualizar perfil do usuario
 mutation AtualizarPerfil(
   $id: UUID!
   $nome: String
@@ -30,7 +28,6 @@ mutation AtualizarPerfil(
   )
 }
 
-# 3. Atualizar senha do usuario
 mutation AtualizarSenha(
   $id: UUID!
   $senhaHashNova: String!
@@ -43,7 +40,6 @@ mutation AtualizarSenha(
   )
 }
 
-# 4. Criar novo paciente
 mutation CriarPaciente(
   $nome: String!
   $responsavelId: UUID!
@@ -58,7 +54,6 @@ mutation CriarPaciente(
   )
 }
 
-# 5. Atualizar dados do paciente
 mutation AtualizarPaciente(
   $id: UUID!
   $nome: String
@@ -73,12 +68,12 @@ mutation AtualizarPaciente(
   )
 }
 
-# 6. Deletar paciente
-mutation DeletarPaciente($id: UUID!) {
+mutation DeletarPaciente(
+  $id: UUID!
+) {
   paciente_delete(id: $id)
 }
 
-# 7. Criar vínculo entre nutricionista e paciente
 mutation VincularNutricionista(
   $nutricionistaId: UUID!
   $pacienteId: UUID!
@@ -91,20 +86,30 @@ mutation VincularNutricionista(
   )
 }
 
-# 8. Remover vínculo entre nutricionista e paciente
 mutation DesvincularNutricionista(
   $nutricionistaId: UUID!
   $pacienteId: UUID!
 ) {
   nutricionistaPaciente_delete(
-    key: { 
-      nutricionistaId: $nutricionistaId, 
-      pacienteId: $pacienteId 
+    key: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
     }
   )
 }
 
-# 9. Criar nova refeição (usuario tira foto)
+mutation VincularNutricionistaComPaciente(
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
+) {
+  nutricionistaPaciente_insert(
+    data: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
 mutation CriarRefeicao(
   $pacienteId: UUID!
   $urlFotoAntes: String!
@@ -119,7 +124,6 @@ mutation CriarRefeicao(
   )
 }
 
-# 10. Atualizar refeição
 mutation AtualizarRefeicao(
   $id: UUID!
   $urlFotoDepois: String
@@ -134,12 +138,35 @@ mutation AtualizarRefeicao(
   )
 }
 
-# 11. Deletar refeição
-mutation DeletarRefeicao($id: UUID!) {
+mutation DeletarRefeicao(
+  $id: UUID!
+) {
   refeicao_delete(id: $id)
 }
 
-# 12. Criar detecção (Chamado após Python processar a foto)
+mutation MarcarRefeicaoAnalisada(
+  $id: UUID!
+) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "analisada"
+    }
+  )
+}
+
+mutation RejeitarRefeicao(
+  $id: UUID!
+  $motivo: String
+) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "rejeitada"
+    }
+  )
+}
+
 mutation CriarDeteccao(
   $refeicaoId: UUID!
   $alimentoId: UUID!
@@ -156,16 +183,11 @@ mutation CriarDeteccao(
       percentualConsumido: $percentualConsumido
       cor: $cor
       textura: $textura
-      aceito: false  # Usuario confirma depois
+      aceito: false
     }
   )
 }
 
-# 13. Criar múltiplas detecções (batch - mais eficiente)
-# NOTA: Removido pois o Data Connect não suporta lista dinâmica no insertMany.
-# O Dart deve fazer um loop e chamar a mutation "CriarDeteccao" individualmente.
-
-# 14. Atualizar detecção (usuario aceita/rejeita resultado)
 mutation AtualizarDeteccao(
   $id: UUID!
   $aceito: Boolean!
@@ -178,12 +200,12 @@ mutation AtualizarDeteccao(
   )
 }
 
-# 15. Deletar detecção (se usuario rejeitar)
-mutation DeletarDeteccao($id: UUID!) {
+mutation DeletarDeteccao(
+  $id: UUID!
+) {
   deteccaoAlimento_delete(id: $id)
 }
 
-# 16. Criar novo alimento
 mutation CriarAlimento(
   $label: String!
   $categoria: String
@@ -196,7 +218,6 @@ mutation CriarAlimento(
   )
 }
 
-# 17. Atualizar alimento (admin apenas)
 mutation AtualizarAlimento(
   $id: UUID!
   $label: String
@@ -211,22 +232,12 @@ mutation AtualizarAlimento(
   )
 }
 
-# 18. Deletar alimento (admin apenas)
-mutation DeletarAlimento($id: UUID!) {
+mutation DeletarAlimento(
+  $id: UUID!
+) {
   alimento_delete(id: $id)
 }
 
-# ==========================================
-# RELATORIO - Análise Completa
-# ==========================================
-
-# 19. Criar relatório (Dart monta e salva após receber dados do Python)
-# conteudo é um STRING com JSON:
-# {
-#   "resumo": "...",
-#   "alimentos": [...],
-#   "recomendacoes": "..."
-# }
 mutation CriarRelatorio(
   $refeicaoId: UUID!
   $pacienteId: UUID!
@@ -241,7 +252,6 @@ mutation CriarRelatorio(
   )
 }
 
-# 20. Atualizar relatório (se precisar corrigir algo)
 mutation AtualizarRelatorio(
   $id: UUID!
   $conteudo: String!
@@ -254,43 +264,8 @@ mutation AtualizarRelatorio(
   )
 }
 
-# 21. Deletar relatório
-mutation DeletarRelatorio($id: UUID!) {
-  relatorio_delete(id: $id)
-}
-
-# 23. Vincular nutricionista e criar primeiros dados
-mutation VincularNutricionistaComPaciente(
-  $nutricionistaId: UUID!
-  $pacienteId: UUID!
-) {
-  nutricionistaPaciente_insert(
-    data: {
-      nutricionistaId: $nutricionistaId
-      pacienteId: $pacienteId
-    }
-  )
-}
-
-# 24. Marcar refeição como "analisada" após criar relatório
-mutation MarcarRefeicaoAnalisada($id: UUID!) {
-  refeicao_update(
-    id: $id
-    data: {
-      status: "analisada"
-    }
-  )
-}
-
-# 25. Rejeitar refeição 
-mutation RejeitarRefeicao(
+mutation DeletarRelatorio(
   $id: UUID!
-  $motivo: String
 ) {
-  refeicao_update(
-    id: $id
-    data: {
-      status: "rejeitada"
-    }
-  )
+  relatorio_delete(id: $id)
 }

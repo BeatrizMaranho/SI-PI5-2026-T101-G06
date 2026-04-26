@@ -1,13 +1,3 @@
-# ============================================
-# APPETIT - QUERIES GRAPHQL
-# Filtradas por tipo de usuario
-# ============================================
-
-# ==========================================
-# USUARIO - Autenticação e Perfil
-# ==========================================
-
-# 1. Obter dados do usuario autenticado
 query ObterUsuarioAtual($id: UUID!) {
   usuario(id: $id) {
     id
@@ -18,7 +8,6 @@ query ObterUsuarioAtual($id: UUID!) {
   }
 }
 
-# 2. Buscar usuario por email (para login)
 query BuscarUsuarioPorEmail($email: String!) {
   usuarios(
     where: {
@@ -34,7 +23,6 @@ query BuscarUsuarioPorEmail($email: String!) {
   }
 }
 
-# 3. Buscar usuario por ID
 query ObterUsuarioPorId($id: UUID!) {
   usuario(id: $id) {
     id
@@ -45,7 +33,6 @@ query ObterUsuarioPorId($id: UUID!) {
   }
 }
 
-# 4. Listar meus pacientes
 query ListarMeusPacientes($responsavelId: UUID!) {
   pacientes(
     where: {
@@ -56,7 +43,6 @@ query ListarMeusPacientes($responsavelId: UUID!) {
     nome
     nascimento
     criadoEm
-    criadoEm
     responsavel {
       nome
       email
@@ -64,7 +50,6 @@ query ListarMeusPacientes($responsavelId: UUID!) {
   }
 }
 
-# 5. Obter paciente específico com todas as refeições
 query ObterPacienteComRefeicoes($pacienteId: UUID!) {
   paciente(id: $pacienteId) {
     id
@@ -84,7 +69,6 @@ query ObterPacienteComRefeicoes($pacienteId: UUID!) {
   }
 }
 
-# 6. Obter paciente com histórico completo (refeições + relatórios)
 query ObterPacienteCompleto($pacienteId: UUID!) {
   paciente(id: $pacienteId) {
     id
@@ -120,11 +104,6 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
   }
 }
 
-# ==========================================
-# NUTRICIONISTA - Pacientes Vinculados
-# ==========================================
-
-# 7. Listar pacientes vinculados à nutricionista autenticada
 query ListarPacientesVinculados($nutricionistaId: UUID!) {
   nutricionistaPacientes(
     where: {
@@ -132,7 +111,6 @@ query ListarPacientesVinculados($nutricionistaId: UUID!) {
     }
   ) {
     paciente {
-      id
       id
       nome
       nascimento
@@ -145,7 +123,6 @@ query ListarPacientesVinculados($nutricionistaId: UUID!) {
   }
 }
 
-# 8. Obter paciente específico + suas refeições (para nutricionista)
 query ObterPacienteParaNutricionista($pacienteId: UUID!) {
   paciente(id: $pacienteId) {
     id
@@ -181,11 +158,6 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
   }
 }
 
-# ==========================================
-# REFEICAO - Análise de fotos
-# ==========================================
-
-# 9. Listar refeições do paciente (com filtro por status)
 query ListarRefeicoesPaciente(
   $pacienteId: UUID!
   $status: String
@@ -208,7 +180,6 @@ query ListarRefeicoesPaciente(
   }
 }
 
-# 10. Obter refeição específica com detecções
 query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
   refeicao(id: $refeicaoId) {
     id
@@ -235,7 +206,6 @@ query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
   }
 }
 
-# 11. Listar refeições PENDENTES de análise
 query ListarRefeicoesPendentes($pacienteId: UUID!) {
   refeicaos(
     where: { 
@@ -253,11 +223,6 @@ query ListarRefeicoesPendentes($pacienteId: UUID!) {
   }
 }
 
-# ==========================================
-# DETECCAO_ALIMENTO - Resultados da IA
-# ==========================================
-
-# 12. Listar detecções de uma refeição específica
 query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
   deteccaoAlimentos(
     where: {
@@ -277,7 +242,6 @@ query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
   }
 }
 
-# 13. Listar detecções ACEITAS de uma refeição
 query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
   deteccaoAlimentos(
     where: { 
@@ -296,11 +260,6 @@ query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
   }
 }
 
-# ==========================================
-# RELATORIO - Análise completa
-# ==========================================
-
-# 14. Obter relatório de uma refeição
 query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
   relatorios(
     where: {
@@ -317,7 +276,6 @@ query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
   }
 }
 
-# 15. Listar relatórios do paciente (últimos 30)
 query ListarRelatorioPaciente(
   $pacienteId: UUID!
   $limite: Int = 30
@@ -336,20 +294,10 @@ query ListarRelatorioPaciente(
       id
       dataHora
       urlFotoAntes
-      urlFotoAntes
     }
   }
 }
 
-# 16. Obter relatório completo com contexto (refeição + detecções)
-query ObterRelatorioCompleto($relatorioId: UUID!) {
-  relatorio(id: $relatorioId) {
-    id
-    conteudo
-    dataGeracao
-    refeicao {
-      id
-# 16. Obter relatório completo com contexto (refeição + detecções)
 query ObterRelatorioCompleto($relatorioId: UUID!) {
   relatorio(id: $relatorioId) {
     id
@@ -358,8 +306,6 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
     refeicao {
       id
       dataHora
-      urlFotoAntes
-      urlFotoDepois
       urlFotoAntes
       urlFotoDepois
       status
@@ -371,12 +317,8 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
         alimento {
           label
           categoria
-          categoria
         }
         percentualConsumido
-        aceito
-        cor
-        textura
         aceito
         cor
         textura
@@ -385,11 +327,6 @@ query ObterRelatorioCompleto($relatorioId: UUID!) {
   }
 }
 
-# ==========================================
-# ALIMENTO - Catálogo
-# ==========================================
-
-# 17. Listar catálogo de alimentos
 query ListarCatalogoAlimentos {
   alimentos(
     orderBy: [{ label: ASC }]
@@ -400,7 +337,6 @@ query ListarCatalogoAlimentos {
   }
 }
 
-# 18. Buscar alimento por label
 query BuscarAlimentoPorLabel($label: String!) {
   alimentos(
     where: {
@@ -413,7 +349,6 @@ query BuscarAlimentoPorLabel($label: String!) {
   }
 }
 
-# 19. Listar alimentos por categoria
 query ListarAlimentosPorCategoria($categoria: String!) {
   alimentos(
     where: {
@@ -427,11 +362,6 @@ query ListarAlimentosPorCategoria($categoria: String!) {
   }
 }
 
-# ==========================================
-# RELATORIOS E ANALYTICS
-# ==========================================
-
-# 20. Resumo de refeições do paciente (últimos 7 dias)
 query ResumoRefeicoes7Dias(
   $pacienteId: UUID!
   $dataLimite: Timestamp!
@@ -455,7 +385,6 @@ query ResumoRefeicoes7Dias(
   }
 }
 
-# 21. Alimentos mais detectados em período (para recomendações)
 query AlimentosMaisDetectados(
   $pacienteId: UUID!
   $dataLimite: Timestamp!
