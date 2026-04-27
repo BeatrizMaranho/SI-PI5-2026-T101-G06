@@ -3,7 +3,7 @@ mutation CriarUsuario(
   $email: String!
   $senhaHash: String!
   $tipo: String!
-) {
+) @auth(level: PUBLIC) {
   usuario_insert(
     data: {
       nome: $nome

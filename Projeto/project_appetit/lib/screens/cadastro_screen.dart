@@ -1,65 +1,75 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:project_appetit/components/main_screen.dart';
-import 'package:project_appetit/dataconnect_generated/generated.dart'; // Import do Data Connect
-import 'package:project_appetit/screens/cadastro_screen.dart';
+import 'package:crypto/crypto.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart'; 
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class CadastroScreen extends StatefulWidget {
+  const CadastroScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<CadastroScreen> createState() => _CadastroScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _CadastroScreenState extends State<CadastroScreen> {
+  final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _confirmaSenhaController = TextEditingController();
+
   bool _isLoading = false;
 
-  Future<bool> _executarLogicaLogin(String email, String senha) async {
-    try {
-      final connector = ExampleConnector.instance;
-      var bytes = utf8.encode(senha);
-      var hashDigitado = sha256.convert(bytes).toString();
-
-      final result = await connector
-          .buscarUsuarioPorEmail(email: email)
-          .execute();
-
-      if (result.data.usuarios.isEmpty) return false;
-
-      final usuario = result.data.usuarios.first;
-      return usuario.senhaHash == hashDigitado;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  void _tentarLogin() async {
+  void _tentarCadastro() async {
+    final nome = _nomeController.text.trim();
     final email = _emailController.text.trim().toLowerCase();
     final senha = _senhaController.text.trim();
+    final confirmaSenha = _confirmaSenhaController.text.trim();
 
-    if (email.isEmpty || senha.isEmpty) {
+    if (nome.isEmpty || email.isEmpty || senha.isEmpty || confirmaSenha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha os campos corretamente')),
+        const SnackBar(content: Text('Preencha todos os campos')),
+      );
+      return;
+    }
+
+    if (senha != confirmaSenha) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('As senhas não conferem')),
       );
       return;
     }
 
     setState(() => _isLoading = true);
-    bool sucesso = await _executarLogicaLogin(email, senha);
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (sucesso) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      } else {
+    try {
+      var bytes = utf8.encode(senha);
+      var hashSenha = sha256.convert(bytes).toString();
+
+      final connector = ExampleConnector.instance;
+      await connector.criarUsuario(
+        nome: nome,
+        email: email,
+        senhaHash: hashSenha,
+        tipo: 'usuario', 
+      ).execute();
+
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('E-mail ou senha incorretos')),
+          const SnackBar(
+            content: Text('Cadastro realizado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar no banco: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -74,8 +84,18 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Column(
             children: [
-              const SizedBox(height: 60),
-              Image.asset('assets/imgs/cenoura.png', height: 120),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Image.asset('assets/imgs/morango.png', height: 100), 
               const SizedBox(height: 16),
               const Text(
                 "APPETIT",
@@ -85,19 +105,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 40),
+
+              _buildLabel("Nome"),
+              const SizedBox(height: 8),
+              _buildTextField(_nomeController, "Digite seu nome", false),
+              const SizedBox(height: 16),
+
               _buildLabel("Email"),
               const SizedBox(height: 8),
               _buildTextField(_emailController, "Digite seu email", false),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
               _buildLabel("Senha"),
               const SizedBox(height: 8),
               _buildTextField(_senhaController, "Digite sua senha", true),
+              const SizedBox(height: 16),
+
+              _buildLabel("Confirma senha"),
+              const SizedBox(height: 8),
+              _buildTextField(_confirmaSenhaController, "Digite novamente sua senha", true),
               const SizedBox(height: 40),
+
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.orange)
                   : GestureDetector(
-                      onTap: _tentarLogin,
+                      onTap: _tentarCadastro,
                       child: Container(
                         width: double.infinity,
                         height: 56,
@@ -111,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: const Center(
                           child: Text(
-                            "Entrar",
+                            "Cadastrar",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -121,42 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text(
-                    "Esqueceu a senha?",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      decoration: TextDecoration.underline,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 32),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CadastroScreen()),
-                  );
-                },
-                child: const Text(
-                  "Cadastre-se aqui",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
