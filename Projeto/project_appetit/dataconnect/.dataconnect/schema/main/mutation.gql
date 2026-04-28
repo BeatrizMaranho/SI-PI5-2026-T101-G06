@@ -1,0 +1,776 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Alimento` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  alimento_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Alimento_Data!
+  ): Alimento_KeyOutput! @fdc_generated(from: "Alimento", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `DeteccaoAlimento` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  deteccaoAlimento_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: DeteccaoAlimento_Data!
+  ): DeteccaoAlimento_KeyOutput! @fdc_generated(from: "DeteccaoAlimento", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `NutricionistaPaciente` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  nutricionistaPaciente_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: NutricionistaPaciente_Data!
+  ): NutricionistaPaciente_KeyOutput! @fdc_generated(from: "NutricionistaPaciente", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Paciente` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paciente_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Paciente_Data!
+  ): Paciente_KeyOutput! @fdc_generated(from: "Paciente", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Refeicao` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  refeicao_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Refeicao_Data!
+  ): Refeicao_KeyOutput! @fdc_generated(from: "Refeicao", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Relatorio` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  relatorio_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput! @fdc_generated(from: "Relatorio", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Usuario` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  usuario_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Usuario_Data!
+  ): Usuario_KeyOutput! @fdc_generated(from: "Usuario", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Alimento` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  alimento_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Alimento_Data!]!
+  ): [Alimento_KeyOutput!]! @fdc_generated(from: "Alimento", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `DeteccaoAlimento` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  deteccaoAlimento_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [DeteccaoAlimento_Data!]!
+  ): [DeteccaoAlimento_KeyOutput!]! @fdc_generated(from: "DeteccaoAlimento", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `NutricionistaPaciente` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  nutricionistaPaciente_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [NutricionistaPaciente_Data!]!
+  ): [NutricionistaPaciente_KeyOutput!]! @fdc_generated(from: "NutricionistaPaciente", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Paciente` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  paciente_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Paciente_Data!]!
+  ): [Paciente_KeyOutput!]! @fdc_generated(from: "Paciente", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Refeicao` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  refeicao_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Refeicao_Data!]!
+  ): [Refeicao_KeyOutput!]! @fdc_generated(from: "Refeicao", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Relatorio` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  relatorio_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Relatorio_Data!]!
+  ): [Relatorio_KeyOutput!]! @fdc_generated(from: "Relatorio", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Usuario` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  usuario_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Usuario_Data!]!
+  ): [Usuario_KeyOutput!]! @fdc_generated(from: "Usuario", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Alimento` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Alimento`.
+  """
+  alimento_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Alimento_Data!
+  ): Alimento_KeyOutput! @fdc_generated(from: "Alimento", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `DeteccaoAlimento` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DeteccaoAlimento`.
+  """
+  deteccaoAlimento_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: DeteccaoAlimento_Data!
+  ): DeteccaoAlimento_KeyOutput! @fdc_generated(from: "DeteccaoAlimento", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `NutricionistaPaciente` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `NutricionistaPaciente`.
+  """
+  nutricionistaPaciente_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: NutricionistaPaciente_Data!
+  ): NutricionistaPaciente_KeyOutput! @fdc_generated(from: "NutricionistaPaciente", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Paciente` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Paciente`.
+  """
+  paciente_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Paciente_Data!
+  ): Paciente_KeyOutput! @fdc_generated(from: "Paciente", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Refeicao` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Refeicao`.
+  """
+  refeicao_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Refeicao_Data!
+  ): Refeicao_KeyOutput! @fdc_generated(from: "Refeicao", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Relatorio` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Relatorio`.
+  """
+  relatorio_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput! @fdc_generated(from: "Relatorio", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Usuario` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Usuario`.
+  """
+  usuario_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Usuario_Data!
+  ): Usuario_KeyOutput! @fdc_generated(from: "Usuario", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Alimento` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Alimento`.
+  """
+  alimento_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Alimento_Data!]!
+  ): [Alimento_KeyOutput!]! @fdc_generated(from: "Alimento", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `DeteccaoAlimento` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DeteccaoAlimento`.
+  """
+  deteccaoAlimento_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [DeteccaoAlimento_Data!]!
+  ): [DeteccaoAlimento_KeyOutput!]! @fdc_generated(from: "DeteccaoAlimento", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `NutricionistaPaciente` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `NutricionistaPaciente`.
+  """
+  nutricionistaPaciente_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [NutricionistaPaciente_Data!]!
+  ): [NutricionistaPaciente_KeyOutput!]! @fdc_generated(from: "NutricionistaPaciente", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Paciente` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Paciente`.
+  """
+  paciente_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Paciente_Data!]!
+  ): [Paciente_KeyOutput!]! @fdc_generated(from: "Paciente", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Refeicao` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Refeicao`.
+  """
+  refeicao_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Refeicao_Data!]!
+  ): [Refeicao_KeyOutput!]! @fdc_generated(from: "Refeicao", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Relatorio` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Relatorio`.
+  """
+  relatorio_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Relatorio_Data!]!
+  ): [Relatorio_KeyOutput!]! @fdc_generated(from: "Relatorio", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Usuario` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Usuario`.
+  """
+  usuario_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Usuario_Data!]!
+  ): [Usuario_KeyOutput!]! @fdc_generated(from: "Usuario", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Alimento` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Alimento` or `null` if not found.
+  """
+  alimento_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Alimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Alimento_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Alimento_Data!
+  ): Alimento_KeyOutput @fdc_generated(from: "Alimento", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `DeteccaoAlimento` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `DeteccaoAlimento` or `null` if not found.
+  """
+  deteccaoAlimento_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: DeteccaoAlimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: DeteccaoAlimento_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: DeteccaoAlimento_Data!
+  ): DeteccaoAlimento_KeyOutput @fdc_generated(from: "DeteccaoAlimento", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `NutricionistaPaciente` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `NutricionistaPaciente` or `null` if not found.
+  """
+  nutricionistaPaciente_update(
+    """
+    The key used to identify the object.
+    """
+    key: NutricionistaPaciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: NutricionistaPaciente_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: NutricionistaPaciente_Data!
+  ): NutricionistaPaciente_KeyOutput @fdc_generated(from: "NutricionistaPaciente", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Paciente` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Paciente` or `null` if not found.
+  """
+  paciente_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Paciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Paciente_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Paciente_Data!
+  ): Paciente_KeyOutput @fdc_generated(from: "Paciente", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Refeicao` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Refeicao` or `null` if not found.
+  """
+  refeicao_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Refeicao_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Refeicao_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Refeicao_Data!
+  ): Refeicao_KeyOutput @fdc_generated(from: "Refeicao", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Relatorio` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Relatorio` or `null` if not found.
+  """
+  relatorio_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput @fdc_generated(from: "Relatorio", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Usuario` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Usuario` or `null` if not found.
+  """
+  usuario_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Usuario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Usuario_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Usuario_Data!
+  ): Usuario_KeyOutput @fdc_generated(from: "Usuario", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Alimento` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  alimento_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Alimento_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Alimento_Data!
+  ): Int! @fdc_generated(from: "Alimento", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `DeteccaoAlimento` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  deteccaoAlimento_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: DeteccaoAlimento_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: DeteccaoAlimento_Data!
+  ): Int! @fdc_generated(from: "DeteccaoAlimento", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `NutricionistaPaciente` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  nutricionistaPaciente_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: NutricionistaPaciente_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: NutricionistaPaciente_Data!
+  ): Int! @fdc_generated(from: "NutricionistaPaciente", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Paciente` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  paciente_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Paciente_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Paciente_Data!
+  ): Int! @fdc_generated(from: "Paciente", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Refeicao` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  refeicao_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Refeicao_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Refeicao_Data!
+  ): Int! @fdc_generated(from: "Refeicao", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Relatorio` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  relatorio_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Relatorio_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Relatorio_Data!
+  ): Int! @fdc_generated(from: "Relatorio", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Usuario` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  usuario_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Usuario_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Usuario_Data!
+  ): Int! @fdc_generated(from: "Usuario", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Alimento` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  alimento_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Alimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Alimento_FirstRow
+  ): Alimento_KeyOutput @fdc_generated(from: "Alimento", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `DeteccaoAlimento` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  deteccaoAlimento_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: DeteccaoAlimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: DeteccaoAlimento_FirstRow
+  ): DeteccaoAlimento_KeyOutput @fdc_generated(from: "DeteccaoAlimento", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `NutricionistaPaciente` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  nutricionistaPaciente_delete(
+    """
+    The key used to identify the object.
+    """
+    key: NutricionistaPaciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: NutricionistaPaciente_FirstRow
+  ): NutricionistaPaciente_KeyOutput @fdc_generated(from: "NutricionistaPaciente", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Paciente` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  paciente_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Paciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Paciente_FirstRow
+  ): Paciente_KeyOutput @fdc_generated(from: "Paciente", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Refeicao` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  refeicao_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Refeicao_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Refeicao_FirstRow
+  ): Refeicao_KeyOutput @fdc_generated(from: "Refeicao", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Relatorio` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  relatorio_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+  ): Relatorio_KeyOutput @fdc_generated(from: "Relatorio", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Usuario` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  usuario_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Usuario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Usuario_FirstRow
+  ): Usuario_KeyOutput @fdc_generated(from: "Usuario", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Alimento` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  alimento_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Alimento_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Alimento", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `DeteccaoAlimento` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  deteccaoAlimento_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: DeteccaoAlimento_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "DeteccaoAlimento", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `NutricionistaPaciente` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  nutricionistaPaciente_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: NutricionistaPaciente_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "NutricionistaPaciente", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Paciente` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  paciente_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Paciente_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Refeicao` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  refeicao_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Refeicao_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Refeicao", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Relatorio` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  relatorio_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Relatorio_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Usuario` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  usuario_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Usuario_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Usuario", purpose: DELETE_MULTIPLE)
+}

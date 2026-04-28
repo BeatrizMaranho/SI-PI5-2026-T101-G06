@@ -1,0 +1,368 @@
+extend type Query {
+  """
+  ✨ Look up a single `Alimento` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  alimento(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Alimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Alimento_FirstRow
+  ): Alimento @fdc_generated(from: "Alimento", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `DeteccaoAlimento` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  deteccaoAlimento(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: DeteccaoAlimento_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: DeteccaoAlimento_FirstRow
+  ): DeteccaoAlimento @fdc_generated(from: "DeteccaoAlimento", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `NutricionistaPaciente` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  nutricionistaPaciente(
+    """
+    The key used to identify the object.
+    """
+    key: NutricionistaPaciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: NutricionistaPaciente_FirstRow
+  ): NutricionistaPaciente @fdc_generated(from: "NutricionistaPaciente", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Paciente` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  paciente(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Paciente_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Paciente_FirstRow
+  ): Paciente @fdc_generated(from: "Paciente", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Refeicao` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  refeicao(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Refeicao_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Refeicao_FirstRow
+  ): Refeicao @fdc_generated(from: "Refeicao", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Relatorio` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  relatorio(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+  ): Relatorio @fdc_generated(from: "Relatorio", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Usuario` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  usuario(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Usuario_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Usuario_FirstRow
+  ): Usuario @fdc_generated(from: "Usuario", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Alimento` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  alimentos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Alimento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Alimento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Alimento_Having
+  ): [Alimento!]! @fdc_generated(from: "Alimento", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `DeteccaoAlimento` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  deteccaoAlimentos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: DeteccaoAlimento_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [DeteccaoAlimento_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: DeteccaoAlimento_Having
+  ): [DeteccaoAlimento!]! @fdc_generated(from: "DeteccaoAlimento", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `NutricionistaPaciente` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  nutricionistaPacientes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: NutricionistaPaciente_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [NutricionistaPaciente_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: NutricionistaPaciente_Having
+  ): [NutricionistaPaciente!]! @fdc_generated(from: "NutricionistaPaciente", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Paciente` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  pacientes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Paciente_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Paciente_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Paciente_Having
+  ): [Paciente!]! @fdc_generated(from: "Paciente", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Refeicao` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  refeicaos(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Refeicao_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Refeicao_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Refeicao_Having
+  ): [Refeicao!]! @fdc_generated(from: "Refeicao", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Relatorio` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  relatorios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Relatorio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Relatorio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Relatorio_Having
+  ): [Relatorio!]! @fdc_generated(from: "Relatorio", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Usuario` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  usuarios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Usuario_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Usuario_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Usuario_Having
+  ): [Usuario!]! @fdc_generated(from: "Usuario", purpose: QUERY_MULTIPLE)
+}
