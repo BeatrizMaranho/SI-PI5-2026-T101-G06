@@ -1,8 +1,5 @@
-# select_food_queries.gql
-
-# 1. Buscar todos os Usuários
-query ListarUsuarios {
-  usuarios {
+query ObterUsuarioAtual($id: UUID!) {
+  usuario(id: $id) {
     id
     nome
     email
@@ -11,12 +8,41 @@ query ListarUsuarios {
   }
 }
 
-# 2. Buscar Pacientes e seus Responsáveis
-query ListarPacientes {
-  pacientes {
+query BuscarUsuarioPorEmail($email: String!) @auth(level: PUBLIC) {
+  usuarios(
+    where: {
+      email: { eq: $email }
+    }
+  ) {
+    id
+    nome
+    email
+    tipo
+    senhaHash
+    criadoEm
+  }
+}
+
+query ObterUsuarioPorId($id: UUID!) {
+  usuario(id: $id) {
+    id
+    nome
+    email
+    tipo
+    criadoEm
+  }
+}
+
+query ListarMeusPacientes($responsavelId: UUID!) {
+  pacientes(
+    where: {
+      responsavelId: { eq: $responsavelId }
+    }
+  ) {
     id
     nome
     nascimento
+    criadoEm
     responsavel {
       nome
       email
@@ -24,21 +50,125 @@ query ListarPacientes {
   }
 }
 
-# 3. Listar vínculos entre Nutricionistas e Pacientes
-query ListarNutricionistasPacientes {
-  nutricionistaPacientes {
-    nutricionista {
+query ObterPacienteComRefeicoes($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
       nome
+      email
     }
-    paciente {
-      nome
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
     }
   }
 }
 
-# 4. Buscar Refeições com detalhes das fotos
-query ListarRefeicoes {
-  refeicoes {
+query ObterPacienteCompleto($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorios: relatorios_on_refeicao {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+query ListarPacientesVinculados($nutricionistaId: UUID!) {
+  nutricionistaPacientes(
+    where: {
+      nutricionistaId: { eq: $nutricionistaId }
+    }
+  ) {
+    paciente {
+      id
+      nome
+      nascimento
+      responsavel {
+        nome
+        email
+      }
+    }
+    vinculadoEm
+  }
+}
+
+query ObterPacienteParaNutricionista($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorios: relatorios_on_refeicao {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+query ListarRefeicoesPaciente(
+  $pacienteId: UUID!
+  $status: String
+) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      status: { eq: $status }
+    }
+    orderBy: [{ dataHora: DESC }]
+  ) {
     id
     dataHora
     status
@@ -50,51 +180,228 @@ query ListarRefeicoes {
   }
 }
 
-# 5. Listar Catálogo de Alimentos
+query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
+  refeicao(id: $refeicaoId) {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+    deteccoes: deteccaoAlimentos_on_refeicao {
+      id
+      alimento {
+        id
+        label
+        categoria
+      }
+      percentualConsumido
+      aceito
+      cor
+      textura
+      criadoEm
+    }
+  }
+}
+
+query ListarRefeicoesPendentes($pacienteId: UUID!) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      status: { eq: "pendente" }
+    }
+    orderBy: [{ dataHora: ASC }]
+  ) {
+    id
+    dataHora
+    urlFotoAntes
+    paciente {
+      nome
+    }
+  }
+}
+
+query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    aceito
+    cor
+    textura
+    criadoEm
+  }
+}
+
+query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(
+    where: { 
+      refeicaoId: { eq: $refeicaoId }
+      aceito: { eq: true }
+    }
+  ) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    cor
+    textura
+  }
+}
+
+query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
+  relatorios(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+query ListarRelatorioPaciente(
+  $pacienteId: UUID!
+  $limite: Int = 30
+) {
+  relatorios(
+    where: {
+      pacienteId: { eq: $pacienteId }
+    }
+    orderBy: [{ dataGeracao: DESC }]
+    limit: $limite
+  ) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+query ObterRelatorioCompleto($relatorioId: UUID!) {
+  relatorio(id: $relatorioId) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+      urlFotoDepois
+      status
+      paciente {
+        nome
+      }
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+    }
+  }
+}
+
 query ListarCatalogoAlimentos {
-  alimentos {
+  alimentos(
+    orderBy: [{ label: ASC }]
+  ) {
     id
     label
     categoria
   }
 }
 
-# 6. RELATÓRIO COMPLETO: Ver tudo o que foi detectado por refeição
-query ListarDeteccoesCompletas {
-  deteccaoAlimentos {
-    id
-    percentualConsumido
-    aceito
-    cor
-    textura
-    alimento {
-      label
-      categoria
+query BuscarAlimentoPorLabel($label: String!) {
+  alimentos(
+    where: {
+      label: { eq: $label }
     }
-    refeicao {
-      id
-      dataHora
-      paciente {
-        nome
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+query ListarAlimentosPorCategoria($categoria: String!) {
+  alimentos(
+    where: {
+      categoria: { eq: $categoria }
+    }
+    orderBy: [{ label: ASC }]
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+query ResumoRefeicoes7Dias(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      dataHora: { ge: $dataLimite }
+    }
+    orderBy: [{ dataHora: DESC }]
+  ) {
+    id
+    dataHora
+    status
+    deteccoes: deteccaoAlimentos_on_refeicao {
+      alimento {
+        categoria
       }
+      percentualConsumido
     }
   }
 }
 
-# 7. Buscar dados de um Paciente Específico (por ID)
-query ObterPacientePorId($id: UUID!) {
-  paciente(id: $id) {
-    nome
-    nascimento
-    refeicoes_on_paciente {
-      dataHora
-      status
-      deteccaoAlimentos_on_refeicao {
-        alimento {
-          label
-        }
-        percentualConsumido
+query AlimentosMaisDetectados(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
+  deteccaoAlimentos(
+    where: {
+      refeicao: {
+        pacienteId: { eq: $pacienteId }
+        dataHora: { ge: $dataLimite }
       }
     }
+    orderBy: [{ percentualConsumido: DESC }]
+  ) {
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
   }
 }

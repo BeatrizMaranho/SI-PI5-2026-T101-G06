@@ -1,0 +1,271 @@
+mutation CriarUsuario(
+  $nome: String!
+  $email: String!
+  $senhaHash: String!
+  $tipo: String!
+) @auth(level: PUBLIC) {
+  usuario_insert(
+    data: {
+      nome: $nome
+      email: $email
+      senhaHash: $senhaHash
+      tipo: $tipo
+    }
+  )
+}
+
+mutation AtualizarPerfil(
+  $id: UUID!
+  $nome: String
+  $email: String
+) {
+  usuario_update(
+    id: $id
+    data: {
+      nome: $nome
+      email: $email
+    }
+  )
+}
+
+mutation AtualizarSenha(
+  $id: UUID!
+  $senhaHashNova: String!
+) {
+  usuario_update(
+    id: $id
+    data: {
+      senhaHash: $senhaHashNova
+    }
+  )
+}
+
+mutation CriarPaciente(
+  $nome: String!
+  $responsavelId: UUID!
+  $nascimento: Date
+) {
+  paciente_insert(
+    data: {
+      nome: $nome
+      responsavelId: $responsavelId
+      nascimento: $nascimento
+    }
+  )
+}
+
+mutation AtualizarPaciente(
+  $id: UUID!
+  $nome: String
+  $nascimento: Date
+) {
+  paciente_update(
+    id: $id
+    data: {
+      nome: $nome
+      nascimento: $nascimento
+    }
+  )
+}
+
+mutation DeletarPaciente(
+  $id: UUID!
+) {
+  paciente_delete(id: $id)
+}
+
+mutation VincularNutricionista(
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
+) {
+  nutricionistaPaciente_insert(
+    data: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation DesvincularNutricionista(
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
+) {
+  nutricionistaPaciente_delete(
+    key: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation VincularNutricionistaComPaciente(
+  $nutricionistaId: UUID!
+  $pacienteId: UUID!
+) {
+  nutricionistaPaciente_insert(
+    data: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation CriarRefeicao(
+  $pacienteId: UUID!
+  $urlFotoAntes: String!
+  $status: String = "pendente"
+) {
+  refeicao_insert(
+    data: {
+      pacienteId: $pacienteId
+      urlFotoAntes: $urlFotoAntes
+      status: $status
+    }
+  )
+}
+
+mutation AtualizarRefeicao(
+  $id: UUID!
+  $urlFotoDepois: String
+  $status: String
+) {
+  refeicao_update(
+    id: $id
+    data: {
+      urlFotoDepois: $urlFotoDepois
+      status: $status
+    }
+  )
+}
+
+mutation DeletarRefeicao(
+  $id: UUID!
+) {
+  refeicao_delete(id: $id)
+}
+
+mutation MarcarRefeicaoAnalisada(
+  $id: UUID!
+) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "analisada"
+    }
+  )
+}
+
+mutation RejeitarRefeicao(
+  $id: UUID!
+  $motivo: String
+) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "rejeitada"
+    }
+  )
+}
+
+mutation CriarDeteccao(
+  $refeicaoId: UUID!
+  $alimentoId: UUID!
+  $confidence: Float!
+  $percentualConsumido: Float!
+  $cor: String
+  $textura: String
+) {
+  deteccaoAlimento_insert(
+    data: {
+      refeicaoId: $refeicaoId
+      alimentoId: $alimentoId
+      confidence: $confidence
+      percentualConsumido: $percentualConsumido
+      cor: $cor
+      textura: $textura
+      aceito: false
+    }
+  )
+}
+
+mutation AtualizarDeteccao(
+  $id: UUID!
+  $aceito: Boolean!
+) {
+  deteccaoAlimento_update(
+    id: $id
+    data: {
+      aceito: $aceito
+    }
+  )
+}
+
+mutation DeletarDeteccao(
+  $id: UUID!
+) {
+  deteccaoAlimento_delete(id: $id)
+}
+
+mutation CriarAlimento(
+  $label: String!
+  $categoria: String
+) {
+  alimento_insert(
+    data: {
+      label: $label
+      categoria: $categoria
+    }
+  )
+}
+
+mutation AtualizarAlimento(
+  $id: UUID!
+  $label: String
+  $categoria: String
+) {
+  alimento_update(
+    id: $id
+    data: {
+      label: $label
+      categoria: $categoria
+    }
+  )
+}
+
+mutation DeletarAlimento(
+  $id: UUID!
+) {
+  alimento_delete(id: $id)
+}
+
+mutation CriarRelatorio(
+  $refeicaoId: UUID!
+  $pacienteId: UUID!
+  $conteudo: String!
+) {
+  relatorio_insert(
+    data: {
+      refeicaoId: $refeicaoId
+      pacienteId: $pacienteId
+      conteudo: $conteudo
+    }
+  )
+}
+
+mutation AtualizarRelatorio(
+  $id: UUID!
+  $conteudo: String!
+) {
+  relatorio_update(
+    id: $id
+    data: {
+      conteudo: $conteudo
+    }
+  )
+}
+
+mutation DeletarRelatorio(
+  $id: UUID!
+) {
+  relatorio_delete(id: $id)
+}
