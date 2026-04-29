@@ -44,6 +44,7 @@ dependencies:
   http: ^1.1.0  # Para chamadas de API
   http_parser: ^4.0.2 # Para definir o tipo das imagens
   crypto: ^3.0.7
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
