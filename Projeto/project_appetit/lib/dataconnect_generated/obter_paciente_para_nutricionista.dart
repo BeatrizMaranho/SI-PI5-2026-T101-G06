@@ -21,6 +21,8 @@ class ObterPacienteParaNutricionistaVariablesBuilder {
 class ObterPacienteParaNutricionistaPaciente {
   final String id;
   final String nome;
+  final double? peso;
+  final String? alergias;
   final DateTime? nascimento;
   final ObterPacienteParaNutricionistaPacienteResponsavel responsavel;
   final List<ObterPacienteParaNutricionistaPacienteRefeicoes> refeicoes;
@@ -28,6 +30,8 @@ class ObterPacienteParaNutricionistaPaciente {
   
   id = nativeFromJson<String>(json['id']),
   nome = nativeFromJson<String>(json['nome']),
+  peso = json['peso'] == null ? null : nativeFromJson<double>(json['peso']),
+  alergias = json['alergias'] == null ? null : nativeFromJson<String>(json['alergias']),
   nascimento = json['nascimento'] == null ? null : nativeFromJson<DateTime>(json['nascimento']),
   responsavel = ObterPacienteParaNutricionistaPacienteResponsavel.fromJson(json['responsavel']),
   refeicoes = (json['refeicoes'] as List<dynamic>)
@@ -45,19 +49,27 @@ class ObterPacienteParaNutricionistaPaciente {
     final ObterPacienteParaNutricionistaPaciente otherTyped = other as ObterPacienteParaNutricionistaPaciente;
     return id == otherTyped.id && 
     nome == otherTyped.nome && 
+    peso == otherTyped.peso && 
+    alergias == otherTyped.alergias && 
     nascimento == otherTyped.nascimento && 
     responsavel == otherTyped.responsavel && 
     refeicoes == otherTyped.refeicoes;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, responsavel.hashCode, refeicoes.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, peso.hashCode, alergias.hashCode, nascimento.hashCode, responsavel.hashCode, refeicoes.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json['id'] = nativeToJson<String>(id);
     json['nome'] = nativeToJson<String>(nome);
+    if (peso != null) {
+      json['peso'] = nativeToJson<double?>(peso);
+    }
+    if (alergias != null) {
+      json['alergias'] = nativeToJson<String?>(alergias);
+    }
     if (nascimento != null) {
       json['nascimento'] = nativeToJson<DateTime?>(nascimento);
     }
@@ -69,6 +81,8 @@ class ObterPacienteParaNutricionistaPaciente {
   ObterPacienteParaNutricionistaPaciente({
     required this.id,
     required this.nome,
+    this.peso,
+    this.alergias,
     this.nascimento,
     required this.responsavel,
     required this.refeicoes,

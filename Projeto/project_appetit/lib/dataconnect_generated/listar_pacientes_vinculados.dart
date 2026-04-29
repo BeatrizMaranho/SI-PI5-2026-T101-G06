@@ -60,12 +60,16 @@ class ListarPacientesVinculadosNutricionistaPacientes {
 class ListarPacientesVinculadosNutricionistaPacientesPaciente {
   final String id;
   final String nome;
+  final double? peso;
+  final String? alergias;
   final DateTime? nascimento;
   final ListarPacientesVinculadosNutricionistaPacientesPacienteResponsavel responsavel;
   ListarPacientesVinculadosNutricionistaPacientesPaciente.fromJson(dynamic json):
   
   id = nativeFromJson<String>(json['id']),
   nome = nativeFromJson<String>(json['nome']),
+  peso = json['peso'] == null ? null : nativeFromJson<double>(json['peso']),
+  alergias = json['alergias'] == null ? null : nativeFromJson<String>(json['alergias']),
   nascimento = json['nascimento'] == null ? null : nativeFromJson<DateTime>(json['nascimento']),
   responsavel = ListarPacientesVinculadosNutricionistaPacientesPacienteResponsavel.fromJson(json['responsavel']);
   @override
@@ -80,18 +84,26 @@ class ListarPacientesVinculadosNutricionistaPacientesPaciente {
     final ListarPacientesVinculadosNutricionistaPacientesPaciente otherTyped = other as ListarPacientesVinculadosNutricionistaPacientesPaciente;
     return id == otherTyped.id && 
     nome == otherTyped.nome && 
+    peso == otherTyped.peso && 
+    alergias == otherTyped.alergias && 
     nascimento == otherTyped.nascimento && 
     responsavel == otherTyped.responsavel;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, responsavel.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, peso.hashCode, alergias.hashCode, nascimento.hashCode, responsavel.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json['id'] = nativeToJson<String>(id);
     json['nome'] = nativeToJson<String>(nome);
+    if (peso != null) {
+      json['peso'] = nativeToJson<double?>(peso);
+    }
+    if (alergias != null) {
+      json['alergias'] = nativeToJson<String?>(alergias);
+    }
     if (nascimento != null) {
       json['nascimento'] = nativeToJson<DateTime?>(nascimento);
     }
@@ -102,6 +114,8 @@ class ListarPacientesVinculadosNutricionistaPacientesPaciente {
   ListarPacientesVinculadosNutricionistaPacientesPaciente({
     required this.id,
     required this.nome,
+    this.peso,
+    this.alergias,
     this.nascimento,
     required this.responsavel,
   });

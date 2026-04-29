@@ -13,6 +13,8 @@ type Paciente @table {
   responsavelId: UUID!
   responsavel: Usuario!
   nascimento: Date
+  peso: Float
+  alergias: String
   criadoEm: Timestamp! @default(expr: "request.time")
 }
 

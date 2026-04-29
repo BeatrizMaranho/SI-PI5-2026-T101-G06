@@ -1279,6 +1279,14 @@ class CriarPacienteVariablesBuilder {
    _nascimento.value = t;
    return this;
   }
+  CriarPacienteVariablesBuilder peso(double? t) {
+   _peso.value = t;
+   return this;
+  }
+  CriarPacienteVariablesBuilder alergias(String? t) {
+   _alergias.value = t;
+   return this;
+  }
 
   ...
 }
@@ -1287,6 +1295,8 @@ ExampleConnector.instance.criarPaciente(
   responsavelId: responsavelId,
 )
 .nascimento(nascimento)
+.peso(peso)
+.alergias(alergias)
 .execute();
 ```
 
