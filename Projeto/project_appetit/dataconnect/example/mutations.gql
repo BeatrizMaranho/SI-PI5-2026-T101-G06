@@ -1,4 +1,5 @@
 mutation CriarUsuario(
+  $id: String!
   $nome: String!
   $email: String!
   $senhaHash: String!
@@ -6,6 +7,7 @@ mutation CriarUsuario(
 ) @auth(level: PUBLIC) {
   usuario_insert(
     data: {
+      id: $id
       nome: $nome
       email: $email
       senhaHash: $senhaHash
@@ -14,15 +16,15 @@ mutation CriarUsuario(
   )
 }
 
-mutation DeletarUsuario($id: UUID!) @auth(level: USER) {
+mutation DeletarUsuario($id: String!) @auth(level: USER) {
   usuario_delete(key: { id: $id })
 }
 
 mutation AtualizarPerfil(
-  $id: UUID!
+  $id: String!
   $nome: String
   $email: String
-) {
+) @auth(level: USER) {
   usuario_update(
     id: $id
     data: {
@@ -33,9 +35,9 @@ mutation AtualizarPerfil(
 }
 
 mutation AtualizarSenha(
-  $id: UUID!
+  $id: String!
   $senhaHashNova: String!
-) {
+) @auth(level: USER) {
   usuario_update(
     id: $id
     data: {
@@ -46,11 +48,11 @@ mutation AtualizarSenha(
 
 mutation CriarPaciente(
   $nome: String!
-  $responsavelId: UUID!
+  $responsavelId: String!
   $nascimento: Date
   $peso: Float
   $alergias: String
-  ) @auth(level: USER) {
+) @auth(level: USER) {
   paciente_insert(
     data: {
       nome: $nome
@@ -66,7 +68,7 @@ mutation AtualizarPaciente(
   $id: UUID!
   $nome: String
   $nascimento: Date
-) {
+) @auth(level: USER) {
   paciente_update(
     id: $id
     data: {
@@ -78,14 +80,14 @@ mutation AtualizarPaciente(
 
 mutation DeletarPaciente(
   $id: UUID!
-) {
-  paciente_delete(id: $id)
+) @auth(level: USER) {
+  paciente_delete(key: { id: $id })
 }
 
 mutation VincularNutricionista(
-  $nutricionistaId: UUID!
+  $nutricionistaId: String!
   $pacienteId: UUID!
-) {
+) @auth(level: USER) {
   nutricionistaPaciente_insert(
     data: {
       nutricionistaId: $nutricionistaId
@@ -95,9 +97,9 @@ mutation VincularNutricionista(
 }
 
 mutation DesvincularNutricionista(
-  $nutricionistaId: UUID!
+  $nutricionistaId: String!
   $pacienteId: UUID!
-) {
+) @auth(level: USER) {
   nutricionistaPaciente_delete(
     key: {
       nutricionistaId: $nutricionistaId
@@ -107,9 +109,9 @@ mutation DesvincularNutricionista(
 }
 
 mutation VincularNutricionistaComPaciente(
-  $nutricionistaId: UUID!
+  $nutricionistaId: String!
   $pacienteId: UUID!
-) {
+) @auth(level: USER) {
   nutricionistaPaciente_insert(
     data: {
       nutricionistaId: $nutricionistaId
@@ -122,7 +124,7 @@ mutation CriarRefeicao(
   $pacienteId: UUID!
   $urlFotoAntes: String!
   $status: String = "pendente"
-) {
+) @auth(level: USER) {
   refeicao_insert(
     data: {
       pacienteId: $pacienteId
@@ -136,7 +138,7 @@ mutation AtualizarRefeicao(
   $id: UUID!
   $urlFotoDepois: String
   $status: String
-) {
+) @auth(level: USER) {
   refeicao_update(
     id: $id
     data: {
@@ -148,13 +150,13 @@ mutation AtualizarRefeicao(
 
 mutation DeletarRefeicao(
   $id: UUID!
-) {
-  refeicao_delete(id: $id)
+) @auth(level: USER) {
+  refeicao_delete(key: { id: $id })
 }
 
 mutation MarcarRefeicaoAnalisada(
   $id: UUID!
-) {
+) @auth(level: USER) {
   refeicao_update(
     id: $id
     data: {
@@ -166,7 +168,7 @@ mutation MarcarRefeicaoAnalisada(
 mutation RejeitarRefeicao(
   $id: UUID!
   $motivo: String
-) {
+) @auth(level: USER) {
   refeicao_update(
     id: $id
     data: {
@@ -182,7 +184,7 @@ mutation CriarDeteccao(
   $percentualConsumido: Float!
   $cor: String
   $textura: String
-) {
+) @auth(level: USER) {
   deteccaoAlimento_insert(
     data: {
       refeicaoId: $refeicaoId
@@ -199,7 +201,7 @@ mutation CriarDeteccao(
 mutation AtualizarDeteccao(
   $id: UUID!
   $aceito: Boolean!
-) {
+) @auth(level: USER) {
   deteccaoAlimento_update(
     id: $id
     data: {
@@ -210,14 +212,14 @@ mutation AtualizarDeteccao(
 
 mutation DeletarDeteccao(
   $id: UUID!
-) {
-  deteccaoAlimento_delete(id: $id)
+) @auth(level: USER) {
+  deteccaoAlimento_delete(key: { id: $id })
 }
 
 mutation CriarAlimento(
   $label: String!
   $categoria: String
-) {
+) @auth(level: USER) {
   alimento_insert(
     data: {
       label: $label
@@ -230,7 +232,7 @@ mutation AtualizarAlimento(
   $id: UUID!
   $label: String
   $categoria: String
-) {
+) @auth(level: USER) {
   alimento_update(
     id: $id
     data: {
@@ -242,15 +244,15 @@ mutation AtualizarAlimento(
 
 mutation DeletarAlimento(
   $id: UUID!
-) {
-  alimento_delete(id: $id)
+) @auth(level: USER) {
+  alimento_delete(key: { id: $id })
 }
 
 mutation CriarRelatorio(
   $refeicaoId: UUID!
   $pacienteId: UUID!
   $conteudo: String!
-) {
+) @auth(level: USER) {
   relatorio_insert(
     data: {
       refeicaoId: $refeicaoId
@@ -263,7 +265,7 @@ mutation CriarRelatorio(
 mutation AtualizarRelatorio(
   $id: UUID!
   $conteudo: String!
-) {
+) @auth(level: USER) {
   relatorio_update(
     id: $id
     data: {
@@ -274,6 +276,6 @@ mutation AtualizarRelatorio(
 
 mutation DeletarRelatorio(
   $id: UUID!
-) {
-  relatorio_delete(id: $id)
+) @auth(level: USER) {
+  relatorio_delete(key: { id: $id })
 }

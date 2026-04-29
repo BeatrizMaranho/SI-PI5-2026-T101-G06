@@ -1,5 +1,5 @@
 type Usuario @table {
-  id: UUID! @default(expr: "uuidV4()")
+  id: String!
   nome: String!
   email: String! @unique
   senhaHash: String!
@@ -10,7 +10,7 @@ type Usuario @table {
 type Paciente @table {
   id: UUID! @default(expr: "uuidV4()")
   nome: String!
-  responsavelId: UUID!
+  responsavelId: String!
   responsavel: Usuario!
   nascimento: Date
   peso: Float
@@ -19,7 +19,7 @@ type Paciente @table {
 }
 
 type NutricionistaPaciente @table(key: ["nutricionistaId", "pacienteId"]) {
-  nutricionistaId: UUID!
+  nutricionistaId: String!
   pacienteId: UUID!
   nutricionista: Usuario!
   paciente: Paciente!

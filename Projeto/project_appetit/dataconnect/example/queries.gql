@@ -1,4 +1,4 @@
-query ObterUsuarioAtual($id: UUID!) {
+query ObterUsuarioAtual($id: String!) {
   usuario(id: $id) {
     id
     nome
@@ -23,7 +23,7 @@ query BuscarUsuarioPorEmail($email: String!) @auth(level: PUBLIC) {
   }
 }
 
-query ObterUsuarioPorId($id: UUID!) {
+query ObterUsuarioPorId($id: String!) {
   usuario(id: $id) {
     id
     nome
@@ -33,7 +33,7 @@ query ObterUsuarioPorId($id: UUID!) {
   }
 }
 
-query ListarMeusPacientes($responsavelId: UUID!) @auth(level: USER) {
+query ListarMeusPacientes($responsavelId: String!) @auth(level: USER) {
   pacientes(
     where: {
       responsavelId: { eq: $responsavelId }
@@ -108,7 +108,7 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
   }
 }
 
-query ListarPacientesVinculados($nutricionistaId: UUID!) {
+query ListarPacientesVinculados($nutricionistaId: String!) {
   nutricionistaPacientes(
     where: {
       nutricionistaId: { eq: $nutricionistaId }

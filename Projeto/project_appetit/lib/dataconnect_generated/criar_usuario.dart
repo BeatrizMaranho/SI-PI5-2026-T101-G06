@@ -1,13 +1,14 @@
 part of 'generated.dart';
 
 class CriarUsuarioVariablesBuilder {
+  String id;
   String nome;
   String email;
   String senhaHash;
   String tipo;
 
   final FirebaseDataConnect _dataConnect;
-  CriarUsuarioVariablesBuilder(this._dataConnect, {required  this.nome,required  this.email,required  this.senhaHash,required  this.tipo,});
+  CriarUsuarioVariablesBuilder(this._dataConnect, {required  this.id,required  this.nome,required  this.email,required  this.senhaHash,required  this.tipo,});
   Deserializer<CriarUsuarioData> dataDeserializer = (dynamic json)  => CriarUsuarioData.fromJson(jsonDecode(json));
   Serializer<CriarUsuarioVariables> varsSerializer = (CriarUsuarioVariables vars) => jsonEncode(vars.toJson());
   Future<OperationResult<CriarUsuarioData, CriarUsuarioVariables>> execute() {
@@ -15,7 +16,7 @@ class CriarUsuarioVariablesBuilder {
   }
 
   MutationRef<CriarUsuarioData, CriarUsuarioVariables> ref() {
-    CriarUsuarioVariables vars= CriarUsuarioVariables(nome: nome,email: email,senhaHash: senhaHash,tipo: tipo,);
+    CriarUsuarioVariables vars= CriarUsuarioVariables(id: id,nome: nome,email: email,senhaHash: senhaHash,tipo: tipo,);
     return _dataConnect.mutation("CriarUsuario", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -90,6 +91,7 @@ class CriarUsuarioData {
 
 @immutable
 class CriarUsuarioVariables {
+  final String id;
   final String nome;
   final String email;
   final String senhaHash;
@@ -97,6 +99,7 @@ class CriarUsuarioVariables {
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   CriarUsuarioVariables.fromJson(Map<String, dynamic> json):
   
+  id = nativeFromJson<String>(json['id']),
   nome = nativeFromJson<String>(json['nome']),
   email = nativeFromJson<String>(json['email']),
   senhaHash = nativeFromJson<String>(json['senhaHash']),
@@ -111,18 +114,20 @@ class CriarUsuarioVariables {
     }
 
     final CriarUsuarioVariables otherTyped = other as CriarUsuarioVariables;
-    return nome == otherTyped.nome && 
+    return id == otherTyped.id && 
+    nome == otherTyped.nome && 
     email == otherTyped.email && 
     senhaHash == otherTyped.senhaHash && 
     tipo == otherTyped.tipo;
     
   }
   @override
-  int get hashCode => Object.hashAll([nome.hashCode, email.hashCode, senhaHash.hashCode, tipo.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, email.hashCode, senhaHash.hashCode, tipo.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
+    json['id'] = nativeToJson<String>(id);
     json['nome'] = nativeToJson<String>(nome);
     json['email'] = nativeToJson<String>(email);
     json['senhaHash'] = nativeToJson<String>(senhaHash);
@@ -131,6 +136,7 @@ class CriarUsuarioVariables {
   }
 
   CriarUsuarioVariables({
+    required this.id,
     required this.nome,
     required this.email,
     required this.senhaHash,
