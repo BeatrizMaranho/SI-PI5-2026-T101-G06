@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_appetit/screens/tirar_fotos_screen.dart';
 import 'child_registration_screen.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'dart:developer' as dev; // Import para logs mais limpos
@@ -19,13 +20,6 @@ class ManageChildrenScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/back.svg',
-            width: 24,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text(
           'Gerenciar crianças',
           style: AppConstants.titleStyle,
@@ -96,9 +90,16 @@ class ManageChildrenScreen extends StatelessWidget {
                         '0', 
                         DateFormat('dd/MM/yyyy').format(paciente.criadoEm.toDateTime()),
                         AppConstants.borderOrange, 
-                        AppConstants.primaryOrange
-                      );
-                      
+                        AppConstants.primaryOrange,
+                        onCameraTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TirarFotosScreen(/*childId: paciente.id*/),
+                            ),
+                          );
+                        },
+                      );                      
                     },
                 ),
                 
@@ -164,7 +165,16 @@ class ManageChildrenScreen extends StatelessWidget {
 
     return idade;
   }
-  Widget childCard(BuildContext context, String nome, String idade, String refeicoes, String data, Color statsColor, Color actionColor) {
+  Widget childCard(
+    BuildContext context,
+    String nome, 
+    String idade, 
+    String refeicoes, 
+    String data,
+    Color statsColor, 
+    Color actionColor,
+    {required VoidCallback onCameraTap}
+    ) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
@@ -209,7 +219,7 @@ class ManageChildrenScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              actionButton(Icons.camera_alt, actionColor),
+              actionButton(Icons.camera_alt, actionColor, onTap: onCameraTap),
               actionButton(Icons.edit, actionColor),
               actionButton(Icons.delete, actionColor),
             ],
@@ -252,8 +262,10 @@ class ManageChildrenScreen extends StatelessWidget {
     );
   }
 
-  Widget actionButton(IconData icon, Color actionColor) {
-    return Container(
+  Widget actionButton(IconData icon, Color actionColor, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       width: 80,
       height: 45,
       decoration: BoxDecoration(
@@ -261,6 +273,7 @@ class ManageChildrenScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(icon, color: AppConstants.iconLight, size: 20),
+      ),
     );
   }
 }

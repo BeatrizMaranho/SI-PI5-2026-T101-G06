@@ -20,15 +20,6 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true, // Centralizado conforme o padrão das outras telas
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/back.svg', // Implementação do back.svg
-            width: 24,
-          ),
-          onPressed: () {
-            Navigator.pop(context); // Volta para a tela anterior
-          },
-        ),
         title: const Text(
           "Perfil do Responsável",
           style: TextStyle(

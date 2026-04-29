@@ -21,10 +21,6 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       appBar: AppBar(
         backgroundColor: AppConstants.backgroundColor,
         elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset('assets/icons/back.svg', width: 24),
-          onPressed: () => Navigator.pop(context),
-        ),
         centerTitle: true,
         title: const Text(
           "Registrar refeições",
