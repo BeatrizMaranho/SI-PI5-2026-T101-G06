@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 21
+names: ['beans', 'beet', 'broccoli', 'carrot', 'cassava', 'cauliflower', 'chicken', 'corn', 'cucumber', 'egg', 'fish', 'green_beans', 'green_vegetables', 'meat', 'pasta', 'peas', 'potato', 'rice', 'salad', 'sausage', 'tomato']
+
+roboflow:
+  workspace: julias-workspace-mtqoy
+  project: pi_5
+  version: 3
+  license: Public Domain
+  url: https://universe.roboflow.com/julias-workspace-mtqoy/pi_5/dataset/3
