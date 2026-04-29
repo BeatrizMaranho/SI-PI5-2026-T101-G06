@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
-import 'package:project_appetit/dataconnect_generated/generated.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart';
 
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
@@ -38,18 +37,29 @@ class _CadastroScreenState extends State<CadastroScreen> {
       return;
     }
 
+    if (senha.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A senha deve ter pelo menos 6 caracteres')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
-      var bytes = utf8.encode(senha);
-      var hashSenha = sha256.convert(bytes).toString();
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: senha,
+      );
+
+      final String uid = userCredential.user!.uid;
 
       final connector = ExampleConnector.instance;
       await connector.criarUsuario(
         nome: nome,
         email: email,
-        senhaHash: hashSenha,
-        tipo: 'usuario', 
+        senhaHash: senha,
+        tipo: 'usuario',
       ).execute();
 
       if (mounted) {
@@ -62,12 +72,24 @@ class _CadastroScreenState extends State<CadastroScreen> {
         );
         Navigator.pop(context);
       }
+    } on FirebaseAuthException catch (e) {
+      setState(() => _isLoading = false);
+      String mensagem = 'Erro ao cadastrar';
+      if (e.code == 'email-already-in-use') mensagem = 'Este e-mail já está em uso';
+      if (e.code == 'weak-password') mensagem = 'A senha é muito fraca';
+      if (e.code == 'invalid-email') mensagem = 'E-mail inválido';
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
+        );
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao salvar no banco: $e'),
+            content: Text('Erro inesperado: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -95,7 +117,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Image.asset('assets/imgs/morango.png', height: 100), 
+              Image.asset('assets/imgs/morango.png', height: 100),
               const SizedBox(height: 16),
               const Text(
                 "APPETIT",
@@ -106,27 +128,22 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-
               _buildLabel("Nome"),
               const SizedBox(height: 8),
               _buildTextField(_nomeController, "Digite seu nome", false),
               const SizedBox(height: 16),
-
               _buildLabel("Email"),
               const SizedBox(height: 8),
               _buildTextField(_emailController, "Digite seu email", false),
               const SizedBox(height: 16),
-
               _buildLabel("Senha"),
               const SizedBox(height: 8),
               _buildTextField(_senhaController, "Digite sua senha", true),
               const SizedBox(height: 16),
-
               _buildLabel("Confirma senha"),
               const SizedBox(height: 8),
               _buildTextField(_confirmaSenhaController, "Digite novamente sua senha", true),
               const SizedBox(height: 40),
-
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.orange)
                   : GestureDetector(
@@ -176,11 +193,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String hint,
-    bool obscure,
-  ) {
+  Widget _buildTextField(TextEditingController controller, String hint, bool obscure) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -189,10 +202,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
         hintStyle: const TextStyle(color: Colors.black26),
         filled: true,
         fillColor: const Color(0xFFF8F8F8),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

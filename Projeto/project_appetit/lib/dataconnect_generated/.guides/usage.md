@@ -2,6 +2,7 @@
 
 ```dart
 ExampleConnector.instance.CriarUsuario(criarUsuarioVariables).execute();
+ExampleConnector.instance.DeletarUsuario(deletarUsuarioVariables).execute();
 ExampleConnector.instance.AtualizarPerfil(atualizarPerfilVariables).execute();
 ExampleConnector.instance.AtualizarSenha(atualizarSenhaVariables).execute();
 ExampleConnector.instance.CriarPaciente(criarPacienteVariables).execute();
@@ -10,7 +11,6 @@ ExampleConnector.instance.DeletarPaciente(deletarPacienteVariables).execute();
 ExampleConnector.instance.VincularNutricionista(vincularNutricionistaVariables).execute();
 ExampleConnector.instance.DesvincularNutricionista(desvincularNutricionistaVariables).execute();
 ExampleConnector.instance.VincularNutricionistaComPaciente(vincularNutricionistaComPacienteVariables).execute();
-ExampleConnector.instance.CriarRefeicao(criarRefeicaoVariables).execute();
 
 ```
 

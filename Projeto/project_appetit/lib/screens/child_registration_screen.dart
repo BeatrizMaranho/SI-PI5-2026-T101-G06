@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class ChildRegistrationScreen extends StatefulWidget {
   const ChildRegistrationScreen({super.key});
@@ -9,20 +12,89 @@ class ChildRegistrationScreen extends StatefulWidget {
 }
 
 class _ChildRegistrationScreenState extends State<ChildRegistrationScreen> {
-  // Controllers em inglês para facilitar o mapeamento com os campos do Firestore
-  final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _allergyController = TextEditingController();
+  final _nomeController = TextEditingController();
+  final _nascimentoController = TextEditingController();
+  final _pesoController = TextEditingController();
+  final _alergiasController = TextEditingController();
 
-  @override
-  void dispose() {
-    // Importante limpar os controllers para evitar vazamento de memória
-    _nameController.dispose();
-    _ageController.dispose();
-    _weightController.dispose();
-    _allergyController.dispose();
-    super.dispose();
+  DateTime? _selectedDate;
+  bool _isLoading = false;
+
+  // Função para selecionar a data via calendário
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365)),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(primary: AppConstants.primaryOrange),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _nascimentoController.text = DateFormat('dd/MM/yyyy').format(picked);
+      });
+    }
+  }
+
+  Future<void> _registrarPaciente() async {
+    final nome = _nomeController.text.trim();
+    final pesoStr = _pesoController.text.trim();
+    final alergias = _alergiasController.text.trim();
+
+    if (nome.isEmpty || _selectedDate == null) {
+      _showSnackBar('Nome e data de nascimento são obrigatórios', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showSnackBar('Erro: Você precisa estar logado.', isError: true);
+        setState(() => _isLoading = false);
+        return; 
+      }
+
+      final double? pesoNum = double.tryParse(pesoStr.replaceAll(',', '.'));
+      
+      await ExampleConnector.instance.criarPaciente(
+        nome: nome,
+        responsavelId: user.uid,
+      )
+      .nascimento(_selectedDate)
+      .peso(pesoNum)
+      .alergias(alergias)
+      .execute();
+      
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showSnackBar('Cadastro realizado com sucesso!');
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) _showSnackBar('Erro ao salvar: $e', isError: true);
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -36,121 +108,117 @@ class _ChildRegistrationScreenState extends State<ChildRegistrationScreen> {
           icon: const Icon(Icons.arrow_back_ios, color: AppConstants.textBlack),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Gerenciar crianças", style: AppConstants.titleStyle),
-        centerTitle: false,
+        title: const Text("Nova Criança", style: AppConstants.titleStyle),
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Criancas cadastradas",
-              style: AppConstants.sectionStyle,
-            ),
-            const SizedBox(height: 30),
-            
-            // Reutilizando o helper para manter a interface limpa
-            _buildInputField(
-              label: "Nome",
-              hint: "Digite o nome",
-              controller: _nameController,
-            ),
-            _buildInputField(
-              label: "Idade",
-              hint: "Ex: 5",
-              controller: _ageController,
-              keyboardType: TextInputType.number,
-            ),
-            _buildInputField(
-              label: "Peso",
-              hint: "Ex: 20kg",
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-            ),
-            _buildInputField(
-              label: "Intolerância/Alergia",
-              hint: "Ex: Lactose, Glúten...",
-              controller: _allergyController,
-            ),
-            
-            const SizedBox(height: 30),
-
-            // Botão Principal de Cadastro
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Aqui você chamará sua função de Create do Firebase
-                  // Ex: firestore.collection('children').add({...})
-                  print("Iniciando cadastro de: ${_nameController.text}");
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppConstants.primaryOrange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "Cadastrar",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildLabel("Nome completo *"),
+              _buildTextField(_nomeController, "Nome da criança"),
+              
+              const SizedBox(height: 20),
+              
+              _buildLabel("Data de nascimento *"),
+              GestureDetector(
+                onTap: () => _selectDate(context),
+                child: AbsorbPointer(
+                  child: _buildTextField(
+                    _nascimentoController, 
+                    "Toque para selecionar",
+                    icon: Icons.calendar_today,
                   ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel("Peso (kg)"),
+                        _buildTextField(
+                          _pesoController, 
+                          "Ex: 15.5", 
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true)
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              _buildLabel("Alergias ou restrições"),
+              _buildTextField(
+                _alergiasController, 
+                "Ex: Amendoim, Lactose...", 
+                maxLines: 3
+              ),
+
+              const SizedBox(height: 40),
+
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppConstants.primaryOrange))
+                  : ElevatedButton(
+                      onPressed: _registrarPaciente,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppConstants.primaryOrange,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Salvar Cadastro",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Componente de Campo de Entrada customizado conforme o print
-  Widget _buildInputField({
-    required String label,
-    required String hint,
-    required TextEditingController controller,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
+  Widget _buildLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.elementSpacing),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppConstants.sectionStyle.copyWith(
-              fontWeight: FontWeight.w500,
-              color: AppConstants.textBlack.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            style: const TextStyle(color: AppConstants.textBlack),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFFD1D1D1)),
-              filled: true,
-              fillColor: AppConstants.cardWhite,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              // Estilização das bordas para o visual do print
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
-                borderSide: const BorderSide(color: AppConstants.primaryOrange, width: 1.5),
-              ),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(label, style: AppConstants.sectionStyle),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String hint, {
+    TextInputType keyboardType = TextInputType.text,
+    IconData? icon,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        hintText: hint,
+        suffixIcon: icon != null ? Icon(icon, color: AppConstants.primaryOrange) : null,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppConstants.borderOrange),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppConstants.borderOrange),
+        ),
       ),
     );
   }

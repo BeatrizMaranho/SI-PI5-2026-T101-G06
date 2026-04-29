@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_appetit/components/main_screen.dart';
 import 'package:project_appetit/screens/main_admin_screen.dart';
@@ -33,54 +32,59 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final connector = ExampleConnector.instance;
-      var bytes = utf8.encode(senha);
-      var hashDigitado = sha256.convert(bytes).toString();
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: senha,
+      );
 
-      final result = await connector
-          .buscarUsuarioPorEmail(email: email)
-          .execute();
+      if (userCredential.user != null) {
+        final connector = ExampleConnector.instance;
+        final result = await connector.buscarUsuarioPorEmail(email: email).execute();
 
-      if (mounted) {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          if (result.data.usuarios.isNotEmpty) {
+            final usuario = result.data.usuarios.first;
 
-        if (result.data.usuarios.isNotEmpty) {
-          final usuario = result.data.usuarios.first;
-
-          if (usuario.senhaHash == hashDigitado) {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool('isLoggedIn', true);
             await prefs.setString('userType', usuario.tipo);
+            await prefs.setString('userId', usuario.id);
+
+            setState(() => _isLoading = false);
 
             if (usuario.tipo == 'admin') {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const MainScreenAdmin(),
-                ),
+                MaterialPageRoute(builder: (context) => const MainScreenAdmin()),
               );
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const MainScreen()),
+                MaterialPageRoute(builder: (context) => MainScreen(userId: usuario.id)),
               );
             }
           } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Senha incorreta')));
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Usuário não encontrado no banco de dados.')),
+            );
           }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Usuário não encontrado')),
-          );
         }
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        String mensagem = 'Erro ao realizar login';
+        if (e.code == 'user-not-found') mensagem = 'E-mail não cadastrado.';
+        if (e.code == 'wrong-password') mensagem = 'Senha incorreta.';
+        if (e.code == 'invalid-email') mensagem = 'Formato de e-mail inválido.';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro na comunicação com o banco')),
+          const SnackBar(content: Text('Erro inesperado na comunicação.')),
         );
       }
     }
@@ -201,11 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String hint,
-    bool obscure,
-  ) {
+  Widget _buildTextField(TextEditingController controller, String hint, bool obscure) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -214,10 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
         hintStyle: const TextStyle(color: Colors.black26),
         filled: true,
         fillColor: const Color(0xFFF8F8F8),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

@@ -14,6 +14,10 @@ mutation CriarUsuario(
   )
 }
 
+mutation DeletarUsuario($id: UUID!) @auth(level: USER) {
+  usuario_delete(key: { id: $id })
+}
+
 mutation AtualizarPerfil(
   $id: UUID!
   $nome: String
