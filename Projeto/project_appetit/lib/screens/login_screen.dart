@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_appetit/components/main_screen.dart';
-import 'package:project_appetit/dataconnect_generated/generated.dart'; // Import do Data Connect
+import 'package:project_appetit/screens/main_admin_screen.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:project_appetit/screens/cadastro_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,26 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _senhaController = TextEditingController();
   bool _isLoading = false;
 
-  Future<bool> _executarLogicaLogin(String email, String senha) async {
-    try {
-      final connector = ExampleConnector.instance;
-      var bytes = utf8.encode(senha);
-      var hashDigitado = sha256.convert(bytes).toString();
-
-      final result = await connector
-          .buscarUsuarioPorEmail(email: email)
-          .execute();
-
-      if (result.data.usuarios.isEmpty) return false;
-
-      final usuario = result.data.usuarios.first;
-      return usuario.senhaHash == hashDigitado;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  void _tentarLogin() async {
+  Future<void> _tentarLogin() async {
     final email = _emailController.text.trim().toLowerCase();
     final senha = _senhaController.text.trim();
 
@@ -48,18 +31,56 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    bool sucesso = await _executarLogicaLogin(email, senha);
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (sucesso) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      } else {
+    try {
+      final connector = ExampleConnector.instance;
+      var bytes = utf8.encode(senha);
+      var hashDigitado = sha256.convert(bytes).toString();
+
+      final result = await connector
+          .buscarUsuarioPorEmail(email: email)
+          .execute();
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        if (result.data.usuarios.isNotEmpty) {
+          final usuario = result.data.usuarios.first;
+
+          if (usuario.senhaHash == hashDigitado) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('isLoggedIn', true);
+            await prefs.setString('userType', usuario.tipo);
+
+            if (usuario.tipo == 'admin') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MainScreenAdmin(),
+                ),
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MainScreen()),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Senha incorreta')));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuário não encontrado')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('E-mail ou senha incorretos')),
+          const SnackBar(content: Text('Erro na comunicação com o banco')),
         );
       }
     }
@@ -93,7 +114,27 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildLabel("Senha"),
               const SizedBox(height: 8),
               _buildTextField(_senhaController, "Digite sua senha", true),
-              const SizedBox(height: 40),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    "Esqueceu a senha?",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      decoration: TextDecoration.underline,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.orange)
                   : GestureDetector(
@@ -121,32 +162,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text(
-                    "Esqueceu a senha?",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      decoration: TextDecoration.underline,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CadastroScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroScreen(),
+                    ),
                   );
                 },
                 child: const Text(

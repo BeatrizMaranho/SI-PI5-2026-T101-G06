@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:project_appetit/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -30,9 +32,9 @@ class ProfileScreen extends StatelessWidget {
         title: const Text(
           "Perfil do Responsável",
           style: TextStyle(
-            color: AppConstants.textBlack, 
-            fontWeight: FontWeight.bold, 
-            fontSize: 22
+            color: AppConstants.textBlack,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
       ),
@@ -52,24 +54,34 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(userName, style: AppConstants.cardTitleStyle.copyWith(fontSize: 20)),
+                  Text(
+                    userName,
+                    style: AppConstants.cardTitleStyle.copyWith(fontSize: 20),
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(userRole, style: const TextStyle(
-                        color: AppConstants.textGrey,
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal
-                      )),
+                      Text(
+                        userRole,
+                        style: const TextStyle(
+                          color: AppConstants.textGrey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.edit_outlined, size: 18, color: AppConstants.textBlack),
+                      const Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: AppConstants.textBlack,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: AppConstants.elementSpacing),
 
             _buildInfoTile(
@@ -78,14 +90,14 @@ class ProfileScreen extends StatelessWidget {
               value: userEmail,
               onEdit: () {},
             ),
-            
+
             _buildInfoTile(
               icon: Icons.phone_outlined,
               label: "Telefone",
               value: userPhone,
               onEdit: () {},
             ),
-            
+
             _buildInfoTile(
               icon: Icons.lock_outline,
               label: "Senha",
@@ -98,7 +110,19 @@ class ProfileScreen extends StatelessWidget {
               label: "Sair",
               value: "",
               isLogout: true,
-              onEdit: () {},
+              onEdit: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              },
             ),
           ],
         ),
@@ -111,11 +135,11 @@ class ProfileScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: AppConstants.backgroundColor, 
+        color: AppConstants.backgroundColor,
         borderRadius: BorderRadius.circular(25),
         border: Border.all(
-          color: AppConstants.borderOrange.withOpacity(0.3), 
-          width: 1.2
+          color: AppConstants.borderOrange.withOpacity(0.3),
+          width: 1.2,
         ),
       ),
       child: child,
@@ -134,58 +158,63 @@ class ProfileScreen extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppConstants.backgroundColor, 
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: AppConstants.borderOrange.withOpacity(0.3), 
-            width: 1.2
+      child: GestureDetector(
+        onTap: isLogout ? onEdit : null,
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppConstants.backgroundColor,
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: AppConstants.primaryOrange.withOpacity(0.3),
+              width: 1.5,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            // CÍRCULO PADRONIZADO COM O DESIGN
-            Container(
-              height: 55, 
-              width: 55,
-              decoration: const BoxDecoration(
-                color: orangeColor, 
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  icon, 
-                  color: Colors.white, 
-                  size: 24
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryOrange.withOpacity(0.8),
+                  shape: BoxShape.circle,
                 ),
-              ), 
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: const TextStyle(
-                    fontSize: 18, 
-                    fontWeight: FontWeight.bold, 
-                    color: AppConstants.textBlack
-                  )),
-                  if (value.isNotEmpty)
-                    Text(value, style: const TextStyle(
-                      color: AppConstants.textGrey, 
-                      fontSize: 14
-                    )),
-                ],
+                child: Icon(icon, color: Colors.white, size: 24),
               ),
-            ),
-            if (!isLogout)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 22, color: AppConstants.textBlack),
-                onPressed: onEdit,
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppConstants.textBlack,
+                      ),
+                    ),
+                    if (value.isNotEmpty)
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          color: AppConstants.textGrey,
+                          fontSize: 14,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-          ],
+              if (!isLogout)
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 22,
+                    color: AppConstants.textBlack,
+                  ),
+                  onPressed: onEdit,
+                ),
+            ],
+          ),
         ),
       ),
     );

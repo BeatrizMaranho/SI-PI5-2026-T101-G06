@@ -1,20 +1,45 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'components/main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
+import 'package:project_appetit/components/main_screen.dart';
 import 'package:project_appetit/screens/login_screen.dart';
+import 'package:project_appetit/screens/main_admin_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(DevicePreview(enabled: true, builder: (context) => const MyApp()));
+  final prefs = await SharedPreferences.getInstance();
+  final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  final String? userType = prefs.getString('userType');
+
+  Widget telaInicial;
+
+  if (isLoggedIn) {
+    if (userType == 'admin') {
+      telaInicial = const MainScreenAdmin();
+    } else {
+      telaInicial = const MainScreen();
+    }
+  } else {
+    telaInicial = const LoginScreen();
+  }
+
+  runApp(
+    DevicePreview(
+      enabled: true,
+      builder: (context) => MyApp(telaInicial: telaInicial),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.telaInicial});
+
+  final Widget telaInicial;
 
   @override
   Widget build(BuildContext context) {
@@ -27,28 +52,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      home: const LoginScreen(),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Appetit',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.orange,
-            letterSpacing: 2.0,
-          ),
-        ),
-      ),
+      home: telaInicial,
     );
   }
 }
