@@ -45,30 +45,51 @@ class _GaleriaFotosScreenState extends State<GaleriaFotosScreen> {
   }
 
   void _mostrarResultado(Map<String, dynamic> data) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text("Análise da ${data['crianca']}", style: AppConstants.titleStyle),
-        content: Column(
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text("Análise da ${data['crianca']}", style: AppConstants.titleStyle),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("**Itens consumidos:**", style: TextStyle(fontWeight: FontWeight.bold)),
-            ... (data['detalhes']['consumido'] as List).map((item) => Text("• $item")),
+            const Text("Detalhamento por item:", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Divider(),
+            // Aqui iteramos sobre 'analise' para pegar a porcentagem
+            ... (data['analise'] as List).map((info) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("• ${info['item']}:", style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text("${info['porcentagem_consumida']}%", 
+                         style: TextStyle(
+                           color: info['porcentagem_consumida'] > 50 ? Colors.green : Colors.orange,
+                           fontWeight: FontWeight.bold
+                         )),
+                  ],
+                ),
+              );
+            }),
+            const Divider(),
             const SizedBox(height: 10),
-            Text("Status: ${data['mensagem']}"),
+            Text("Consumido: ${data['detalhes']['consumido'].join(', ')}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(color: AppConstants.primaryOrange)),
-          ),
-        ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("OK", style: TextStyle(color: AppConstants.primaryOrange)),
+        ),
+      ],
+    ),
+  );
+}
   // -------------------------------------------------------
 
   Future<void> _escolherDaGaleria(bool isAntes) async {

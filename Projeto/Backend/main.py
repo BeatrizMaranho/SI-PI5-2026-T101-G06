@@ -1,9 +1,10 @@
-from fastapi import FastAPI, File, UploadFile
-from typing import List 
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import io
+import numpy as np
 from PIL import Image
+import cv2
 
 app = FastAPI()
 
@@ -15,48 +16,78 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Carrega o modelo (Ajuste o caminho se necessário)
-weights_path = r'C:\Users\anabe\FoodSegmentation\SI-PI5-2026-T101-G06\V3\runs\detect\treino_melhorado\weights\best.pt'
+# Caminho para o NOVO peso da V7 (Segmentação)
+weights_path = r'C:\Users\anabe\FoodSegmentation\SI-PI5-2026-T101-G06\V7\runs\segment\treino_comida_seg\weights\best.pt'
 model = YOLO(weights_path)
 
-@app.get("/")
-def home():
-    return {"status": "API Appetit Online"}
+def obter_dados_segmentacao(pil_image):
+    # Converte PIL para formato OpenCV (numpy array)
+    img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    img_padronizada = cv2.resize(img, (640, 640))
+    
+    results = model.predict(source=img_padronizada, conf=0.30, verbose=False)
+    relatorio_pixels = {}
+
+    if results[0].masks is not None:
+        masks = results[0].masks.data.cpu().numpy()
+        classes = results[0].boxes.cls.cpu().numpy()
+        
+        for mask, cls_idx in zip(masks, classes):
+            nome_classe = model.names[int(cls_idx)]
+            # Redimensiona a máscara para o tamanho original se necessário, 
+            # mas contar no 640x640 já dá a proporção correta
+            contagem = np.count_nonzero(mask > 0.5)
+            relatorio_pixels[nome_classe] = relatorio_pixels.get(nome_classe, 0) + contagem
+            
+    return relatorio_pixels
 
 @app.post("/analisar")
 async def analisar_refeicao(
     file_antes: UploadFile = File(...), 
-    file_depois: UploadFile = File(...)
+    file_depois: UploadFile = File(...),
+    nome_crianca: str = Form("Sofia") # Recebe o nome do Flutter
 ):
-    # 1. Processar Imagem ANTES
-    content_antes = await file_antes.read()
-    img_antes = Image.open(io.BytesIO(content_antes))
-    res_antes = model.predict(source=img_antes, conf=0.3)
+    # 1. Ler imagens enviadas pelo Flutter
+    img_antes = Image.open(io.BytesIO(await file_antes.read()))
+    img_depois = Image.open(io.BytesIO(await file_depois.read()))
 
-    # 2. Processar Imagem DEPOIS
-    content_depois = await file_depois.read()
-    img_depois = Image.open(io.BytesIO(content_depois))
-    res_depois = model.predict(source=img_depois, conf=0.3)
+    # 2. Obter contagem de pixels por classe (Lógica V7)
+    pixels_antes = obter_dados_segmentacao(img_antes)
+    pixels_depois = obter_dados_segmentacao(img_depois)
 
-    # 3. Extrair listas (O restante da sua lógica está correta!)
-    itens_antes = [model.names[int(box.cls)] for r in res_antes for box in r.boxes]
-    itens_depois = [model.names[int(box.cls)] for r in res_depois for box in r.boxes]
+    # 3. Processar Comparação
+    todas_classes = set(list(pixels_antes.keys()) + list(pixels_depois.keys()))
+    lista_analise = []
+    itens_consumidos_nomes = []
 
-    consumido = []
-    temp_depois = itens_depois.copy()
-    for item in itens_antes:
-        if item in temp_depois:
-            temp_depois.remove(item)
+    for item in todas_classes:
+        p_antes = pixels_antes.get(item, 0)
+        p_depois = pixels_depois.get(item, 0)
+
+        if p_antes > 0:
+            consumido_px = max(0, p_antes - p_depois)
+            porc_consumido = (consumido_px / p_antes) * 100
+            if porc_consumido > 98: porc_consumido = 100.0
         else:
-            consumido.append(item)
+            porc_consumido = 0.0
+
+        # Só adiciona na lista de "consumidos" se houve algum consumo real
+        if porc_consumido > 5: 
+            itens_consumidos_nomes.append(item)
+
+        lista_analise.append({
+            "item": item,
+            "porcentagem_consumida": round(porc_consumido, 2),
+            "status": "Totalmente consumido" if porc_consumido == 100 else f"{round(porc_consumido, 1)}% consumido"
+        })
 
     return {
-        "crianca": "Sofia",
+        "crianca": "Sofia", # Aqui você pode receber o nome do Flutter se desejar
         "detalhes": {
-            "oferecido": itens_antes,
-            "sobras": itens_depois,
-            "consumido": consumido
+            "oferecido": list(pixels_antes.keys()),
+            "sobras": list(pixels_depois.keys()),
+            "consumido": itens_consumidos_nomes
         },
-        "analise": [{"item": i, "precisao": 100.0} for i in consumido], # Para não quebrar o Dialog do Flutter
-        "mensagem": "Análise comparativa concluída!"
+        "analise": lista_analise, 
+        "mensagem": "Análise de segmentação concluída com sucesso!"
     }

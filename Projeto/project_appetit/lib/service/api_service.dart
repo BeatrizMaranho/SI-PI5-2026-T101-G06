@@ -5,7 +5,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ApiService {
-  static const String baseUrl = "http://localhost:8000"; // Seu IP aqui
+  static const String baseUrl = "http://192.168.50.224:8000"; // Seu IP aqui
 
   static Future<Map<String, dynamic>?> enviarFotos(XFile antes, XFile depois) async {
     try {

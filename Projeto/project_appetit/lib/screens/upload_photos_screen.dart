@@ -64,8 +64,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const TirarFotosScreen()),
-                        );
+                          MaterialPageRoute(
+                            builder: (context) => TirarFotosScreen(nomeCrianca: _selectedChild) // Passando o nome
+                        ),
+                      );
                       },
                     ),
                     const SizedBox(height: 20),
@@ -136,7 +138,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           SvgPicture.asset('assets/icons/apple.svg', width: 30),
           const SizedBox(height: 12),
           const Text(
-            "Tire uma foto ou envie uma imagem da refeição. Você pode adicionar várias fotos para uma mesma refeição!",
+            "Para analisar o consumo, precisaremos de uma foto do prato ANTES e outra DEPOIS da refeição. Certifique-se de que as fotos estejam claras e mostrem bem o prato para obter os melhores resultados!",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
           ),

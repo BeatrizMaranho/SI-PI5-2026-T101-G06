@@ -6,7 +6,8 @@ import 'dart:io';
 import 'package:project_appetit/service/api_service.dart';
 
 class TirarFotosScreen extends StatefulWidget {
-  const TirarFotosScreen({super.key});
+  final String nomeCrianca; // Adicione este campo
+  const TirarFotosScreen({super.key, required this.nomeCrianca});
 
   @override
   State<TirarFotosScreen> createState() => _TirarFotosScreenState();
@@ -57,7 +58,7 @@ void _mostrarResultado(Map<String, dynamic> data) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text("**Itens consumidos:**", style: TextStyle(fontWeight: FontWeight.bold)),
-          ... (data['detalhes']['consumido'] as List).map((item) => Text("• $item")),
+          ... (data['analise'] as List).map((res) => Text("• ${res['item']}: ${res['porcentagem_consumida']}% consumido")),
           const SizedBox(height: 10),
           Text("Status: ${data['mensagem']}"),
         ],
