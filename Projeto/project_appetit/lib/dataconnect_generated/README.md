@@ -1092,11 +1092,13 @@ ref.subscribe(...);
 ### CriarUsuario
 #### Required Arguments
 ```dart
+String id = ...;
 String nome = ...;
 String email = ...;
 String senhaHash = ...;
 String tipo = ...;
 ExampleConnector.instance.criarUsuario(
+  id: id,
   nome: nome,
   email: email,
   senhaHash: senhaHash,
@@ -1118,6 +1120,7 @@ class OperationResult<Data, Variables> {
 }
 
 final result = await ExampleConnector.instance.criarUsuario(
+  id: id,
   nome: nome,
   email: email,
   senhaHash: senhaHash,
@@ -1131,12 +1134,14 @@ final ref = result.ref;
 Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
 An example of how to use the `Ref` object is shown below:
 ```dart
+String id = ...;
 String nome = ...;
 String email = ...;
 String senhaHash = ...;
 String tipo = ...;
 
 final ref = ExampleConnector.instance.criarUsuario(
+  id: id,
   nome: nome,
   email: email,
   senhaHash: senhaHash,

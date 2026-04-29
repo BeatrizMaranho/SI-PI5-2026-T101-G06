@@ -102,8 +102,8 @@ part 'alimentos_mais_detectados.dart';
 class ExampleConnector {
   
   
-  CriarUsuarioVariablesBuilder criarUsuario ({required String nome, required String email, required String senhaHash, required String tipo, }) {
-    return CriarUsuarioVariablesBuilder(dataConnect, nome: nome,email: email,senhaHash: senhaHash,tipo: tipo,);
+  CriarUsuarioVariablesBuilder criarUsuario ({required String id, required String nome, required String email, required String senhaHash, required String tipo, }) {
+    return CriarUsuarioVariablesBuilder(dataConnect, id: id,nome: nome,email: email,senhaHash: senhaHash,tipo: tipo,);
   }
   
   

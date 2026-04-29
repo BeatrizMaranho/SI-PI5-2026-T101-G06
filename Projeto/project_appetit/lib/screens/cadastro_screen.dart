@@ -56,6 +56,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
       final connector = ExampleConnector.instance;
       await connector.criarUsuario(
+        id: uid,
         nome: nome,
         email: email,
         senhaHash: senha,

@@ -65,7 +65,7 @@ class _ChildRegistrationScreenState extends State<ChildRegistrationScreen> {
       }
 
       final double? pesoNum = double.tryParse(pesoStr.replaceAll(',', '.'));
-      
+
       await ExampleConnector.instance.criarPaciente(
         nome: nome,
         responsavelId: user.uid,

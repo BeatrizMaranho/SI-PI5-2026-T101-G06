@@ -5,7 +5,7 @@ schemas:
   - source: "./schema"
     datasource:
       postgresql:
-        database: "pi-v-appetit-database"
+        database: "pi-v-appetit-database-2"
         cloudSql:
           instanceId: "pi-v-appetit-instance"
           # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
