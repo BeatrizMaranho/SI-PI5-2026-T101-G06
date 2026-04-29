@@ -44,12 +44,16 @@ mutation CriarPaciente(
   $nome: String!
   $responsavelId: UUID!
   $nascimento: Date
-) {
+  $peso: Float
+  $alergias: String
+  ) @auth(level: USER) {
   paciente_insert(
     data: {
       nome: $nome
       responsavelId: $responsavelId
       nascimento: $nascimento
+      peso: $peso
+      alergias: $alergias
     }
   )
 }
