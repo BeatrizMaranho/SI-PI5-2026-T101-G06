@@ -91,14 +91,14 @@ class ManageChildrenScreen extends StatelessWidget {
                         DateFormat('dd/MM/yyyy').format(paciente.criadoEm.toDateTime()),
                         AppConstants.borderOrange, 
                         AppConstants.primaryOrange,
-                        onCameraTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TirarFotosScreen(/*childId: paciente.id*/),
-                            ),
-                          );
-                        },
+                      onCameraTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TirarFotosScreen(nomeCrianca: paciente.nome), // <--- ADICIONE ISSO
+                          ),
+              );
+              },
                       );                      
                     },
                 ),
