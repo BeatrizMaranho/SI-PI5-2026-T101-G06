@@ -22,6 +22,8 @@ class ListarMeusPacientesPacientes {
   final String id;
   final String nome;
   final DateTime? nascimento;
+  final double? peso;
+  final String? alergias;
   final Timestamp criadoEm;
   final ListarMeusPacientesPacientesResponsavel responsavel;
   ListarMeusPacientesPacientes.fromJson(dynamic json):
@@ -29,6 +31,8 @@ class ListarMeusPacientesPacientes {
   id = nativeFromJson<String>(json['id']),
   nome = nativeFromJson<String>(json['nome']),
   nascimento = json['nascimento'] == null ? null : nativeFromJson<DateTime>(json['nascimento']),
+  peso = json['peso'] == null ? null : nativeFromJson<double>(json['peso']),
+  alergias = json['alergias'] == null ? null : nativeFromJson<String>(json['alergias']),
   criadoEm = Timestamp.fromJson(json['criadoEm']),
   responsavel = ListarMeusPacientesPacientesResponsavel.fromJson(json['responsavel']);
   @override
@@ -44,12 +48,14 @@ class ListarMeusPacientesPacientes {
     return id == otherTyped.id && 
     nome == otherTyped.nome && 
     nascimento == otherTyped.nascimento && 
+    peso == otherTyped.peso && 
+    alergias == otherTyped.alergias && 
     criadoEm == otherTyped.criadoEm && 
     responsavel == otherTyped.responsavel;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, criadoEm.hashCode, responsavel.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, peso.hashCode, alergias.hashCode, criadoEm.hashCode, responsavel.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -58,6 +64,12 @@ class ListarMeusPacientesPacientes {
     json['nome'] = nativeToJson<String>(nome);
     if (nascimento != null) {
       json['nascimento'] = nativeToJson<DateTime?>(nascimento);
+    }
+    if (peso != null) {
+      json['peso'] = nativeToJson<double?>(peso);
+    }
+    if (alergias != null) {
+      json['alergias'] = nativeToJson<String?>(alergias);
     }
     json['criadoEm'] = criadoEm.toJson();
     json['responsavel'] = responsavel.toJson();
@@ -68,6 +80,8 @@ class ListarMeusPacientesPacientes {
     required this.id,
     required this.nome,
     this.nascimento,
+    this.peso,
+    this.alergias,
     required this.criadoEm,
     required this.responsavel,
   });

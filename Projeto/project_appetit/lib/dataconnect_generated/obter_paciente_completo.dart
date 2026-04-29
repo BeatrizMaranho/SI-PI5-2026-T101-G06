@@ -22,6 +22,8 @@ class ObterPacienteCompletoPaciente {
   final String id;
   final String nome;
   final DateTime? nascimento;
+  final double? peso;
+  final String? alergias;
   final ObterPacienteCompletoPacienteResponsavel responsavel;
   final List<ObterPacienteCompletoPacienteRefeicoes> refeicoes;
   ObterPacienteCompletoPaciente.fromJson(dynamic json):
@@ -29,6 +31,8 @@ class ObterPacienteCompletoPaciente {
   id = nativeFromJson<String>(json['id']),
   nome = nativeFromJson<String>(json['nome']),
   nascimento = json['nascimento'] == null ? null : nativeFromJson<DateTime>(json['nascimento']),
+  peso = json['peso'] == null ? null : nativeFromJson<double>(json['peso']),
+  alergias = json['alergias'] == null ? null : nativeFromJson<String>(json['alergias']),
   responsavel = ObterPacienteCompletoPacienteResponsavel.fromJson(json['responsavel']),
   refeicoes = (json['refeicoes'] as List<dynamic>)
         .map((e) => ObterPacienteCompletoPacienteRefeicoes.fromJson(e))
@@ -46,12 +50,14 @@ class ObterPacienteCompletoPaciente {
     return id == otherTyped.id && 
     nome == otherTyped.nome && 
     nascimento == otherTyped.nascimento && 
+    peso == otherTyped.peso && 
+    alergias == otherTyped.alergias && 
     responsavel == otherTyped.responsavel && 
     refeicoes == otherTyped.refeicoes;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, responsavel.hashCode, refeicoes.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, nome.hashCode, nascimento.hashCode, peso.hashCode, alergias.hashCode, responsavel.hashCode, refeicoes.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -60,6 +66,12 @@ class ObterPacienteCompletoPaciente {
     json['nome'] = nativeToJson<String>(nome);
     if (nascimento != null) {
       json['nascimento'] = nativeToJson<DateTime?>(nascimento);
+    }
+    if (peso != null) {
+      json['peso'] = nativeToJson<double?>(peso);
+    }
+    if (alergias != null) {
+      json['alergias'] = nativeToJson<String?>(alergias);
     }
     json['responsavel'] = responsavel.toJson();
     json['refeicoes'] = refeicoes.map((e) => e.toJson()).toList();
@@ -70,6 +82,8 @@ class ObterPacienteCompletoPaciente {
     required this.id,
     required this.nome,
     this.nascimento,
+    this.peso,
+    this.alergias,
     required this.responsavel,
     required this.refeicoes,
   });

@@ -1,16 +1,16 @@
 # Basic Usage
 
 ```dart
-ExampleConnector.instance.ObterUsuarioAtual(obterUsuarioAtualVariables).execute();
-ExampleConnector.instance.BuscarUsuarioPorEmail(buscarUsuarioPorEmailVariables).execute();
-ExampleConnector.instance.ObterUsuarioPorId(obterUsuarioPorIdVariables).execute();
-ExampleConnector.instance.ListarMeusPacientes(listarMeusPacientesVariables).execute();
-ExampleConnector.instance.ObterPacienteComRefeicoes(obterPacienteComRefeicoesVariables).execute();
-ExampleConnector.instance.ObterPacienteCompleto(obterPacienteCompletoVariables).execute();
-ExampleConnector.instance.ListarPacientesVinculados(listarPacientesVinculadosVariables).execute();
-ExampleConnector.instance.ObterPacienteParaNutricionista(obterPacienteParaNutricionistaVariables).execute();
-ExampleConnector.instance.ListarRefeicoesPaciente(listarRefeicoesPacienteVariables).execute();
-ExampleConnector.instance.ObterRefeicaoComDeteccoes(obterRefeicaoComDeteccoesVariables).execute();
+ExampleConnector.instance.CriarUsuario(criarUsuarioVariables).execute();
+ExampleConnector.instance.DeletarUsuario(deletarUsuarioVariables).execute();
+ExampleConnector.instance.AtualizarPerfil(atualizarPerfilVariables).execute();
+ExampleConnector.instance.AtualizarSenha(atualizarSenhaVariables).execute();
+ExampleConnector.instance.CriarPaciente(criarPacienteVariables).execute();
+ExampleConnector.instance.AtualizarPaciente(atualizarPacienteVariables).execute();
+ExampleConnector.instance.DeletarPaciente(deletarPacienteVariables).execute();
+ExampleConnector.instance.VincularNutricionista(vincularNutricionistaVariables).execute();
+ExampleConnector.instance.DesvincularNutricionista(desvincularNutricionistaVariables).execute();
+ExampleConnector.instance.VincularNutricionistaComPaciente(vincularNutricionistaComPacienteVariables).execute();
 
 ```
 
@@ -23,8 +23,8 @@ Optional fields can be discovered based on classes that have `Optional` object t
 This is an example of a mutation with an optional field:
 
 ```dart
-await ExampleConnector.instance.AtualizarAlimento({ ... })
-.label(...)
+await ExampleConnector.instance.ListarRelatorioPaciente({ ... })
+.limite(...)
 .execute();
 ```
 

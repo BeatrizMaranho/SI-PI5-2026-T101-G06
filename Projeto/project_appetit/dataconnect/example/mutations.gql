@@ -14,6 +14,10 @@ mutation CriarUsuario(
   )
 }
 
+mutation DeletarUsuario($id: UUID!) @auth(level: USER) {
+  usuario_delete(key: { id: $id })
+}
+
 mutation AtualizarPerfil(
   $id: UUID!
   $nome: String
@@ -44,12 +48,16 @@ mutation CriarPaciente(
   $nome: String!
   $responsavelId: UUID!
   $nascimento: Date
-) {
+  $peso: Float
+  $alergias: String
+  ) @auth(level: USER) {
   paciente_insert(
     data: {
       nome: $nome
       responsavelId: $responsavelId
       nascimento: $nascimento
+      peso: $peso
+      alergias: $alergias
     }
   )
 }

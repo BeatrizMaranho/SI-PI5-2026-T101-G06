@@ -4,9 +4,19 @@ class CriarPacienteVariablesBuilder {
   String nome;
   String responsavelId;
   Optional<DateTime> _nascimento = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<double> _peso = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _alergias = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  CriarPacienteVariablesBuilder nascimento(DateTime? t) {
    _nascimento.value = t;
+   return this;
+  }
+  CriarPacienteVariablesBuilder peso(double? t) {
+   _peso.value = t;
+   return this;
+  }
+  CriarPacienteVariablesBuilder alergias(String? t) {
+   _alergias.value = t;
    return this;
   }
 
@@ -18,7 +28,7 @@ class CriarPacienteVariablesBuilder {
   }
 
   MutationRef<CriarPacienteData, CriarPacienteVariables> ref() {
-    CriarPacienteVariables vars= CriarPacienteVariables(nome: nome,responsavelId: responsavelId,nascimento: _nascimento,);
+    CriarPacienteVariables vars= CriarPacienteVariables(nome: nome,responsavelId: responsavelId,nascimento: _nascimento,peso: _peso,alergias: _alergias,);
     return _dataConnect.mutation("CriarPaciente", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -96,6 +106,8 @@ class CriarPacienteVariables {
   final String nome;
   final String responsavelId;
   late final Optional<DateTime>nascimento;
+  late final Optional<double>peso;
+  late final Optional<String>alergias;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   CriarPacienteVariables.fromJson(Map<String, dynamic> json):
   
@@ -107,6 +119,14 @@ class CriarPacienteVariables {
   
     nascimento = Optional.optional(nativeFromJson, nativeToJson);
     nascimento.value = json['nascimento'] == null ? null : nativeFromJson<DateTime>(json['nascimento']);
+  
+  
+    peso = Optional.optional(nativeFromJson, nativeToJson);
+    peso.value = json['peso'] == null ? null : nativeFromJson<double>(json['peso']);
+  
+  
+    alergias = Optional.optional(nativeFromJson, nativeToJson);
+    alergias.value = json['alergias'] == null ? null : nativeFromJson<String>(json['alergias']);
   
   }
   @override
@@ -121,11 +141,13 @@ class CriarPacienteVariables {
     final CriarPacienteVariables otherTyped = other as CriarPacienteVariables;
     return nome == otherTyped.nome && 
     responsavelId == otherTyped.responsavelId && 
-    nascimento == otherTyped.nascimento;
+    nascimento == otherTyped.nascimento && 
+    peso == otherTyped.peso && 
+    alergias == otherTyped.alergias;
     
   }
   @override
-  int get hashCode => Object.hashAll([nome.hashCode, responsavelId.hashCode, nascimento.hashCode]);
+  int get hashCode => Object.hashAll([nome.hashCode, responsavelId.hashCode, nascimento.hashCode, peso.hashCode, alergias.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -135,6 +157,12 @@ class CriarPacienteVariables {
     if(nascimento.state == OptionalState.set) {
       json['nascimento'] = nascimento.toJson();
     }
+    if(peso.state == OptionalState.set) {
+      json['peso'] = peso.toJson();
+    }
+    if(alergias.state == OptionalState.set) {
+      json['alergias'] = alergias.toJson();
+    }
     return json;
   }
 
@@ -142,6 +170,8 @@ class CriarPacienteVariables {
     required this.nome,
     required this.responsavelId,
     required this.nascimento,
+    required this.peso,
+    required this.alergias,
   });
 }
 

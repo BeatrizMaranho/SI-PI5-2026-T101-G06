@@ -33,7 +33,7 @@ query ObterUsuarioPorId($id: UUID!) {
   }
 }
 
-query ListarMeusPacientes($responsavelId: UUID!) {
+query ListarMeusPacientes($responsavelId: UUID!) @auth(level: USER) {
   pacientes(
     where: {
       responsavelId: { eq: $responsavelId }
@@ -42,6 +42,8 @@ query ListarMeusPacientes($responsavelId: UUID!) {
     id
     nome
     nascimento
+    peso
+    alergias
     criadoEm
     responsavel {
       nome
@@ -74,6 +76,8 @@ query ObterPacienteCompleto($pacienteId: UUID!) {
     id
     nome
     nascimento
+    peso
+    alergias
     responsavel {
       nome
       email
@@ -113,6 +117,8 @@ query ListarPacientesVinculados($nutricionistaId: UUID!) {
     paciente {
       id
       nome
+      peso
+      alergias
       nascimento
       responsavel {
         nome
@@ -127,6 +133,8 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
   paciente(id: $pacienteId) {
     id
     nome
+    peso
+    alergias
     nascimento
     responsavel {
       nome
