@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiService {
-  static const String baseUrl = "http://192.168.50.224:8000"; // Seu IP aqui
-
+  static const String baseUrl = "http://localhost:8000";
+  
   static Future<Map<String, dynamic>?> enviarFotos(XFile antes, XFile depois) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/analisar'));

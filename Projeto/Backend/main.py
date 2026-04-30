@@ -5,6 +5,7 @@ import io
 import numpy as np
 from PIL import Image
 import cv2
+import os
 
 app = FastAPI()
 
@@ -16,8 +17,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Caminho para o NOVO peso da V7 (Segmentação)
-weights_path = r'C:\Users\anabe\FoodSegmentation\SI-PI5-2026-T101-G06\V7\runs\segment\treino_comida_seg\weights\best.pt'
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#TERMINAL PRECISA ESTAR NA PASTA SI-PI5-2026-T101-G06\projeto\backend>
+
+weights_path = os.path.join(BASE_DIR, '..', '..', 'V7', 'runs', 'segment', 'treino_comida_seg', 'weights', 'best.pt')
+
 model = YOLO(weights_path)
 
 def obter_dados_segmentacao(pil_image):
