@@ -53,7 +53,14 @@ class _MainScreenState extends State<MainScreen> {
         onPageChanged: _onPageChanged,
         physics: const BouncingScrollPhysics(),
         children: [
-          HomeScreen(),
+         HomeScreen(
+          onNavigateToManageChildren: () {
+            _onItemTapped(1); // Ou o índice correto da aba de crianças nesse arquivo
+          },
+          onNavigateToProfile: () {
+            _onItemTapped(4); 
+          },
+        ),
           ManageChildrenScreen(userId: widget.userId), 
           UploadPhotosScreen(),
           DocumentsScreen(),
