@@ -6,6 +6,11 @@ import numpy as np
 from PIL import Image
 import cv2
 import os
+import httpx  # Importante: pip install httpx
+
+# 🔥 Firebase Admin (Opcional se usar apenas Data Connect nesta rota)
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 app = FastAPI()
 
@@ -17,82 +22,124 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# --- 🚀 CONFIGURAÇÕES ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-#TERMINAL PRECISA ESTAR NA PASTA SI-PI5-2026-T101-G06\projeto\backend>
 
+# URL do Firebase Data Connect (Ajuste para produção se necessário)
+# Se estiver usando o emulador local, a porta padrão é 9399
+DATA_CONNECT_URL = "http://127.0.0.1:9399/graphql" 
+
+# Setup Firebase Admin
+cred_path = os.path.join(BASE_DIR, "serviceAccountKey.json")
+if os.path.exists(cred_path):
+    cred = credentials.Certificate(cred_path)
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app(cred)
+    db = firestore.client()
+
+# --- 🧠 MODELO YOLO ---
+# Caminho ajustado para o seu peso de segmentação
 weights_path = os.path.join(BASE_DIR, '..', '..', 'V7', 'runs', 'segment', 'treino_comida_seg', 'weights', 'best.pt')
-
 model = YOLO(weights_path)
 
 def obter_dados_segmentacao(pil_image):
-    # Converte PIL para formato OpenCV (numpy array)
     img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
     img_padronizada = cv2.resize(img, (640, 640))
-    
     results = model.predict(source=img_padronizada, conf=0.30, verbose=False)
+
     relatorio_pixels = {}
 
     if results[0].masks is not None:
         masks = results[0].masks.data.cpu().numpy()
         classes = results[0].boxes.cls.cpu().numpy()
-        
+
         for mask, cls_idx in zip(masks, classes):
             nome_classe = model.names[int(cls_idx)]
-            # Redimensiona a máscara para o tamanho original se necessário, 
-            # mas contar no 640x640 já dá a proporção correta
             contagem = np.count_nonzero(mask > 0.5)
             relatorio_pixels[nome_classe] = relatorio_pixels.get(nome_classe, 0) + contagem
-            
+
     return relatorio_pixels
 
+# --- ✅ ROTA: LISTAR PACIENTES (DATA CONNECT) ---
+@app.get("/pacientes/{responsavel_id}")
+async def listar_pacientes(responsavel_id: str):
+    # Ajustado para usar o plural 'pacientes' e filtro 'eq' conforme o Data Connect
+    query = """
+    query ListPacientes($responsavelId: String!) {
+      pacientes(where: { responsavelId: { eq: $responsavelId } }) {
+        id
+        nome
+        responsavelId
+        peso
+        alergias
+        nascimento
+      }
+    }
+    """
+
+    variables = {
+        "responsavelId": responsavel_id
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                DATA_CONNECT_URL,
+                json={
+                    "query": query,
+                    "variables": variables
+                },
+                timeout=10.0
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            # O Data Connect retorna uma lista dentro de data['data']['pacientes']
+            if "data" in data and "pacientes" in data["data"]:
+                return data["data"]["pacientes"]
+            
+            return []
+        except Exception as e:
+            return {"error": f"Erro ao conectar ao Data Connect: {str(e)}"}
+
+# --- 📸 ROTA: ANÁLISE DE REFEIÇÃO ---
 @app.post("/analisar")
 async def analisar_refeicao(
     file_antes: UploadFile = File(...), 
     file_depois: UploadFile = File(...),
-    nome_crianca: str = Form("Sofia") # Recebe o nome do Flutter
+    nome_crianca: str = Form(...)
 ):
-    # 1. Ler imagens enviadas pelo Flutter
     img_antes = Image.open(io.BytesIO(await file_antes.read()))
     img_depois = Image.open(io.BytesIO(await file_depois.read()))
 
-    # 2. Obter contagem de pixels por classe (Lógica V7)
     pixels_antes = obter_dados_segmentacao(img_antes)
     pixels_depois = obter_dados_segmentacao(img_depois)
 
-    # 3. Processar Comparação
     todas_classes = set(list(pixels_antes.keys()) + list(pixels_depois.keys()))
+
     lista_analise = []
-    itens_consumidos_nomes = []
 
     for item in todas_classes:
         p_antes = pixels_antes.get(item, 0)
         p_depois = pixels_depois.get(item, 0)
 
+        # Cálculo da porcentagem consumida baseado na área de pixels
         if p_antes > 0:
-            consumido_px = max(0, p_antes - p_depois)
-            porc_consumido = (consumido_px / p_antes) * 100
-            if porc_consumido > 98: porc_consumido = 100.0
+            porc = (max(0, p_antes - p_depois) / p_antes * 100)
         else:
-            porc_consumido = 0.0
-
-        # Só adiciona na lista de "consumidos" se houve algum consumo real
-        if porc_consumido > 5: 
-            itens_consumidos_nomes.append(item)
+            porc = 0.0
 
         lista_analise.append({
-            "item": item,
-            "porcentagem_consumida": round(porc_consumido, 2),
-            "status": "Totalmente consumido" if porc_consumido == 100 else f"{round(porc_consumido, 1)}% consumido"
+            "alimento": item,
+            "porcentagem_consumida": round(porc, 2)
         })
 
     return {
-        "crianca": "Sofia", # Aqui você pode receber o nome do Flutter se desejar
-        "detalhes": {
-            "oferecido": list(pixels_antes.keys()),
-            "sobras": list(pixels_depois.keys()),
-            "consumido": itens_consumidos_nomes
-        },
-        "analise": lista_analise, 
-        "mensagem": "Análise de segmentação concluída com sucesso!"
+        "paciente": nome_crianca,
+        "analise": lista_analise,
+        "status": "sucesso"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
