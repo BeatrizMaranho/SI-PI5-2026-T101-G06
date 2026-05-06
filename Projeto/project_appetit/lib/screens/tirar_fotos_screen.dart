@@ -51,32 +51,29 @@ class _TirarFotosScreenState extends State<TirarFotosScreen> {
       String? meuResponsavelId = FirebaseAuth.instance.currentUser?.uid;
 
       // 🔥 fallback
-      meuResponsavelId ??= "1FeuJsPM0Cc63oAl1WmOhJmrqjD3";
+      meuResponsavelId ??= "l6T5V8ODQZdTnnLI55BrNF2QhH02";
 
-      final dados = await ApiService.buscarPacientes(meuResponsavelId);
+     final dados = await ApiService.buscarPacientes(meuResponsavelId);
 
-      if (mounted) {
-        setState(() {
-          _pacientesList = dados;
+    if (mounted) {
+      setState(() {
+        _pacientesList = dados;
+        _fetchingChildren = false;
 
-          // 🔥 garante que o selecionado existe
-          if (_pacientesList.isNotEmpty) {
-            final existe = _pacientesList.any((p) => p['id'] == _currentSelectedId);
-
-            if (!existe) {
-              _currentSelectedId = _pacientesList[0]['id'];
-              _currentSelectedNome = _pacientesList[0]['nome'];
-            }
+        if (_pacientesList.isNotEmpty) {
+          // Se o que veio do construtor não está na lista, seleciona o primeiro
+          bool existe = _pacientesList.any((p) => p['id'] == _currentSelectedId);
+          if (!existe) {
+            _currentSelectedId = _pacientesList[0]['id'];
+            _currentSelectedNome = _pacientesList[0]['nome'];
           }
-
-          _fetchingChildren = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _fetchingChildren = false);
-      debugPrint("Erro ao carregar pacientes: $e");
+        }
+      });
     }
+  } catch (e) {
+    if (mounted) setState(() => _fetchingChildren = false);
   }
+}
 
   Future<void> _executarAnalise() async {
     if (_fotoAntes == null || _fotoDepois == null) return;

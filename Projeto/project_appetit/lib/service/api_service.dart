@@ -22,28 +22,29 @@ class ApiService {
       print("URL: $url");
       print("UID enviado: $idLimpo");
 
-      final response = await http
-          .get(
-            url,
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      print("Status Code: ${response.statusCode}");
-      print("Resposta bruta: ${response.body}");
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
+        final decodedData = json.decode(response.body);
 
-        return data.map((item) => {
-              "id": item['id'].toString(),
-              "nome": item['nome'].toString(),
-            }).toList();
+        // ✅ VERIFICAÇÃO ESSENCIAL: O que chegou é uma lista?
+        if (decodedData is List) {
+          return decodedData.map((item) => {
+                "id": item['id']?.toString() ?? '',
+                "nome": item['nome']?.toString() ?? 'Sem nome',
+              }).toList();
+        } else {
+          // Se chegou um {} (erro), tratamos como lista vazia
+          print("⚠️ Backend retornou formato inesperado: $decodedData");
+          return [];
+        }
       } else {
-        print("❌ Erro na API: ${response.statusCode}");
         return [];
       }
     } catch (e) {

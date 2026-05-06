@@ -47,9 +47,9 @@ class _GaleriaFotosScreenState extends State<GaleriaFotosScreen> {
       String? meuResponsavelId = FirebaseAuth.instance.currentUser?.uid;
 
       // 🔥 fallback com ID correto (COM ZERO, não letra O)
-      meuResponsavelId ??= "1FeuJsPM0Cc63oAl1WmOhJmrqjD3";
+      meuResponsavelId ??= "l6T5V8ODQZdTnnLI55BrNF2QhH02";
 
-      print("UID usado: $meuResponsavelId");
+      //print("UID usado: $meuResponsavelId");
 
       final List<Map<String, dynamic>> dadosDoBanco =
           await ApiService.buscarPacientes(meuResponsavelId);

@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # URL do Firebase Data Connect (Ajuste para produção se necessário)
 # Se estiver usando o emulador local, a porta padrão é 9399
-DATA_CONNECT_URL = "http://127.0.0.1:9399/graphql" 
+DATA_CONNECT_URL = "http://127.0.0.1:9399/graphql/endpoints/pi-v-appetit-service" 
 
 # Setup Firebase Admin
 cred_path = os.path.join(BASE_DIR, "serviceAccountKey.json")
@@ -89,18 +89,19 @@ async def listar_pacientes(responsavel_id: str):
                     "query": query,
                     "variables": variables
                 },
-                timeout=10.0
+                timeout=5.0
             )
             response.raise_for_status()
             data = response.json()
-            
-            # O Data Connect retorna uma lista dentro de data['data']['pacientes']
-            if "data" in data and "pacientes" in data["data"]:
+            print(f"DEBUG DATA CONNECT: {data}")
+            if "data" in data and data["data"] and "pacientes" in data["data"]:
                 return data["data"]["pacientes"]
             
-            return []
         except Exception as e:
-            return {"error": f"Erro ao conectar ao Data Connect: {str(e)}"}
+            print(f" Erro Data Connect: {e}")
+            # IMPORTANTE: Retornar uma lista vazia [] em vez de um dicionário de erro
+            # Isso evita o erro de tipagem no Flutter
+            return []
 
 # --- 📸 ROTA: ANÁLISE DE REFEIÇÃO ---
 @app.post("/analisar")
@@ -142,4 +143,5 @@ async def analisar_refeicao(
 
 if __name__ == "__main__":
     import uvicorn
+    # Mude para 0.0.0.0 para garantir que o Windows não bloqueie a rota
     uvicorn.run(app, host="0.0.0.0", port=8000)

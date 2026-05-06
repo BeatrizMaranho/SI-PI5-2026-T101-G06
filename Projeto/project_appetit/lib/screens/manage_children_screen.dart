@@ -95,7 +95,7 @@ class ManageChildrenScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TirarFotosScreen(nomeCrianca: paciente.nome, pacienteId: '',), // <--- ADICIONE ISSO
+                            builder: (context) => TirarFotosScreen(nomeCrianca: paciente.nome, pacienteId: paciente.id), // <--- ADICIONE ISSO
                           ),
               );
               },
