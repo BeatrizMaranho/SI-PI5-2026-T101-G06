@@ -423,6 +423,15 @@ extend type Paciente {
   """
   _count: Int! @fdc_generated(from: "Paciente.", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Paciente` table where the `alergias` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  alergias_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente.alergias", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Paciente` table where the `criadoEm` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   criadoEm_count(
@@ -459,6 +468,15 @@ extend type Paciente {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Paciente.nome", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Paciente` table where the `peso` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  peso_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente.peso", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Paciente` table where the `responsavelId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   responsavelId_count(
@@ -468,6 +486,24 @@ extend type Paciente {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Paciente.responsavelId", purpose: QUERY_COUNT)
   """
+  ✨ Sum the `peso` field in the `Paciente` table.
+  """
+  peso_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_SUM)
+  """
+  ✨ Average the `peso` field in the `Paciente` table.
+  """
+  peso_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `criadoEm` field in the `Paciente` table.
   """
   criadoEm_min: Timestamp @fdc_generated(from: "Paciente.criadoEm", purpose: QUERY_MIN)
@@ -476,6 +512,10 @@ extend type Paciente {
   """
   nascimento_min: Date @fdc_generated(from: "Paciente.nascimento", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `peso` field in the `Paciente` table.
+  """
+  peso_min: Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `criadoEm` field in the `Paciente` table.
   """
   criadoEm_max: Timestamp @fdc_generated(from: "Paciente.criadoEm", purpose: QUERY_MAX)
@@ -483,6 +523,10 @@ extend type Paciente {
   ✨ Maximum of the `nascimento` field in the `Paciente` table.
   """
   nascimento_max: Date @fdc_generated(from: "Paciente.nascimento", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `peso` field in the `Paciente` table.
+  """
+  peso_max: Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
