@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/constants.dart';
-import 'package:project_appetit/screens/galeria_fotos_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer' as dev;
 import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:project_appetit/service/api_service.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
@@ -19,6 +20,12 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   String? _selectedChildId;
   String _selectedChildNome = '';
   bool _isLoading = true;
+  bool _loadingAnalysis = false;
+
+  // Lógica de "Antes" e "Depois" recuperada da tela antiga
+  File? _fotoAntes;
+  File? _fotoDepois;
+
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -117,43 +124,169 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
-  Future<void> _abrirCamera() async {
+  void _abrirOpcoesMidia(bool isAntes) {
     if (_selectedChildId == null) {
       _mostrarAvisoSemCrianca();
       return;
     }
 
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Adicionar foto",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFFF67B55)),
+                title: const Text('Tirar foto agora'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _capturarMedia(isAntes, ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFFF67B55),
+                ),
+                title: const Text('Escolher da galeria'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _capturarMedia(isAntes, ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _capturarMedia(bool isAntes, ImageSource source) async {
     try {
-      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-      if (photo != null) {
-        dev.log("Foto tirada: ${photo.path}", name: 'UPLOAD_PHOTOS');
+      final XFile? picked = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+      );
+
+      if (picked != null) {
+        setState(() {
+          if (isAntes) {
+            _fotoAntes = File(picked.path);
+          } else {
+            _fotoDepois = File(picked.path);
+          }
+        });
+        dev.log("Mídia capturada: ${picked.path}", name: 'UPLOAD_PHOTOS');
       }
     } catch (e) {
-      dev.log("Erro ao abrir câmera: $e", name: 'UPLOAD_PHOTOS', error: e);
+      dev.log("Erro ao capturar mídia: $e", name: 'UPLOAD_PHOTOS', error: e);
     }
   }
 
-  Future<void> _abrirGaleria() async {
-    if (_selectedChildId == null) {
-      _mostrarAvisoSemCrianca();
-      return;
-    }
+  Future<void> _executarAnalise() async {
+    if (_fotoAntes == null || _fotoDepois == null) return;
+
+    setState(() => _loadingAnalysis = true);
 
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        dev.log(
-          "Imagem da galeria escolhida: ${image.path}",
-          name: 'UPLOAD_PHOTOS',
+      final resultado = await ApiService.enviarFotos(
+        XFile(_fotoAntes!.path),
+        XFile(_fotoDepois!.path),
+        _selectedChildNome,
+      );
+
+      if (!mounted) return;
+
+      setState(() => _loadingAnalysis = false);
+
+      if (resultado != null) {
+        _mostrarResultado(resultado);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Erro na análise. Verifique o backend."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } catch (e) {
-      dev.log("Erro ao abrir galeria: $e", name: 'UPLOAD_PHOTOS', error: e);
+      if (mounted) setState(() => _loadingAnalysis = false);
+      dev.log("Erro na análise: $e", name: 'UPLOAD_PHOTOS', error: e);
     }
+  }
+
+  void _mostrarResultado(Map<String, dynamic> data) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          "Análise da $_selectedChildNome",
+          style: AppConstants.titleStyle,
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Itens consumidos:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+              if (data['analise'] != null)
+                ...(data['analise'] as List).map(
+                  (res) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("• ${res['alimento']}"),
+                        Text(
+                          "${res['porcentagem_consumida']}%",
+                          style: const TextStyle(
+                            color: Color(0xFFF67B55),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "FECHAR",
+              style: TextStyle(color: Color(0xFFF67B55)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    const Color statsOrange = Color(0xFFF67B55);
+    const Color primaryOrange = Color(0xFFE35D33);
+
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
@@ -166,9 +299,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFF67B55)),
-            )
+          ? const Center(child: CircularProgressIndicator(color: statsOrange))
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
@@ -188,12 +319,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
 
                   _buildChildDropdown(),
 
-                  const SizedBox(height: 30),
-                  const Text(
-                    "Como deseja adicionar a foto?",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
 
                   Expanded(
                     child: SingleChildScrollView(
@@ -202,19 +328,54 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                           _buildInstructionCard(),
                           const SizedBox(height: 20),
 
-                          _buildOptionCard(
-                            svgPath: 'assets/icons/camera.svg',
-                            label: "Tirar foto agora",
-                            onTap: _abrirCamera,
-                            isEnabled: true,
+                          _buildCaptureCard(
+                            label: "Foto ANTES da refeição",
+                            foto: _fotoAntes,
+                            onTap: () => _abrirOpcoesMidia(true),
+                            onRemove: () => setState(() => _fotoAntes = null),
+                            circleColor: statsOrange,
                           ),
                           const SizedBox(height: 20),
 
-                          _buildOptionCard(
-                            svgPath: 'assets/icons/upload.svg',
-                            label: "Escolher da galeria",
-                            onTap: _abrirGaleria,
-                            isEnabled: true,
+                          _buildCaptureCard(
+                            label: "Foto DEPOIS da refeição",
+                            foto: _fotoDepois,
+                            onTap: () => _abrirOpcoesMidia(false),
+                            onRemove: () => setState(() => _fotoDepois = null),
+                            circleColor: statsOrange,
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+                            child: ElevatedButton(
+                              onPressed:
+                                  (_fotoAntes != null &&
+                                      _fotoDepois != null &&
+                                      !_loadingAnalysis)
+                                  ? _executarAnalise
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryOrange,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              child: _loadingAnalysis
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      "Analisar Consumo",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
                           ),
                           const SizedBox(height: 20),
                         ],
@@ -333,67 +494,65 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
-  Widget _buildOptionCard({
-    required String svgPath,
+  Widget _buildCaptureCard({
     required String label,
+    required File? foto,
     required VoidCallback onTap,
-    bool isEnabled = true,
+    required VoidCallback onRemove,
+    required Color circleColor,
   }) {
     return GestureDetector(
-      onTap: isEnabled ? onTap : null,
-      child: Opacity(
-        opacity: isEnabled ? 1.0 : 0.5,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 30),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: const Color(0xFFF67B55).withOpacity(0.1),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 25),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: circleColor.withOpacity(0.2), width: 1.5),
+        ),
+        child: Column(
+          children: [
+            if (foto == null) ...[
+              Icon(Icons.camera_alt, color: circleColor, size: 30),
+              const SizedBox(height: 10),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+            ] else ...[
               Container(
-                height: 70,
-                width: 70,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF67B55),
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    svgPath,
-                    width: 35,
-                    height: 35,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
-                      BlendMode.srcIn,
-                    ),
+                  image: DecorationImage(
+                    image: FileImage(foto),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
+              const SizedBox(height: 10),
+              const Text(
+                "Foto capturada",
+                style: TextStyle(
+                  color: Colors.green,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 5),
+              // Botão para remover a foto e permitir capturar novamente
+              TextButton.icon(
+                onPressed: onRemove,
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.redAccent,
+                  size: 18,
+                ),
+                label: const Text(
+                  "Remover",
+                  style: TextStyle(color: Colors.redAccent),
                 ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
