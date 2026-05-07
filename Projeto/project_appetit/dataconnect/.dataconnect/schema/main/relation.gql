@@ -101,6 +101,15 @@ extend type DeteccaoAlimento {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "DeteccaoAlimento.alimentoId", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `DeteccaoAlimento` table where the `confidence` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  confidence_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DeteccaoAlimento.confidence", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `DeteccaoAlimento` table where the `cor` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   cor_count(
@@ -109,6 +118,15 @@ extend type DeteccaoAlimento {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "DeteccaoAlimento.cor", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `DeteccaoAlimento` table where the `criadoEm` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  criadoEm_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "DeteccaoAlimento.criadoEm", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `DeteccaoAlimento` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -146,6 +164,15 @@ extend type DeteccaoAlimento {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "DeteccaoAlimento.textura", purpose: QUERY_COUNT)
   """
+  ✨ Sum the `confidence` field in the `DeteccaoAlimento` table.
+  """
+  confidence_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "DeteccaoAlimento.confidence", purpose: QUERY_SUM)
+  """
   ✨ Sum the `percentualConsumido` field in the `DeteccaoAlimento` table.
   """
   percentualConsumido_sum(
@@ -154,6 +181,15 @@ extend type DeteccaoAlimento {
     """
     distinct: Boolean = false
   ): Float @fdc_generated(from: "DeteccaoAlimento.percentualConsumido", purpose: QUERY_SUM)
+  """
+  ✨ Average the `confidence` field in the `DeteccaoAlimento` table.
+  """
+  confidence_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "DeteccaoAlimento.confidence", purpose: QUERY_AVG)
   """
   ✨ Average the `percentualConsumido` field in the `DeteccaoAlimento` table.
   """
@@ -164,9 +200,25 @@ extend type DeteccaoAlimento {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "DeteccaoAlimento.percentualConsumido", purpose: QUERY_AVG)
   """
+  ✨ Minimum of the `confidence` field in the `DeteccaoAlimento` table.
+  """
+  confidence_min: Float @fdc_generated(from: "DeteccaoAlimento.confidence", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `criadoEm` field in the `DeteccaoAlimento` table.
+  """
+  criadoEm_min: Timestamp @fdc_generated(from: "DeteccaoAlimento.criadoEm", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `percentualConsumido` field in the `DeteccaoAlimento` table.
   """
   percentualConsumido_min: Float @fdc_generated(from: "DeteccaoAlimento.percentualConsumido", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `confidence` field in the `DeteccaoAlimento` table.
+  """
+  confidence_max: Float @fdc_generated(from: "DeteccaoAlimento.confidence", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `criadoEm` field in the `DeteccaoAlimento` table.
+  """
+  criadoEm_max: Timestamp @fdc_generated(from: "DeteccaoAlimento.criadoEm", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `percentualConsumido` field in the `DeteccaoAlimento` table.
   """
@@ -203,6 +255,23 @@ extend type NutricionistaPaciente {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "NutricionistaPaciente.pacienteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `NutricionistaPaciente` table where the `vinculadoEm` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  vinculadoEm_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "NutricionistaPaciente.vinculadoEm", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `vinculadoEm` field in the `NutricionistaPaciente` table.
+  """
+  vinculadoEm_min: Timestamp @fdc_generated(from: "NutricionistaPaciente.vinculadoEm", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `vinculadoEm` field in the `NutricionistaPaciente` table.
+  """
+  vinculadoEm_max: Timestamp @fdc_generated(from: "NutricionistaPaciente.vinculadoEm", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -278,6 +347,40 @@ extend type Paciente {
     having: Refeicao_Having
   ): [Refeicao!]! @fdc_generated(from: "Refeicao.paciente", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Relatorio` objects in a one-to-many relationship (where `Relatorio`.`paciente` is this object).
+  """
+  relatorios_on_paciente(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Relatorio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Relatorio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Relatorio_Having
+  ): [Relatorio!]! @fdc_generated(from: "Relatorio.paciente", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `Usuario` objects using `NutricionistaPaciente` as the join table (a `NutricionistaPaciente` object exists where its `paciente` is this and its `nutricionista` is that).
   """
   usuarios_via_NutricionistaPaciente(
@@ -320,6 +423,24 @@ extend type Paciente {
   """
   _count: Int! @fdc_generated(from: "Paciente.", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Paciente` table where the `alergias` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  alergias_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente.alergias", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Paciente` table where the `criadoEm` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  criadoEm_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente.criadoEm", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Paciente` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -347,6 +468,15 @@ extend type Paciente {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Paciente.nome", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Paciente` table where the `peso` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  peso_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Paciente.peso", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Paciente` table where the `responsavelId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   responsavelId_count(
@@ -356,13 +486,47 @@ extend type Paciente {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Paciente.responsavelId", purpose: QUERY_COUNT)
   """
+  ✨ Sum the `peso` field in the `Paciente` table.
+  """
+  peso_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_SUM)
+  """
+  ✨ Average the `peso` field in the `Paciente` table.
+  """
+  peso_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `criadoEm` field in the `Paciente` table.
+  """
+  criadoEm_min: Timestamp @fdc_generated(from: "Paciente.criadoEm", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `nascimento` field in the `Paciente` table.
   """
   nascimento_min: Date @fdc_generated(from: "Paciente.nascimento", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `peso` field in the `Paciente` table.
+  """
+  peso_min: Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `criadoEm` field in the `Paciente` table.
+  """
+  criadoEm_max: Timestamp @fdc_generated(from: "Paciente.criadoEm", purpose: QUERY_MAX)
+  """
   ✨ Maximum of the `nascimento` field in the `Paciente` table.
   """
   nascimento_max: Date @fdc_generated(from: "Paciente.nascimento", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `peso` field in the `Paciente` table.
+  """
+  peso_max: Float @fdc_generated(from: "Paciente.peso", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -403,6 +567,40 @@ extend type Refeicao {
     """
     having: DeteccaoAlimento_Having
   ): [DeteccaoAlimento!]! @fdc_generated(from: "DeteccaoAlimento.refeicao", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Relatorio` objects in a one-to-many relationship (where `Relatorio`.`refeicao` is this object).
+  """
+  relatorios_on_refeicao(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Relatorio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Relatorio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Relatorio_Having
+  ): [Relatorio!]! @fdc_generated(from: "Relatorio.refeicao", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -477,6 +675,73 @@ extend type Refeicao {
   A generated field that is used for caching results in SDKs.
   """
   _id: ID! @fdc_generated(from: "Refeicao.id", purpose: ENTITY_ID)
+}
+extend type Relatorio {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Relatorio", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Relatorio` table.
+  """
+  _count: Int! @fdc_generated(from: "Relatorio.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Relatorio` table where the `conteudo` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  conteudo_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio.conteudo", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Relatorio` table where the `dataGeracao` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dataGeracao_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio.dataGeracao", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Relatorio` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Relatorio` table where the `pacienteId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  pacienteId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio.pacienteId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Relatorio` table where the `refeicaoId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  refeicaoId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio.refeicaoId", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `dataGeracao` field in the `Relatorio` table.
+  """
+  dataGeracao_min: Timestamp @fdc_generated(from: "Relatorio.dataGeracao", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `dataGeracao` field in the `Relatorio` table.
+  """
+  dataGeracao_max: Timestamp @fdc_generated(from: "Relatorio.dataGeracao", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Relatorio.id", purpose: ENTITY_ID)
 }
 extend type Usuario {
   """

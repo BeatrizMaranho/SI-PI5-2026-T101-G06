@@ -45,6 +45,15 @@ extend type Mutation {
     data: Refeicao_Data!
   ): Refeicao_KeyOutput! @fdc_generated(from: "Refeicao", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Relatorio` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  relatorio_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput! @fdc_generated(from: "Relatorio", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Usuario` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   usuario_insert(
@@ -98,6 +107,15 @@ extend type Mutation {
     """
     data: [Refeicao_Data!]!
   ): [Refeicao_KeyOutput!]! @fdc_generated(from: "Refeicao", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Relatorio` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  relatorio_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Relatorio_Data!]!
+  ): [Relatorio_KeyOutput!]! @fdc_generated(from: "Relatorio", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Usuario` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -153,6 +171,15 @@ extend type Mutation {
     data: Refeicao_Data!
   ): Refeicao_KeyOutput! @fdc_generated(from: "Refeicao", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Relatorio` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Relatorio`.
+  """
+  relatorio_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput! @fdc_generated(from: "Relatorio", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Usuario` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Usuario`.
   """
   usuario_upsert(
@@ -206,6 +233,15 @@ extend type Mutation {
     """
     data: [Refeicao_Data!]!
   ): [Refeicao_KeyOutput!]! @fdc_generated(from: "Refeicao", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Relatorio` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Relatorio`.
+  """
+  relatorio_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Relatorio_Data!]!
+  ): [Relatorio_KeyOutput!]! @fdc_generated(from: "Relatorio", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Usuario` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Usuario`.
   """
@@ -331,13 +367,42 @@ extend type Mutation {
     data: Refeicao_Data!
   ): Refeicao_KeyOutput @fdc_generated(from: "Refeicao", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Relatorio` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Relatorio` or `null` if not found.
+  """
+  relatorio_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Relatorio_Data!
+  ): Relatorio_KeyOutput @fdc_generated(from: "Relatorio", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Usuario` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Usuario` or `null` if not found.
   """
   usuario_update(
     """
     The unique ID of the object.
     """
-    id: UUID
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
 
     """
     The key used to identify the object.
@@ -450,6 +515,25 @@ extend type Mutation {
     data: Refeicao_Data!
   ): Int! @fdc_generated(from: "Refeicao", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Relatorio` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  relatorio_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Relatorio_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Relatorio_Data!
+  ): Int! @fdc_generated(from: "Relatorio", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Usuario` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   usuario_updateMany(
@@ -559,13 +643,37 @@ extend type Mutation {
     first: Refeicao_FirstRow
   ): Refeicao_KeyOutput @fdc_generated(from: "Refeicao", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Relatorio` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  relatorio_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+  ): Relatorio_KeyOutput @fdc_generated(from: "Relatorio", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Usuario` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   usuario_delete(
     """
     The unique ID of the object.
     """
-    id: UUID
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
 
     """
     The key used to identify the object.
@@ -647,6 +755,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Refeicao", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Relatorio` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  relatorio_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Relatorio_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Relatorio", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Usuario` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

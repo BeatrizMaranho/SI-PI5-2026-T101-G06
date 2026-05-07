@@ -85,5 +85,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'pi-v-appetit.firebasestorage.app',
     measurementId: 'G-4Y7WB0CJ6Y',
   );
-
 }

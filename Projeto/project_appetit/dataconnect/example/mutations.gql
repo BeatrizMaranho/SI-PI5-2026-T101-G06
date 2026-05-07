@@ -1,0 +1,281 @@
+mutation CriarUsuario(
+  $id: String!
+  $nome: String!
+  $email: String!
+  $senhaHash: String!
+  $tipo: String!
+) @auth(level: PUBLIC) {
+  usuario_insert(
+    data: {
+      id: $id
+      nome: $nome
+      email: $email
+      senhaHash: $senhaHash
+      tipo: $tipo
+    }
+  )
+}
+
+mutation DeletarUsuario($id: String!) @auth(level: USER) {
+  usuario_delete(key: { id: $id })
+}
+
+mutation AtualizarPerfil(
+  $id: String!
+  $nome: String
+  $email: String
+) @auth(level: USER) {
+  usuario_update(
+    id: $id
+    data: {
+      nome: $nome
+      email: $email
+    }
+  )
+}
+
+mutation AtualizarSenha(
+  $id: String!
+  $senhaHashNova: String!
+) @auth(level: USER) {
+  usuario_update(
+    id: $id
+    data: {
+      senhaHash: $senhaHashNova
+    }
+  )
+}
+
+mutation CriarPaciente(
+  $nome: String!
+  $responsavelId: String!
+  $nascimento: Date
+  $peso: Float
+  $alergias: String
+) @auth(level: USER) {
+  paciente_insert(
+    data: {
+      nome: $nome
+      responsavelId: $responsavelId
+      nascimento: $nascimento
+      peso: $peso
+      alergias: $alergias
+    }
+  )
+}
+
+mutation AtualizarPaciente(
+  $id: UUID!
+  $nome: String
+  $nascimento: Date
+) @auth(level: USER) {
+  paciente_update(
+    id: $id
+    data: {
+      nome: $nome
+      nascimento: $nascimento
+    }
+  )
+}
+
+mutation DeletarPaciente(
+  $id: UUID!
+) @auth(level: USER) {
+  paciente_delete(key: { id: $id })
+}
+
+mutation VincularNutricionista(
+  $nutricionistaId: String!
+  $pacienteId: UUID!
+) @auth(level: USER) {
+  nutricionistaPaciente_insert(
+    data: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation DesvincularNutricionista(
+  $nutricionistaId: String!
+  $pacienteId: UUID!
+) @auth(level: USER) {
+  nutricionistaPaciente_delete(
+    key: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation VincularNutricionistaComPaciente(
+  $nutricionistaId: String!
+  $pacienteId: UUID!
+) @auth(level: USER) {
+  nutricionistaPaciente_insert(
+    data: {
+      nutricionistaId: $nutricionistaId
+      pacienteId: $pacienteId
+    }
+  )
+}
+
+mutation CriarRefeicao(
+  $pacienteId: UUID!
+  $urlFotoAntes: String!
+  $status: String = "pendente"
+) @auth(level: USER) {
+  refeicao_insert(
+    data: {
+      pacienteId: $pacienteId
+      urlFotoAntes: $urlFotoAntes
+      status: $status
+    }
+  )
+}
+
+mutation AtualizarRefeicao(
+  $id: UUID!
+  $urlFotoDepois: String
+  $status: String
+) @auth(level: USER) {
+  refeicao_update(
+    id: $id
+    data: {
+      urlFotoDepois: $urlFotoDepois
+      status: $status
+    }
+  )
+}
+
+mutation DeletarRefeicao(
+  $id: UUID!
+) @auth(level: USER) {
+  refeicao_delete(key: { id: $id })
+}
+
+mutation MarcarRefeicaoAnalisada(
+  $id: UUID!
+) @auth(level: USER) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "analisada"
+    }
+  )
+}
+
+mutation RejeitarRefeicao(
+  $id: UUID!
+  $motivo: String
+) @auth(level: USER) {
+  refeicao_update(
+    id: $id
+    data: {
+      status: "rejeitada"
+    }
+  )
+}
+
+mutation CriarDeteccao(
+  $refeicaoId: UUID!
+  $alimentoId: UUID!
+  $confidence: Float!
+  $percentualConsumido: Float!
+  $cor: String
+  $textura: String
+) @auth(level: USER) {
+  deteccaoAlimento_insert(
+    data: {
+      refeicaoId: $refeicaoId
+      alimentoId: $alimentoId
+      confidence: $confidence
+      percentualConsumido: $percentualConsumido
+      cor: $cor
+      textura: $textura
+      aceito: false
+    }
+  )
+}
+
+mutation AtualizarDeteccao(
+  $id: UUID!
+  $aceito: Boolean!
+) @auth(level: USER) {
+  deteccaoAlimento_update(
+    id: $id
+    data: {
+      aceito: $aceito
+    }
+  )
+}
+
+mutation DeletarDeteccao(
+  $id: UUID!
+) @auth(level: USER) {
+  deteccaoAlimento_delete(key: { id: $id })
+}
+
+mutation CriarAlimento(
+  $label: String!
+  $categoria: String
+) @auth(level: USER) {
+  alimento_insert(
+    data: {
+      label: $label
+      categoria: $categoria
+    }
+  )
+}
+
+mutation AtualizarAlimento(
+  $id: UUID!
+  $label: String
+  $categoria: String
+) @auth(level: USER) {
+  alimento_update(
+    id: $id
+    data: {
+      label: $label
+      categoria: $categoria
+    }
+  )
+}
+
+mutation DeletarAlimento(
+  $id: UUID!
+) @auth(level: USER) {
+  alimento_delete(key: { id: $id })
+}
+
+mutation CriarRelatorio(
+  $refeicaoId: UUID!
+  $pacienteId: UUID!
+  $conteudo: String!
+) @auth(level: USER) {
+  relatorio_insert(
+    data: {
+      refeicaoId: $refeicaoId
+      pacienteId: $pacienteId
+      conteudo: $conteudo
+    }
+  )
+}
+
+mutation AtualizarRelatorio(
+  $id: UUID!
+  $conteudo: String!
+) @auth(level: USER) {
+  relatorio_update(
+    id: $id
+    data: {
+      conteudo: $conteudo
+    }
+  )
+}
+
+mutation DeletarRelatorio(
+  $id: UUID!
+) @auth(level: USER) {
+  relatorio_delete(key: { id: $id })
+}

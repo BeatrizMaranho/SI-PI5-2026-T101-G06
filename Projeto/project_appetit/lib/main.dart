@@ -1,24 +1,23 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:project_appetit/components/main_screen.dart';
 import 'package:project_appetit/screens/login_screen.dart';
 import 'package:project_appetit/screens/main_admin_screen.dart';
-import 'package:project_appetit/screens/upload_photos_screen.dart';
->>>>>>> Stashed changes
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-<<<<<<< Updated upstream
-  runApp(const MyApp());
-=======
-  runApp(DevicePreview(enabled: true, builder: (context) => const MyApp()));
->>>>>>> Stashed changes
+  runApp(
+    DevicePreview(
+      enabled: true,
+      builder: (context) => const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -27,55 +26,44 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
-      title: 'Appetit',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-<<<<<<< Updated upstream
-      home: const MyHomePage(),
-=======
       home: const AuthWrapper(),
-      routes: {'/upload-photos': (context) => const UploadPhotosScreen()},
->>>>>>> Stashed changes
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  Future<Map<String, String?>> _getAuthData() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'isLoggedIn': prefs.getBool('isLoggedIn')?.toString(),
+      'userType': prefs.getString('userType'),
+      'userId': prefs.getString('userId'),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< Updated upstream
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Appetit',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.orange,
-            letterSpacing: 2.0,
-          ),
-        ),
-      ),
-=======
     return FutureBuilder<Map<String, String?>>(
       future: _getAuthData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
         final data = snapshot.data;
         final bool loggedIn = data?['isLoggedIn'] == 'true';
         final String? uid = data?['userId'];
         final String? type = data?['userType'];
-
+        
         if (loggedIn && uid != null) {
           if (type == 'admin') {
             return const MainScreenAdmin();
@@ -85,7 +73,6 @@ class MyHomePage extends StatelessWidget {
 
         return const LoginScreen();
       },
->>>>>>> Stashed changes
     );
   }
 }

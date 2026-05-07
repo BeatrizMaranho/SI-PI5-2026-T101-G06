@@ -6,6 +6,10 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Precisamos da câmera para registrar as refeições.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Precisamos acessar a galeria para fazer upload das fotos.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Project Appetit</string>
 	<key>CFBundleExecutable</key>

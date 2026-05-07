@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71863922193",
+    "project_id": "pi-v-appetit",
+    "storage_bucket": "pi-v-appetit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71863922193:android:cb3c5ca5cc6a1018fc0bb0",
+        "android_client_info": {
+          "package_name": "com.example.project_appetit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbEOXuw35V1Y4GcwryQq4HxbRdwDVk_3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

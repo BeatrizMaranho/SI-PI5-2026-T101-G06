@@ -90,13 +90,37 @@ extend type Query {
     first: Refeicao_FirstRow
   ): Refeicao @fdc_generated(from: "Refeicao", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Relatorio` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  relatorio(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Relatorio_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Relatorio_FirstRow
+  ): Relatorio @fdc_generated(from: "Relatorio", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Usuario` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   usuario(
     """
     The unique ID of the object.
     """
-    id: UUID
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
 
     """
     The key used to identify the object.
@@ -278,6 +302,40 @@ extend type Query {
     """
     having: Refeicao_Having
   ): [Refeicao!]! @fdc_generated(from: "Refeicao", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Relatorio` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  relatorios(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Relatorio_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Relatorio_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Relatorio_Having
+  ): [Relatorio!]! @fdc_generated(from: "Relatorio", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Usuario` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

@@ -1,0 +1,415 @@
+query ObterUsuarioAtual($id: String!) {
+  usuario(id: $id) {
+    id
+    nome
+    email
+    tipo
+    criadoEm
+  }
+}
+
+query BuscarUsuarioPorEmail($email: String!) @auth(level: PUBLIC) {
+  usuarios(
+    where: {
+      email: { eq: $email }
+    }
+  ) {
+    id
+    nome
+    email
+    tipo
+    senhaHash
+    criadoEm
+  }
+}
+
+query ObterUsuarioPorId($id: String!) {
+  usuario(id: $id) {
+    id
+    nome
+    email
+    tipo
+    criadoEm
+  }
+}
+
+query ListarMeusPacientes($responsavelId: String!) @auth(level: USER) {
+  pacientes(
+    where: {
+      responsavelId: { eq: $responsavelId }
+    }
+  ) {
+    id
+    nome
+    nascimento
+    peso
+    alergias
+    criadoEm
+    responsavel {
+      nome
+      email
+    }
+  }
+}
+
+query ObterPacienteComRefeicoes($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+    }
+  }
+}
+
+query ObterPacienteCompleto($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    nascimento
+    peso
+    alergias
+    responsavel {
+      nome
+      email
+    }
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorios: relatorios_on_refeicao {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+query ListarPacientesVinculados($nutricionistaId: String!) {
+  nutricionistaPacientes(
+    where: {
+      nutricionistaId: { eq: $nutricionistaId }
+    }
+  ) {
+    paciente {
+      id
+      nome
+      peso
+      alergias
+      nascimento
+      responsavel {
+        nome
+        email
+      }
+    }
+    vinculadoEm
+  }
+}
+
+query ObterPacienteParaNutricionista($pacienteId: UUID!) {
+  paciente(id: $pacienteId) {
+    id
+    nome
+    peso
+    alergias
+    nascimento
+    responsavel {
+      nome
+      email
+    }
+    refeicoes: refeicaos_on_paciente {
+      id
+      dataHora
+      status
+      urlFotoAntes
+      urlFotoDepois
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+      relatorios: relatorios_on_refeicao {
+        id
+        conteudo
+        dataGeracao
+      }
+    }
+  }
+}
+
+query ListarRefeicoesPaciente(
+  $pacienteId: UUID!
+  $status: String
+) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      status: { eq: $status }
+    }
+    orderBy: [{ dataHora: DESC }]
+  ) {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+  }
+}
+
+query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
+  refeicao(id: $refeicaoId) {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+    deteccoes: deteccaoAlimentos_on_refeicao {
+      id
+      alimento {
+        id
+        label
+        categoria
+      }
+      percentualConsumido
+      aceito
+      cor
+      textura
+      criadoEm
+    }
+  }
+}
+
+query ListarRefeicoesPendentes($pacienteId: UUID!) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      status: { eq: "pendente" }
+    }
+    orderBy: [{ dataHora: ASC }]
+  ) {
+    id
+    dataHora
+    urlFotoAntes
+    paciente {
+      nome
+    }
+  }
+}
+
+query ListarDeteccoesPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    aceito
+    cor
+    textura
+    criadoEm
+  }
+}
+
+query ListarDeteccoesAceitasPorRefeicao($refeicaoId: UUID!) {
+  deteccaoAlimentos(
+    where: { 
+      refeicaoId: { eq: $refeicaoId }
+      aceito: { eq: true }
+    }
+  ) {
+    id
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+    cor
+    textura
+  }
+}
+
+query ObterRelatorioPorRefeicao($refeicaoId: UUID!) {
+  relatorios(
+    where: {
+      refeicaoId: { eq: $refeicaoId }
+    }
+  ) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+query ListarRelatorioPaciente(
+  $pacienteId: UUID!
+  $limite: Int = 30
+) {
+  relatorios(
+    where: {
+      pacienteId: { eq: $pacienteId }
+    }
+    orderBy: [{ dataGeracao: DESC }]
+    limit: $limite
+  ) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+    }
+  }
+}
+
+query ObterRelatorioCompleto($relatorioId: UUID!) {
+  relatorio(id: $relatorioId) {
+    id
+    conteudo
+    dataGeracao
+    refeicao {
+      id
+      dataHora
+      urlFotoAntes
+      urlFotoDepois
+      status
+      paciente {
+        nome
+      }
+      deteccoes: deteccaoAlimentos_on_refeicao {
+        id
+        alimento {
+          label
+          categoria
+        }
+        percentualConsumido
+        aceito
+        cor
+        textura
+      }
+    }
+  }
+}
+
+query ListarCatalogoAlimentos {
+  alimentos(
+    orderBy: [{ label: ASC }]
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+query BuscarAlimentoPorLabel($label: String!) {
+  alimentos(
+    where: {
+      label: { eq: $label }
+    }
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+query ListarAlimentosPorCategoria($categoria: String!) {
+  alimentos(
+    where: {
+      categoria: { eq: $categoria }
+    }
+    orderBy: [{ label: ASC }]
+  ) {
+    id
+    label
+    categoria
+  }
+}
+
+query ResumoRefeicoes7Dias(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
+      dataHora: { ge: $dataLimite }
+    }
+    orderBy: [{ dataHora: DESC }]
+  ) {
+    id
+    dataHora
+    status
+    deteccoes: deteccaoAlimentos_on_refeicao {
+      alimento {
+        categoria
+      }
+      percentualConsumido
+    }
+  }
+}
+
+query AlimentosMaisDetectados(
+  $pacienteId: UUID!
+  $dataLimite: Timestamp!
+) {
+  deteccaoAlimentos(
+    where: {
+      refeicao: {
+        pacienteId: { eq: $pacienteId }
+        dataHora: { ge: $dataLimite }
+      }
+    }
+    orderBy: [{ percentualConsumido: DESC }]
+  ) {
+    alimento {
+      label
+      categoria
+    }
+    percentualConsumido
+  }
+}

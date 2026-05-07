@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_appetit/screens/tirar_fotos_screen.dart';
 import 'child_registration_screen.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
-import 'dart:developer' as dev;
+import 'dart:developer' as dev; // Import para logs mais limpos
 import 'package:intl/intl.dart';
 
 class ManageChildrenScreen extends StatelessWidget {
@@ -19,51 +20,35 @@ class ManageChildrenScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text('Gerenciar crianças', style: AppConstants.titleStyle),
+        title: const Text(
+          'Gerenciar crianças',
+          style: AppConstants.titleStyle,
+        ),
       ),
       body: FutureBuilder(
-        future: ExampleConnector.instance
-            .listarMeusPacientes(responsavelId: userId)
-            .execute(),
+        future: ExampleConnector.instance.listarMeusPacientes(responsavelId: userId).execute(),
         builder: (context, snapshot) {
-          dev.log(
-            'Buscando pacientes para o userId: $userId',
-            name: 'MANAGE_CHILDREN',
-          );
+          dev.log('Buscando pacientes para o userId: $userId', name: 'APP_DEBUG');
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppConstants.primaryOrange,
-              ),
-            );
+            return const Center(child: CircularProgressIndicator(color: AppConstants.primaryOrange));
           }
 
           if (snapshot.hasError) {
-            dev.log(
-              'ERRO NO FUTUREBUILDER: ${snapshot.error}',
-              name: 'MANAGE_CHILDREN',
-              error: snapshot.error,
-            );
+            dev.log('ERRO NO FUTUREBUILDER: ${snapshot.error}', name: 'APP_DEBUG', error: snapshot.error);
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Erro ao carregar dados"),
                   const SizedBox(height: 10),
-                  Text(
-                    "${snapshot.error}",
-                    style: const TextStyle(fontSize: 10, color: Colors.red),
-                  ),
+                  Text("${snapshot.error}", style: const TextStyle(fontSize: 10, color: Colors.red)),
                 ],
               ),
             );
           }
 
-          dev.log(
-            'Dados recebidos: ${snapshot.data?.data.pacientes}',
-            name: 'MANAGE_CHILDREN',
-          );
+          dev.log('Dados recebidos: ${snapshot.data?.data.pacientes}', name: 'APP_DEBUG');
 
           final pacientes = snapshot.data?.data.pacientes ?? [];
 
@@ -77,15 +62,12 @@ class ManageChildrenScreen extends StatelessWidget {
                   style: AppConstants.sectionStyle,
                 ),
                 const SizedBox(height: AppConstants.defaultPadding),
-
+                
                 if (pacientes.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Text(
-                        "Nenhuma criança cadastrada",
-                        style: TextStyle(color: AppConstants.textGrey),
-                      ),
+                      child: Text("Nenhuma criança cadastrada", style: TextStyle(color: AppConstants.textGrey)),
                     ),
                   ),
 
@@ -93,48 +75,34 @@ class ManageChildrenScreen extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pacientes.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppConstants.elementSpacing),
+                  separatorBuilder: (context, index) => const SizedBox(height: AppConstants.elementSpacing),
                   itemBuilder: (context, index) {
-                    final paciente = pacientes[index];
+                      final paciente = pacientes[index];
+                      
+                      dev.log('Processando paciente: ${paciente.nome}, Nasc: ${paciente.nascimento}', name: 'APP_DEBUG');
 
-                    dev.log(
-                      'Processando paciente: ${paciente.nome}, ID: ${paciente.id}',
-                      name: 'MANAGE_CHILDREN',
-                    );
+                      final int idadeCalculada = calcularIdade(paciente.nascimento);
 
-                    final int idadeCalculada = calcularIdade(
-                      paciente.nascimento,
-                    );
-
-                    return childCard(
-                      context,
-                      paciente.nome,
-                      "$idadeCalculada anos",
-                      '0',
-                      DateFormat(
-                        'dd/MM/yyyy',
-                      ).format(paciente.criadoEm.toDateTime()),
-                      AppConstants.borderOrange,
-                      AppConstants.primaryOrange,
+                      return childCard(
+                        context, 
+                        paciente.nome, 
+                        "$idadeCalculada anos", 
+                        '0', 
+                        DateFormat('dd/MM/yyyy').format(paciente.criadoEm.toDateTime()),
+                        AppConstants.borderOrange, 
+                        AppConstants.primaryOrange,
                       onCameraTap: () {
-                        dev.log(
-                          'Clicou em câmera - Navegando para UploadPhotosScreen com paciente: ${paciente.nome}',
-                          name: 'MANAGE_CHILDREN',
-                        );
-                        Navigator.pushNamed(
+                        Navigator.push(
                           context,
-                          '/upload-photos',
-                          arguments: {
-                            'selectedChildId': paciente.id,
-                            'selectedChildName': paciente.nome,
-                          },
-                        );
-                      },
-                    );
-                  },
+                          MaterialPageRoute(
+                            builder: (context) => TirarFotosScreen(nomeCrianca: paciente.nome, pacienteId: paciente.id), // <--- ADICIONE ISSO
+                          ),
+              );
+              },
+                      );                      
+                    },
                 ),
-
+                
                 const SizedBox(height: AppConstants.elementSpacing),
 
                 SizedBox(
@@ -151,20 +119,18 @@ class ManageChildrenScreen extends StatelessWidget {
                     },
                     icon: const Icon(Icons.add, color: AppConstants.iconLight),
                     label: const Text(
-                      'Adicionar nova criança',
+                      'Adicionar nova criança', 
                       style: TextStyle(
-                        fontSize: 18,
-                        color: AppConstants.iconLight,
-                        fontWeight: FontWeight.bold,
-                      ),
+                        fontSize: 18, 
+                        color: AppConstants.iconLight, 
+                        fontWeight: FontWeight.bold
+                      )
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppConstants.primaryOrange,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppConstants.buttonBorderRadius,
-                        ),
+                        borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius)
                       ),
                     ),
                   ),
@@ -178,40 +144,46 @@ class ManageChildrenScreen extends StatelessWidget {
     );
   }
 
+  // Restante dos métodos (calcularIdade, childCard, etc) permanecem iguais...
+
   int calcularIdade(dynamic nascimento) {
     if (nascimento == null) return 0;
-
-    DateTime dataNasc = nascimento is String
-        ? DateTime.parse(nascimento)
+    
+    // Converte para DateTime se for String, caso já não seja
+    DateTime dataNasc = nascimento is String 
+        ? DateTime.parse(nascimento) 
         : nascimento;
-
+        
     DateTime hoje = DateTime.now();
     int idade = hoje.year - dataNasc.year;
 
-    if (hoje.month < dataNasc.month ||
+    // Ajusta se o aniversário ainda não ocorreu este ano
+    if (hoje.month < dataNasc.month || 
         (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) {
       idade--;
     }
 
     return idade;
   }
-
   Widget childCard(
     BuildContext context,
-    String nome,
-    String idade,
-    String refeicoes,
+    String nome, 
+    String idade, 
+    String refeicoes, 
     String data,
-    Color statsColor,
-    Color actionColor, {
-    required VoidCallback onCameraTap,
-  }) {
+    Color statsColor, 
+    Color actionColor,
+    {required VoidCallback onCameraTap}
+    ) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: AppConstants.cardWhite,
+        color: AppConstants.cardWhite, 
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        border: Border.all(color: statsColor.withOpacity(0.3), width: 1.2),
+        border: Border.all(
+          color: statsColor.withOpacity(0.3), 
+          width: 1.2,
+        ),
       ),
       child: Column(
         children: [
@@ -230,10 +202,7 @@ class ManageChildrenScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(nome, style: AppConstants.cardTitleStyle),
-                  Text(
-                    idade,
-                    style: const TextStyle(color: AppConstants.textGrey),
-                  ),
+                  Text(idade, style: const TextStyle(color: AppConstants.textGrey)),
                 ],
               ),
             ],
@@ -241,12 +210,7 @@ class ManageChildrenScreen extends StatelessWidget {
           const SizedBox(height: 15),
           Row(
             children: [
-              expandedInfoBox(
-                "Refeições",
-                refeicoes,
-                Icons.restaurant,
-                statsColor,
-              ),
+              expandedInfoBox("Refeições", refeicoes, Icons.restaurant, statsColor),
               const SizedBox(width: 10),
               expandedInfoBox("Desde", data, Icons.calendar_today, statsColor),
             ],
@@ -259,18 +223,13 @@ class ManageChildrenScreen extends StatelessWidget {
               actionButton(Icons.edit, actionColor),
               actionButton(Icons.delete, actionColor),
             ],
-          ),
+          )
         ],
       ),
     );
   }
 
-  Widget expandedInfoBox(
-    String label,
-    String value,
-    IconData icon,
-    Color statsColor,
-  ) {
+  Widget expandedInfoBox(String label, String value, IconData icon, Color statsColor) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -290,12 +249,12 @@ class ManageChildrenScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              value,
+              value, 
               style: const TextStyle(
-                color: AppConstants.iconLight,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+                color: AppConstants.iconLight, 
+                fontWeight: FontWeight.bold, 
+                fontSize: 16
+              )
             ),
           ],
         ),
@@ -307,13 +266,13 @@ class ManageChildrenScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 80,
-        height: 45,
-        decoration: BoxDecoration(
-          color: actionColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: AppConstants.iconLight, size: 20),
+      width: 80,
+      height: 45,
+      decoration: BoxDecoration(
+        color: actionColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: AppConstants.iconLight, size: 20),
       ),
     );
   }

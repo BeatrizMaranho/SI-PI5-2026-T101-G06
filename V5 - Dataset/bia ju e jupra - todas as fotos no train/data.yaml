@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 21
+names: ['beans', 'beet', 'broccoli', 'carrot', 'cassava', 'cauliflower', 'chicken', 'corn', 'cucumber', 'egg', 'fish', 'green_beans', 'green_vegetables', 'meat', 'pasta', 'peas', 'potato', 'rice', 'salad', 'tomato', 'sausage']
+
+roboflow:
+  workspace: beatrizs-workspace-meysr
+  project: beatrizs-workspace-meysr
+  version: dataset
+  license: Private
+  url: https://app.roboflow.com/beatrizs-workspace-meysr/beatrizs-workspace-meysr/dataset
