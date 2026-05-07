@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/constants.dart';
-import 'package:project_appetit/screens/tirar_fotos_screen.dart'; 
-import 'package:project_appetit/screens/galeria_fotos_screen.dart'; 
-import 'package:project_appetit/service/api_service.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🔥 IMPORTANTE
+import 'package:project_appetit/screens/galeria_fotos_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer' as dev;
+import 'package:project_appetit/dataconnect_generated/generated.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
@@ -14,15 +15,39 @@ class UploadPhotosScreen extends StatefulWidget {
 }
 
 class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
-  List<Map<String, dynamic>> _pacientes = []; 
-  String? _selectedChildId; 
-  String _selectedChildNome = ''; 
+  List<Map<String, dynamic>> _pacientes = [];
+  String? _selectedChildId;
+  String _selectedChildNome = '';
   bool _isLoading = true;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _fetchPacientes(); 
+    _fetchPacientes();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _verificarArgumentos();
+    });
+  }
+
+  void _verificarArgumentos() {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+
+    if (args != null && args.containsKey('selectedChildId')) {
+      final childId = args['selectedChildId'];
+      final childName = args['selectedChildName'] ?? '';
+
+      setState(() {
+        _selectedChildId = childId;
+        _selectedChildNome = childName;
+      });
+
+      dev.log(
+        'Criança selecionada via argumentos: $childName (ID: $childId)',
+        name: 'UPLOAD_PHOTOS',
+      );
+    }
   }
 
   Future<void> _fetchPacientes() async {
@@ -30,35 +55,100 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
-        print("❌ Usuário não logado");
+        dev.log("Usuário não logado", name: 'UPLOAD_PHOTOS');
         setState(() => _isLoading = false);
         return;
       }
 
       final String meuResponsavelId = user.uid;
 
-      print("🆔 UID LOGADO: $meuResponsavelId");
+      dev.log("UID LOGADO: $meuResponsavelId", name: 'UPLOAD_PHOTOS');
 
-      final List<Map<String, dynamic>> dadosDoBanco =
-          await ApiService.buscarPacientes(meuResponsavelId);
+      final resultado = await ExampleConnector.instance
+          .listarMeusPacientes(responsavelId: meuResponsavelId)
+          .execute();
+
+      final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
+          .map((p) => {'id': p.id, 'nome': p.nome, 'nascimento': p.nascimento})
+          .toList();
+
+      dev.log(
+        "Pacientes encontrados: ${dadosDoBanco.length}",
+        name: 'UPLOAD_PHOTOS',
+      );
 
       if (mounted) {
         setState(() {
           _pacientes = dadosDoBanco;
 
-          if (_pacientes.isNotEmpty) {
+          if (_selectedChildId == null && _pacientes.isNotEmpty) {
             _selectedChildId = _pacientes[0]['id'];
             _selectedChildNome = _pacientes[0]['nome'];
+            dev.log(
+              "Primeiro paciente selecionado: $_selectedChildNome",
+              name: 'UPLOAD_PHOTOS',
+            );
           }
 
           _isLoading = false;
         });
       }
     } catch (e) {
+      dev.log(
+        "Erro ao carregar pacientes: $e",
+        name: 'UPLOAD_PHOTOS',
+        error: e,
+      );
       if (mounted) {
         setState(() => _isLoading = false);
       }
-      debugPrint("Erro ao carregar pacientes: $e");
+    }
+  }
+
+  void _mostrarAvisoSemCrianca() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Nenhuma criança selecionada. Selecione uma criança primeiro.',
+        ),
+        backgroundColor: Colors.redAccent,
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _abrirCamera() async {
+    if (_selectedChildId == null) {
+      _mostrarAvisoSemCrianca();
+      return;
+    }
+
+    try {
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+      if (photo != null) {
+        dev.log("Foto tirada: ${photo.path}", name: 'UPLOAD_PHOTOS');
+      }
+    } catch (e) {
+      dev.log("Erro ao abrir câmera: $e", name: 'UPLOAD_PHOTOS', error: e);
+    }
+  }
+
+  Future<void> _abrirGaleria() async {
+    if (_selectedChildId == null) {
+      _mostrarAvisoSemCrianca();
+      return;
+    }
+
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        dev.log(
+          "Imagem da galeria escolhida: ${image.path}",
+          name: 'UPLOAD_PHOTOS',
+        );
+      }
+    } catch (e) {
+      dev.log("Erro ao abrir galeria: $e", name: 'UPLOAD_PHOTOS', error: e);
     }
   }
 
@@ -75,84 +165,65 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           style: AppConstants.titleStyle,
         ),
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF67B55)))
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFF67B55)),
+            )
           : Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Selecione a criança desejada",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Selecione a criança desejada",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildChildDropdown(),
+
+                  const SizedBox(height: 30),
+                  const Text(
+                    "Como deseja adicionar a foto?",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildInstructionCard(),
+                          const SizedBox(height: 20),
+
+                          _buildOptionCard(
+                            svgPath: 'assets/icons/camera.svg',
+                            label: "Tirar foto agora",
+                            onTap: _abrirCamera,
+                            isEnabled: true,
+                          ),
+                          const SizedBox(height: 20),
+
+                          _buildOptionCard(
+                            svgPath: 'assets/icons/upload.svg',
+                            label: "Escolher da galeria",
+                            onTap: _abrirGaleria,
+                            isEnabled: true,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
-            
-            _buildChildDropdown(),
-            
-            const SizedBox(height: 30),
-            const Text(
-              "Como deseja adicionar a foto?",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 20),
-            
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildInstructionCard(),
-                    const SizedBox(height: 20),
-                    
-                    _buildOptionCard(
-                      svgPath: 'assets/icons/camera.svg',
-                      label: "Tirar foto agora",
-                      onTap: () {
-                        if (_selectedChildId != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TirarFotosScreen(
-                                nomeCrianca: _selectedChildNome,
-                                pacienteId: _selectedChildId!,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      isEnabled: _selectedChildId != null,
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    _buildOptionCard(
-                      svgPath: 'assets/icons/upload.svg',
-                      label: "Escolher da galeria",
-                      onTap: () {
-                        if (_selectedChildId != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => GaleriaFotosScreen(
-                                nomeCrianca: _selectedChildNome,
-                                pacienteId: _selectedChildId!,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      isEnabled: _selectedChildId != null,
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -169,15 +240,24 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         child: Column(
           children: [
             const Text(
-              "⚠️ Nenhuma criança cadastrada nesta conta.",
+              "Nenhuma criança cadastrada nesta conta.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: _fetchPacientes, 
-              child: const Text("Tentar novamente", style: TextStyle(color: Color(0xFFF67B55), fontWeight: FontWeight.bold))
-            )
+              onPressed: _fetchPacientes,
+              child: const Text(
+                "Tentar novamente",
+                style: TextStyle(
+                  color: Color(0xFFF67B55),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -198,14 +278,23 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
           items: _pacientes.map((paciente) {
             return DropdownMenuItem<String>(
-              value: paciente['id'], 
-              child: Text(paciente['nome'], style: const TextStyle(fontSize: 16, color: Colors.black))
+              value: paciente['id'],
+              child: Text(
+                paciente['nome'],
+                style: const TextStyle(fontSize: 16, color: Colors.black),
+              ),
             );
           }).toList(),
           onChanged: (val) {
             setState(() {
               _selectedChildId = val;
-              _selectedChildNome = _pacientes.firstWhere((p) => p['id'] == val)['nome'];
+              _selectedChildNome = _pacientes.firstWhere(
+                (p) => p['id'] == val,
+              )['nome'];
+              dev.log(
+                "Paciente selecionado: $_selectedChildNome",
+                name: 'UPLOAD_PHOTOS',
+              );
             });
           },
         ),
@@ -225,10 +314,13 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       child: Column(
         children: [
           SvgPicture.asset(
-            'assets/icons/apple.svg', 
-            width: 30, 
+            'assets/icons/apple.svg',
+            width: 30,
             height: 30,
-            colorFilter: const ColorFilter.mode(Color(0xFFF67B55), BlendMode.srcIn),
+            colorFilter: const ColorFilter.mode(
+              Color(0xFFF67B55),
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -242,10 +334,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   Widget _buildOptionCard({
-    required String svgPath, 
-    required String label, 
+    required String svgPath,
+    required String label,
     required VoidCallback onTap,
-    bool isEnabled = true, 
+    bool isEnabled = true,
   }) {
     return GestureDetector(
       onTap: isEnabled ? onTap : null,
@@ -258,7 +350,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: const Color(0xFFF67B55).withOpacity(0.1), 
+              color: const Color(0xFFF67B55).withOpacity(0.1),
               width: 1.2,
             ),
             boxShadow: [
@@ -266,7 +358,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 color: Colors.black.withOpacity(0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -284,8 +376,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                     width: 35,
                     height: 35,
                     colorFilter: const ColorFilter.mode(
-                      Colors.white, 
-                      BlendMode.srcIn
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
                   ),
                 ),
