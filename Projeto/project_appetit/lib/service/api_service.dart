@@ -16,6 +16,29 @@ class ApiService {
     }
   }
 
+  static Future<bool> verificarEmailExistente(String email) async {
+    try {
+      final url = Uri.parse('$baseUrl/verificar-email');
+
+      final response = await http
+          .post(
+            url,
+            headers: {"Content-Type": "application/json"},
+            body: json.encode({"email": email}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['existe'] == true;
+      }
+      return false;
+    } catch (e) {
+      print("Erro ao verificar email: $e");
+      return false;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> buscarPacientes(
     String responsavelId,
   ) async {
