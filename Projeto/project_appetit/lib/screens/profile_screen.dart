@@ -3,23 +3,192 @@ import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_appetit/screens/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final String userName = "Maria Silva";
-    final String userRole = "Mãe";
-    final String userEmail = "mariasilva@gmail.com";
-    final String userPhone = "(00)0000-0000";
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isLoading = true;
+  String currentUserId = "";
+
+  String userName = "Carregando...";
+  String userEmail = "Carregando...";
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarDadosUsuario();
+  }
+
+  Future<void> _carregarDadosUsuario() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = prefs.getString('userId');
+
+      if (uid != null) {
+        currentUserId = uid;
+        final connector = ExampleConnector.instance;
+
+        final result = await connector.obterUsuarioPorId(id: uid).execute();
+
+        if (result.data.usuario != null) {
+          setState(() {
+            userName = result.data.usuario!.nome;
+            userEmail = result.data.usuario!.email;
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao carregar perfil: $e");
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _editarCampo(
+    String titulo,
+    String valorAtual,
+    Function(String) onSalvar,
+  ) async {
+    TextEditingController controller = TextEditingController(
+      text: titulo == "Senha" ? "" : valorAtual,
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Editar $titulo"),
+        content: TextField(
+          controller: controller,
+          obscureText: titulo == "Senha",
+          decoration: InputDecoration(hintText: "Digite o novo $titulo"),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () async {
+              final novoValor = controller.text.trim();
+
+              if (novoValor.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('O campo não pode estar vazio')),
+                );
+                return;
+              }
+
+              if (titulo == "Senha" && novoValor.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('A senha deve ter pelo menos 6 caracteres'),
+                  ),
+                );
+                return;
+              }
+
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                final connector = ExampleConnector.instance;
+
+                if (titulo == "Nome") {
+                  await connector
+                      .atualizarPerfil(id: currentUserId)
+                      .nome(novoValor)
+                      .execute();
+                } else if (titulo == "Email") {
+                  if (user != null) {
+                    await user.verifyBeforeUpdateEmail(novoValor.toLowerCase());
+                  }
+                  await connector
+                      .atualizarPerfil(id: currentUserId)
+                      .email(novoValor.toLowerCase())
+                      .execute();
+                } else if (titulo == "Senha") {
+                  if (user != null) {
+                    await user.updatePassword(novoValor);
+                  }
+                  await connector
+                      .atualizarSenha(
+                        id: currentUserId,
+                        senhaHashNova: novoValor,
+                      )
+                      .execute();
+                }
+
+                setState(() {
+                  onSalvar(
+                    titulo == "Email" ? novoValor.toLowerCase() : novoValor,
+                  );
+                });
+
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Atualizado com sucesso!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } on FirebaseAuthException catch (e) {
+                String mensagem = 'Erro ao atualizar';
+                if (e.code == 'email-already-in-use') {
+                  mensagem = 'Este e-mail já está em uso';
+                } else if (e.code == 'weak-password') {
+                  mensagem = 'A senha é muito fraca';
+                } else if (e.code == 'invalid-email') {
+                  mensagem = 'E-mail inválido';
+                } else if (e.code == 'requires-recent-login') {
+                  mensagem =
+                      'Faça login novamente para alterar dados sensíveis';
+                }
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(mensagem),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro inesperado: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text("Salvar"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor, // 0xFFFFF8F5
+      backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true, // Centralizado conforme o padrão das outras telas
+        centerTitle: true,
         title: const Text(
           "Perfil do Responsável",
           style: TextStyle(
@@ -29,95 +198,100 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          children: [
-            _buildProfileCard(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppConstants.primaryOrange,
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(AppConstants.defaultPadding),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 45,
-                    backgroundColor: Colors.transparent,
-                    child: SvgPicture.asset(
-                      'assets/icons/user-img.svg',
-                      fit: BoxFit.contain,
+                  _buildProfileCard(
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 45,
+                          backgroundColor: Colors.transparent,
+                          child: SvgPicture.asset(
+                            'assets/icons/user-img.svg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  userName,
+                                  style: AppConstants.cardTitleStyle.copyWith(
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _editarCampo(
+                                "Nome",
+                                userName,
+                                (novo) => userName = novo,
+                              ),
+                              child: const Icon(
+                                Icons.edit_outlined,
+                                size: 18,
+                                color: AppConstants.textBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    userName,
-                    style: AppConstants.cardTitleStyle.copyWith(fontSize: 20),
+                  const SizedBox(height: AppConstants.elementSpacing),
+                  _buildInfoTile(
+                    icon: Icons.email_outlined,
+                    label: "Email",
+                    value: userEmail,
+                    onEdit: () => _editarCampo(
+                      "Email",
+                      userEmail,
+                      (novo) => userEmail = novo,
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        userRole,
-                        style: const TextStyle(
-                          color: AppConstants.textGrey,
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.edit_outlined,
-                        size: 18,
-                        color: AppConstants.textBlack,
-                      ),
-                    ],
+                  _buildInfoTile(
+                    icon: Icons.lock_outline,
+                    label: "Senha",
+                    value: "",
+                    onEdit: () => _editarCampo("Senha", "", (novo) {}),
+                  ),
+                  _buildInfoTile(
+                    icon: Icons.logout,
+                    label: "Sair",
+                    value: "",
+                    isLogout: true,
+                    onEdit: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.clear();
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: AppConstants.elementSpacing),
-
-            _buildInfoTile(
-              icon: Icons.email_outlined,
-              label: "Email",
-              value: userEmail,
-              onEdit: () {},
-            ),
-
-            _buildInfoTile(
-              icon: Icons.phone_outlined,
-              label: "Telefone",
-              value: userPhone,
-              onEdit: () {},
-            ),
-
-            _buildInfoTile(
-              icon: Icons.lock_outline,
-              label: "Senha",
-              value: "****",
-              onEdit: () {},
-            ),
-
-            _buildInfoTile(
-              icon: Icons.logout,
-              label: "Sair",
-              value: "",
-              isLogout: true,
-              onEdit: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -144,9 +318,6 @@ class ProfileScreen extends StatelessWidget {
     required VoidCallback onEdit,
     bool isLogout = false,
   }) {
-    // Cor sólida para o círculo padronizada (0xFFF67B55)
-    const Color orangeColor = Color(0xFFF67B55);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
@@ -175,6 +346,7 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       label,
@@ -185,11 +357,16 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     if (value.isNotEmpty)
-                      Text(
-                        value,
-                        style: const TextStyle(
-                          color: AppConstants.textGrey,
-                          fontSize: 14,
+                      FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          value,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: AppConstants.textGrey,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                   ],
