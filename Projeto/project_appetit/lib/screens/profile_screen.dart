@@ -71,7 +71,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: TextField(
           controller: controller,
           obscureText: titulo == "Senha",
-          decoration: InputDecoration(hintText: "Digite o novo $titulo"),
+          decoration: InputDecoration(
+            hintText: titulo == "Senha"
+                ? "Digite a nova senha"
+                : "Digite o novo $titulo",
+          ),
         ),
         actions: [
           TextButton(
