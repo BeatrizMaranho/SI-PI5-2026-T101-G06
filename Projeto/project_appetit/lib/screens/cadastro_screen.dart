@@ -1,3 +1,5 @@
+import 'dart:convert'; 
+import 'package:crypto/crypto.dart'; 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
@@ -47,19 +49,22 @@ class _CadastroScreenState extends State<CadastroScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // 1. Cria o usuário no Firebase passando a senha em texto plano
       final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
       final String uid = userCredential.user!.uid;
+      final bytesSenha = utf8.encode(senha); 
+      final senhaCriptografada = sha256.convert(bytesSenha).toString(); 
 
       final connector = ExampleConnector.instance;
       await connector.criarUsuario(
         id: uid,
         nome: nome,
         email: email,
-        senhaHash: senha,
+        senhaHash: senhaCriptografada, 
         tipo: 'usuario',
       ).execute();
 
