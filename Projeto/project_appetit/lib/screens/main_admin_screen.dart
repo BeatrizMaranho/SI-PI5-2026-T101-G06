@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/custom_nav_bar.dart';
 import 'package:project_appetit/screens/profile_screen.dart';
+import 'package:project_appetit/screens/home_screen.dart'; // Importe a sua HomeScreen
 
 class MainScreenAdmin extends StatefulWidget {
   const MainScreenAdmin({super.key});
@@ -12,28 +13,30 @@ class MainScreenAdmin extends StatefulWidget {
 class _MainScreenAdminState extends State<MainScreenAdmin> {
   int _selectedIndex = 0;
 
-  final List<Widget> _telas = [
-    const Center(
-      child: Text(
-        "Você está logado como administrador",
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-      ),
-    ),
-    const Center(child: Text("Tela Crianças")),
-    const Center(child: Text("Tela Câmera")),
-    const Center(child: Text("Tela Arquivos")),
-    const ProfileScreen(),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
+  // Transformado em um 'get' para podermos passar a função _onItemTapped para a HomeScreen
+  List<Widget> get _telas => [
+    // Substituímos o Center de aviso pela HomeScreen real passando a função
+    HomeScreen(
+  onNavigateToManageChildren: () {
+    // Aqui você chama a função que muda a aba nesse arquivo.
+    // Provavelmente é _onItemTapped(1); igual no admin
+    _onItemTapped(1); 
+  },
+  onNavigateToProfile: () {  // <-- NOVA FUNÇÃO DE REDIRECIONAMENTO AQUI
+        _onItemTapped(4); // 4 é o índice da const ProfileScreen() na lista abaixo
+      },
+),
+    const Center(child: Text("Tela Crianças")), // Aqui no futuro você vai colocar sua ManageChildrenScreen()
+    const Center(child: Text("Tela Câmera")),
+    const Center(child: Text("Tela Arquivos")),
+    const ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
