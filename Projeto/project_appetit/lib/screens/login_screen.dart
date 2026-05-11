@@ -5,6 +5,7 @@ import 'package:project_appetit/components/main_screen.dart';
 import 'package:project_appetit/screens/main_admin_screen.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:project_appetit/screens/cadastro_screen.dart';
+import 'package:project_appetit/service/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,14 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: senha,
-      );
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: senha);
 
       if (userCredential.user != null) {
         final connector = ExampleConnector.instance;
-        final result = await connector.buscarUsuarioPorEmail(email: email).execute();
+        final result = await connector
+            .buscarUsuarioPorEmail(email: email)
+            .execute();
 
         if (mounted) {
           if (result.data.usuarios.isNotEmpty) {
@@ -55,18 +56,24 @@ class _LoginScreenState extends State<LoginScreen> {
             if (usuario.tipo == 'admin') {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const MainScreenAdmin()),
+                MaterialPageRoute(
+                  builder: (context) => const MainScreenAdmin(),
+                ),
               );
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => MainScreen(userId: usuario.id)),
+                MaterialPageRoute(
+                  builder: (context) => MainScreen(userId: usuario.id),
+                ),
               );
             }
           } else {
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Usuário não encontrado no banco de dados.')),
+              const SnackBar(
+                content: Text('Usuário não encontrado no banco de dados.'),
+              ),
             );
           }
         }
@@ -78,7 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (e.code == 'user-not-found') mensagem = 'E-mail não cadastrado.';
         if (e.code == 'wrong-password') mensagem = 'Senha incorreta.';
         if (e.code == 'invalid-email') mensagem = 'Formato de e-mail inválido.';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mensagem)));
       }
     } catch (e) {
       if (mounted) {
@@ -86,6 +95,68 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erro inesperado na comunicação.')),
         );
+      }
+    }
+  }
+
+  Future<void> _recuperarSenha() async {
+    final email = _emailController.text.trim().toLowerCase();
+
+    // 1. Verifica se está vazio
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Insira seu email no campo antes de tentar recuperar a senha.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Opcional: Feedback visual de carregamento
+    setState(() => _isLoading = true);
+
+    try {
+      // 2. Chama o ApiService para ver se o email existe no seu banco
+      bool emailExiste = await ApiService.verificarEmailExistente(email);
+
+      if (!mounted) return;
+
+      if (emailExiste) {
+        // 3. Se existe no banco, dispara o email pelo Firebase Auth
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Link de recuperação enviado para $email')),
+        );
+      } else {
+        // 4. Se não existe no banco, avisa o usuário
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('E-mail não cadastrado no sistema.')),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String mensagem = 'Erro ao enviar recuperação';
+        if (e.code == 'user-not-found')
+          mensagem = 'E-mail não possui registro de senha.';
+        if (e.code == 'invalid-email') mensagem = 'Formato de e-mail inválido.';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mensagem)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro inesperado ao tentar recuperar a senha.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -122,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: _recuperarSenha,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: const Size(0, 0),
@@ -205,7 +276,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, bool obscure) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint,
+    bool obscure,
+  ) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -214,7 +289,10 @@ class _LoginScreenState extends State<LoginScreen> {
         hintStyle: const TextStyle(color: Colors.black26),
         filled: true,
         fillColor: const Color(0xFFF8F8F8),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

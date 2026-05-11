@@ -23,7 +23,7 @@ query BuscarUsuarioPorEmail($email: String!) @auth(level: PUBLIC) {
   }
 }
 
-query ObterUsuarioPorId($id: String!) {
+query ObterUsuarioPorId($id: String!) @auth(level: USER) {
   usuario(id: $id) {
     id
     nome
@@ -32,7 +32,6 @@ query ObterUsuarioPorId($id: String!) {
     criadoEm
   }
 }
-
 query ListarMeusPacientes($responsavelId: String!) @auth(level: USER) {
   pacientes(
     where: {
