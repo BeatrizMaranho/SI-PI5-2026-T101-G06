@@ -228,54 +228,218 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   void _mostrarResultado(Map<String, dynamic> data) {
+    const Color backgroundColor = Color(0xFFF9F4F0); 
+    const Color primaryOrange = Color(0xFFE35D33);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          "Análise da $_selectedChildNome",
-          style: AppConstants.titleStyle,
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Itens consumidos:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Divider(),
-              if (data['analise'] != null)
-                ...(data['analise'] as List).map(
-                  (res) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setPopupState) {
+            List analise = data['analise'] ?? [];
+
+            int bemAceitos = 0;
+            int parciais = 0;
+            int rejeitados = 0;
+
+            for (var item in analise) {
+              double porc = (item['porcentagem_consumida'] as num).toDouble();
+              if (porc >= 80) bemAceitos++;
+              else if (porc >= 40) parciais++;
+              else rejeitados++;
+            }
+
+            return Dialog(
+              backgroundColor: backgroundColor,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("• ${res['alimento']}"),
-                        Text(
-                          "${res['porcentagem_consumida']}%",
-                          style: const TextStyle(
-                            color: Color(0xFFF67B55),
-                            fontWeight: FontWeight.bold,
-                          ),
+                        const Text(
+                          "Análise concluída",
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Alimentos identificados",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 16),
+
+                    ...analise.map((res) {
+                      double porc = (res['porcentagem_consumida'] as num).toDouble();
+                      Color cardFillColor;
+                      Color cardBorderColor;
+
+                      if (porc >= 80) {
+                        cardFillColor = const Color(0xFFE8F5E9);
+                        cardBorderColor = const Color(0xFF81C784);
+                      } else if (porc >= 40) {
+                        cardFillColor = const Color(0xFFFFF9C4);
+                        cardBorderColor = const Color(0xFFFFD54F);
+                      } else {
+                        cardFillColor = const Color(0xFFFFEBEE);
+                        cardBorderColor = const Color(0xFFE57373);
+                      }
+
+                      return GestureDetector(
+                        onTap: () async {
+                          String? novoNome = await _dialogEditarNome(res['alimento']);
+                          if (novoNome != null && novoNome.isNotEmpty) {
+                            setPopupState(() {
+                              res['alimento'] = novoNome;
+                            });
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: cardFillColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: cardBorderColor, width: 1.2),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit_outlined, size: 18, color: Colors.black87),
+                              const SizedBox(width: 12),
+                              Text(
+                                res['alimento'].toString().toUpperCase(),
+                                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                              ),
+                              const Spacer(),
+                              Text(
+                                "${porc.toInt()}%",
+                                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+
+                    const SizedBox(height: 20),
+                    const Text("Resumo", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildSummaryBox(bemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
+                        _buildSummaryBox(parciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
+                        _buildSummaryBox(rejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryOrange,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "Concluído",
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-            ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryBox(String valor, String label, Color borderColor, Color fillColor) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.22,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: fillColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            valor,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 10, color: Colors.grey[800], fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // DIÁLOGO DE EDIÇÃO COM AS CORES DO APP
+  Future<String?> _dialogEditarNome(String nomeAtual) {
+    const Color backgroundColor = Color(0xFFF9F4F0); 
+    const Color primaryOrange = Color(0xFFE35D33);
+    TextEditingController controller = TextEditingController(text: nomeAtual);
+    
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor, // Fundo creme
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Corrigir alimento",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          cursorColor: primaryOrange,
+          decoration: const InputDecoration(
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: primaryOrange, width: 2),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
+            ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "FECHAR",
-              style: TextStyle(color: Color(0xFFF67B55)),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryOrange,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
+            child: const Text("SALVAR", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
