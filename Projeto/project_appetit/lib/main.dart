@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart'; // 1. Adicionado Provider
+import 'package:project_appetit/models/refeicao_model.dart'; // 2. Importe seu provider
 import 'firebase_options.dart';
 import 'package:project_appetit/components/main_screen.dart';
 import 'package:project_appetit/screens/login_screen.dart';
@@ -13,7 +15,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(DevicePreview(enabled: true, builder: (context) => const MyApp()));
+  runApp(
+    // 3. MultiProvider adicionado aqui para envolver todo o app
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => RefeicaoProvider()),
+      ],
+      child: DevicePreview(
+        enabled: true,
+        builder: (context) => const MyApp(),
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

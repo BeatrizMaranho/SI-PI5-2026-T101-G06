@@ -63,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
           ManageChildrenScreen(userId: widget.userId), 
           UploadPhotosScreen(),
-          DocumentsScreen(),
+          DocumentsScreen(userId: '',),
           ProfileScreen(),
         ],
       ),

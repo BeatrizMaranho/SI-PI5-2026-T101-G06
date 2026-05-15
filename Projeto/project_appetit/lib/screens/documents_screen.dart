@@ -1,94 +1,368 @@
+import 'dart:developer' as dev;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_appetit/dataconnect_generated/generated.dart';
+import 'package:provider/provider.dart';
+import 'package:project_appetit/models/refeicao_model.dart';
 
-// --- CLASSE DO MODELO ---
-class AlimentoModel {
-  final String nome;
-  final String porcentagem;
-  final Color corFundo;
-  final Color corBorda;
+// Imports adicionados para funcionamento do relatório em PDF
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
-  AlimentoModel({
-    required this.nome,
-    required String porcentagem,
-  }) : porcentagem = "$porcentagem%",
-       corFundo = int.parse(porcentagem) >= 70 
-           ? const Color(0xFFF1F8E9) 
-           : int.parse(porcentagem) >= 40 
-               ? const Color(0xFFFFFDE7) 
-               : const Color(0xFFFDECEA),
-       corBorda = int.parse(porcentagem) >= 70 
-           ? const Color(0xFF81C784) 
-           : int.parse(porcentagem) >= 40 
-               ? const Color(0xFFFFF176) 
-               : const Color(0xFFE57373);
+class DocumentsScreen extends StatefulWidget {
+  final String userId;
+
+  const DocumentsScreen({super.key, required this.userId});
+
+  @override
+  State<DocumentsScreen> createState() => _DocumentsScreenState();
 }
 
-class DocumentsScreen extends StatelessWidget {
-  final List<AlimentoModel> alimentosIdentificados = [
-    AlimentoModel(nome: "Arroz", porcentagem: "70"),
-    AlimentoModel(nome: "Feijão", porcentagem: "50"),
-    AlimentoModel(nome: "Carne", porcentagem: "10"),
-  ];
+class _DocumentsScreenState extends State<DocumentsScreen> {
+  List<Map<String, dynamic>> pacientes = [];
+  
+  // Armazena apenas o ID da criança selecionada (Garante estabilidade no Dropdown)
+  String? idCriancaSelecionada; 
+  String nomeCriancaSelecionada = "";
+  String alergiasCriancaSelecionada = "Não";
+  
+  bool carregando = true;
+  int diasSelecionados = 7; // Padrão: 1 semana
 
-  DocumentsScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _fetchPacientesDashboard();
+  }
+
+  Future<void> _fetchPacientesDashboard() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        dev.log("Usuário não autenticado no Firebase", name: 'DASHBOARD');
+        setState(() => carregando = false);
+        return;
+      }
+
+      final String meuResponsavelId = user.uid;
+      dev.log("Dashboard carregando dados para o UID: $meuResponsavelId", name: 'DASHBOARD');
+
+      final resultado = await ExampleConnector.instance
+          .listarMeusPacientes(responsavelId: meuResponsavelId)
+          .execute();
+
+      final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
+          .map((p) => {
+                'id': p.id.toString(), 
+                'nome': p.nome, 
+                'nascimento': p.nascimento,
+                'alergias': (p.alergias == null || p.alergias!.isEmpty) ? "Não" : p.alergias, 
+              })
+          .toList();
+
+      dev.log("Pacientes recuperados no Dashboard: ${dadosDoBanco.length}", name: 'DASHBOARD');
+
+      if (mounted) {
+        setState(() {
+          pacientes = dadosDoBanco;
+          if (pacientes.isNotEmpty) {
+            // Inicializa com os dados do primeiro paciente da lista de forma explícita
+            idCriancaSelecionada = pacientes.first['id'];
+            nomeCriancaSelecionada = pacientes.first['nome'];
+            alergiasCriancaSelecionada = pacientes.first['alergias'];
+          }
+          carregando = false;
+        });
+      }
+    } catch (e) {
+      dev.log("Erro crítico ao buscar pacientes no dashboard: $e", name: 'DASHBOARD', error: e);
+      if (mounted) setState(() => carregando = false);
+    }
+  }
+
+  // Função interna para construir a estrutura do documento PDF
+  Future<void> _gerarPdfRelatorio({
+    required String nomeCrianca,
+    required String alergias,
+    required String periodo,
+    required int bemAceitos,
+    required int parciais,
+    required int rejeitados,
+    required List<AlimentoModel> listaBaixos,
+    required List<AlimentoModel> listaParciais,
+    required List<AlimentoModel> listaAceitos,
+  }) async {
+    final pdf = pw.Document();
+
+    final titleStyle = pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
+    final subtitleStyle = pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
+    final textStyle = pw.TextStyle(fontSize: 14, color: PdfColors.black);
+    final boldStyle = pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return [
+            // Cabeçalho do Relatório
+            pw.Center(child: pw.Text("Relatório de Acompanhamento", style: titleStyle)),
+            pw.SizedBox(height: 20),
+            pw.Divider(color: PdfColors.orange),
+            pw.SizedBox(height: 15),
+
+            // Informações de Contexto
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("Criança: $nomeCrianca", style: boldStyle),
+                pw.Text("Período: $periodo", style: textStyle),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text("Intolerância/Alergia: $alergias", style: boldStyle),
+            pw.SizedBox(height: 25),
+
+            // Seção de Resumo Quantitativo
+            pw.Text("Resumo de Aceitação", style: subtitleStyle),
+            pw.SizedBox(height: 10),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("Bem aceitos: $bemAceitos", style: textStyle),
+                pw.Text("Parciais: $parciais", style: textStyle),
+                pw.Text("Rejeitados: $rejeitados", style: textStyle),
+              ],
+            ),
+            pw.SizedBox(height: 25),
+
+            // Categorias de alimentos no PDF
+            _buildPdfCategorySection("Alimentos com baixa aceitação", listaBaixos, boldStyle, textStyle),
+            pw.SizedBox(height: 15),
+            _buildPdfCategorySection("Alimentos parcialmente aceitos", listaParciais, boldStyle, textStyle),
+            pw.SizedBox(height: 15),
+            _buildPdfCategorySection("Alimentos bem aceitos", listaAceitos, boldStyle, textStyle),
+          ];
+        },
+      ),
+    );
+
+    await Printing.sharePdf(bytes: await pdf.save(), filename: 'relatorio_${nomeCrianca.toLowerCase()}.pdf');
+  }
+
+  // Componente de seção de lista para o PDF estruturado
+  pw.Widget _buildPdfCategorySection(String titulo, List<AlimentoModel> itens, pw.TextStyle tituloStyle, pw.TextStyle itemStyle) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300, width: 1),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start, 
+        children: [
+          pw.Text(titulo, style: tituloStyle),
+          pw.SizedBox(height: 8),
+          if (itens.isEmpty)
+            pw.Text("Nenhum registro no período.", style: itemStyle.copyWith(fontStyle: pw.FontStyle.italic))
+          else
+            pw.ListView.builder(
+              itemCount: itens.length,
+              itemBuilder: (context, index) {
+                final a = itens[index];
+                final porc = a.porcentagem.contains('%') ? a.porcentagem : "${a.porcentagem}%";
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(a.nome[0].toUpperCase() + a.nome.substring(1).toLowerCase(), style: itemStyle),
+                      pw.Text(porc, style: itemStyle.copyWith(fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Cor de destaque padronizada (0xFFF67B55)
     const Color highlightOrange = Color(0xFFF67B55);
+    
+    // Se ainda está carregando o banco, mostra o progresso imediatamente
+    if (carregando) {
+      return const Scaffold(
+        backgroundColor: AppConstants.backgroundColor,
+        body: Center(child: CircularProgressIndicator(color: highlightOrange)),
+      );
+    }
+
+    // Se o banco carregou mas a lista veio vazia, mostra aviso amigável impedindo quebras de layout
+    if (pacientes.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppConstants.backgroundColor,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text("Relatório", style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.people_outline, size: 60, color: highlightOrange),
+                const SizedBox(height: 16),
+                const Text(
+                  "Nenhuma criança vinculada a esta conta.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black54),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    setState(() => carregando = true);
+                    _fetchPacientesDashboard();
+                  },
+                  child: const Text("Atualizar página", style: TextStyle(color: highlightOrange, fontWeight: FontWeight.bold)),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Escuta o Provider reativamente
+    final provider = context.watch<RefeicaoProvider>();
+    
+    // 1. Filtra as refeições pelo período de dias selecionado
+    final refeicoesDoPeriodo = provider.filtrarPorPeriodo(diasSelecionados);
+
+    // 2. Filtra comparando o nome de forma limpa e segura
+    String nomeBusca = nomeCriancaSelecionada.trim().toLowerCase();
+    
+    final listaFiltrada = refeicoesDoPeriodo.where((r) {
+      return r.pacienteNome.trim().toLowerCase() == nomeBusca;
+    }).toList();
+
+    // --- Cálculos baseados na lista filtrada ---
+    int totalBemAceitos = 0;
+    int totalParciais = 0;
+    int totalRejeitados = 0;
+
+    for (var r in listaFiltrada) {
+      totalBemAceitos += r.bemAceitos;
+      totalParciais += r.parciais;
+      totalRejeitados += r.rejeitados;
+    }
+
+    final todosAlimentos = listaFiltrada.expand((r) => r.alimentos).toList();
+    
+    // Filtros de aceitação baseados nos limites de % (IA)
+    final baixos = todosAlimentos.where((a) {
+      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
+      return p < 40;
+    }).toList();
+    
+    final parciais = todosAlimentos.where((a) {
+      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
+      return p >= 40 && p < 80;
+    }).toList();
+    
+    final aceitos = todosAlimentos.where((a) {
+      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
+      return p >= 80;
+    }).toList();
 
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor, // 0xFFFFF8F5
+      backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true, // Centralizado conforme o padrão
+        centerTitle: true,
         leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/back.svg', // Implementação do back.svg
-            width: 24,
-          ),
-          onPressed: () {
-            // Volta para a HomeScreen
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Reconhecimento refeições", 
-          style: AppConstants.titleStyle
-        ),
+        title: const Text("Relatório", style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildChildHeader("Sofia", "5 anos", highlightOrange),
-            const SizedBox(height: 25),
-            Row(
-              children: [
-                Expanded(child: _buildPhotoHolder(highlightOrange)),
-                const SizedBox(width: 15),
-                Expanded(child: _buildPhotoHolder(highlightOrange)),
-              ],
+            // Dropdown de Crianças baseado no ID (String)
+            _buildCriancaDropdown(),
+            const SizedBox(height: 14),
+
+            // Info de Alergia atualizado reativamente
+            _buildInfoRow("Intolerância/Alergia:", alergiasCriancaSelecionada),
+            const SizedBox(height: 14),
+
+            // Dropdown do Período
+            _buildPeriodoDropdown(),
+            const SizedBox(height: 20),
+
+            // Botão de Exportar PDF com os parâmetros do build injetados
+            _buildPdfButton(
+              nome: nomeCriancaSelecionada,
+              alergia: alergiasCriancaSelecionada, // Combinando perfeitamente com os parâmetros abaixo
+              bemAceitos: totalBemAceitos,
+              parciais: totalParciais,
+              rejeitados: totalRejeitados,
+              listaBaixos: baixos,
+              listaParciais: parciais,
+              listaAceitos: aceitos,
             ),
-            const SizedBox(height: 30),
-            const Text("Alimentos identificados", style: AppConstants.sectionStyle),
-            const SizedBox(height: 15),
-            ...alimentosIdentificados.map((alimento) => _buildFoodTile(alimento)).toList(),
-            const SizedBox(height: 30),
-            const Text("Resumo", style: AppConstants.sectionStyle),
-            const SizedBox(height: 15),
+            const SizedBox(height: 24),
+
+            // Cards de Resumo dinâmicos e estilizados igual ao modal
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSummaryCard("1", "Bem aceitos", const Color(0xFF81C784)),
-                _buildSummaryCard("1", "Parciais", const Color(0xFFFFF176)),
-                _buildSummaryCard("1", "Rejeitados", const Color(0xFFE57373)),
+                _buildSummaryCard(totalBemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
+                _buildSummaryCard(totalParciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
+                _buildSummaryCard(totalRejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Listas do Histórico
+            _buildCategoryList(
+              title: "Alimentos com baixa aceitação", 
+              itens: baixos, 
+              borderColor: const Color(0xFFE57373), 
+              titleColor: Colors.black,
+            ),
+            const SizedBox(height: 16),
+            
+            _buildCategoryList(
+              title: "Alimentos parcialmente aceitos", 
+              itens: parciais, 
+              borderColor: const Color(0xFFFFD54F), 
+              titleColor: Colors.black,
+            ),
+            const SizedBox(height: 16),
+
+            _buildCategoryList(
+              title: "Alimentos bem aceitos", 
+              itens: aceitos, 
+              borderColor: const Color(0xFF81C784), 
+              titleColor: Colors.black,
+            ),
+            
             const SizedBox(height: 30),
           ],
         ),
@@ -96,93 +370,214 @@ class DocumentsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChildHeader(String nome, String idade, Color orangeColor) {
+  // --- COMPONENTES VISUAIS FIÉIS AO PROTÓTIPO ---
+
+  Widget _buildCriancaDropdown() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppConstants.backgroundColor, // Fundo ajustado para não ficar branco
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: orangeColor.withOpacity(0.3), 
-          width: 1.2
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: idCriancaSelecionada,
+          isExpanded: true,
+          hint: const Text("Sofia"),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
+          items: pacientes.map((paciente) {
+            return DropdownMenuItem<String>(
+              value: paciente['id'].toString(),
+              child: Text(paciente['nome'], style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: Colors.black87)),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            if (newValue != null) {
+              final pacienteMap = pacientes.firstWhere((p) => p['id'] == newValue);
+              setState(() {
+                idCriancaSelecionada = newValue;
+                nomeCriancaSelecionada = pacienteMap['nome'];
+                alergiasCriancaSelecionada = pacienteMap['alergias'];
+              });
+            }
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildPeriodoDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: diasSelecionados,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
+          items: const [
+            DropdownMenuItem(value: 1, child: Text("Hoje", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 7, child: Text("1 semana", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 15, child: Text("15 dias", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 30, child: Text("1 mês", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 60, child: Text("2 meses", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 90, child: Text("3 meses", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 180, child: Text("6 meses", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+            DropdownMenuItem(value: 365, child: Text("1 ano", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
+          ],
+          onChanged: (val) => setState(() => diasSelecionados = val ?? 7),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
+      ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Substituído pelo seu SVG de perfil
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.transparent,
-            child: SvgPicture.asset(
-              'assets/icons/user-img.svg',
-              fit: BoxFit.contain,
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+        ],
+      ),
+    );
+  }
+
+  // CORREÇÃO: Parâmetro 'allergy' renomeado para 'alergia' para corresponder perfeitamente com a chamada do build
+  Widget _buildPdfButton({
+    required String nome,
+    required String alergia, 
+    required int bemAceitos,
+    required int parciais,
+    required int rejeitados,
+    required List<AlimentoModel> listaBaixos,
+    required List<AlimentoModel> listaParciais,
+    required List<AlimentoModel> listaAceitos,
+  }) {
+    String labelPeriodo = "1 semana";
+    if (diasSelecionados == 1) labelPeriodo = "Hoje";
+    if (diasSelecionados == 15) labelPeriodo = "15 dias";
+    if (diasSelecionados == 30) labelPeriodo = "1 mês";
+    if (diasSelecionados == 60) labelPeriodo = "2 meses";
+    if (diasSelecionados == 90) labelPeriodo = "3 meses";
+    if (diasSelecionados == 180) labelPeriodo = "6 meses";
+    if (diasSelecionados == 365) labelPeriodo = "1 ano";
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton(
+        onPressed: () async {
+          await _gerarPdfRelatorio(
+            nomeCrianca: nome,
+            alergias: alergia,
+            periodo: labelPeriodo,
+            bemAceitos: bemAceitos,
+            parciais: parciais,
+            rejeitados: rejeitados,
+            listaBaixos: listaBaixos,
+            listaParciais: listaParciais,
+            listaAceitos: listaAceitos,
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFF67B55), width: 1.2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              'assets/icons/document.svg', 
+              width: 20, 
+              colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+              placeholderBuilder: (BuildContext context) => const Icon(Icons.insert_drive_file_outlined, color: Colors.black, size: 20),
             ),
-          ),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(nome, style: AppConstants.cardTitleStyle),
-              Text(idade, style: const TextStyle(color: AppConstants.textGrey, fontSize: 15)),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhotoHolder(Color orangeColor) {
-    return Container(
-      height: 160,
-      decoration: BoxDecoration(
-        color: AppConstants.backgroundColor, // Fundo ajustado
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: orangeColor.withOpacity(0.3), 
-          width: 1.2
+            const SizedBox(width: 8),
+            const Text("Exportar PDF", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
         ),
       ),
-      child: const Center(
-        child: Icon(Icons.image_outlined, size: 45, color: Color(0xFFCCCCCC)),
-      ),
     );
   }
 
-  Widget _buildFoodTile(AlimentoModel alimento) {
+  Widget _buildSummaryCard(String valor, String label, Color borderColor, Color fillColor) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      width: MediaQuery.of(context).size.width * 0.26, 
+      padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: alimento.corFundo,
+        color: fillColor,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: alimento.corBorda, width: 1.2),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.edit_outlined, size: 18, color: AppConstants.textBlack),
-          const SizedBox(width: 12),
-          Text(alimento.nome, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const Spacer(),
-          Text(alimento.porcentagem, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard(String valor, String label, Color cor) {
-    return Container(
-      width: 105,
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(
-        color: cor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: cor.withOpacity(0.4), width: 1.2),
+        border: Border.all(color: borderColor, width: 1.2), 
       ),
       child: Column(
         children: [
-          Text(valor, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: cor)),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppConstants.textBlack, fontWeight: FontWeight.bold)),
+          Text(valor, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryList({
+    required String title, 
+    required List<AlimentoModel> itens, 
+    required Color borderColor,
+    required Color titleColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white, 
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: borderColor.withOpacity(0.7), width: 1.5), 
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: titleColor)),
+          const SizedBox(height: 14),
+          if (itens.isEmpty)
+            const Text(
+              "Nenhum registro no período.", 
+              style: TextStyle(fontSize: 14, color: Colors.black54, fontStyle: FontStyle.italic),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: itens.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final a = itens[index];
+                final exibePorcentagem = a.porcentagem.contains('%') ? a.porcentagem : "${a.porcentagem}%";
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                  children: [
+                    Text(
+                      a.nome[0].toUpperCase() + a.nome.substring(1).toLowerCase(), 
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
+                    ),
+                    Text(exibePorcentagem, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );

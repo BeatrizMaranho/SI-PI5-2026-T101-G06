@@ -7,12 +7,15 @@ import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:project_appetit/service/api_service.dart';
+import 'package:provider/provider.dart';
+import 'package:project_appetit/models/refeicao_model.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
 
   @override
   State<UploadPhotosScreen> createState() => _UploadPhotosScreenState();
+  
 }
 
 class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
@@ -21,6 +24,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   String _selectedChildNome = '';
   bool _isLoading = true;
   bool _loadingAnalysis = false;
+  Map<String, dynamic>? pacienteSelecionado;
 
   // Lógica de "Antes" e "Depois" recuperada da tela antiga
   File? _fotoAntes;
@@ -58,60 +62,77 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   Future<void> _fetchPacientes() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
 
-      if (user == null) {
-        dev.log("Usuário não logado", name: 'UPLOAD_PHOTOS');
-        setState(() => _isLoading = false);
-        return;
-      }
+    if (user == null) {
+      dev.log("Usuário não logado", name: 'UPLOAD_PHOTOS');
+      setState(() => _isLoading = false);
+      return;
+    }
 
-      final String meuResponsavelId = user.uid;
+    final String meuResponsavelId = user.uid;
+    dev.log("UID LOGADO: $meuResponsavelId", name: 'UPLOAD_PHOTOS');
 
-      dev.log("UID LOGADO: $meuResponsavelId", name: 'UPLOAD_PHOTOS');
+    final resultado = await ExampleConnector.instance
+        .listarMeusPacientes(responsavelId: meuResponsavelId)
+        .execute();
 
-      final resultado = await ExampleConnector.instance
-          .listarMeusPacientes(responsavelId: meuResponsavelId)
-          .execute();
+    final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
+        .map((p) => {
+              'id': p.id, 
+              'nome': p.nome, 
+              'nascimento': p.nascimento
+            })
+        .toList();
 
-      final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
-          .map((p) => {'id': p.id, 'nome': p.nome, 'nascimento': p.nascimento})
-          .toList();
+    dev.log(
+      "Pacientes encontrados: ${dadosDoBanco.length}",
+      name: 'UPLOAD_PHOTOS',
+    );
 
-      dev.log(
-        "Pacientes encontrados: ${dadosDoBanco.length}",
-        name: 'UPLOAD_PHOTOS',
-      );
+    if (mounted) {
+      setState(() {
+        _pacientes = dadosDoBanco;
 
-      if (mounted) {
-        setState(() {
-          _pacientes = dadosDoBanco;
-
-          if (_selectedChildId == null && _pacientes.isNotEmpty) {
+        if (_pacientes.isNotEmpty) {
+          // Se ainda não houver nada selecionado, pegamos o primeiro da lista
+          if (_selectedChildId == null) {
             _selectedChildId = _pacientes[0]['id'];
             _selectedChildNome = _pacientes[0]['nome'];
-            dev.log(
-              "Primeiro paciente selecionado: $_selectedChildNome",
-              name: 'UPLOAD_PHOTOS',
+            
+            // --- ADICIONE ESTA LINHA AQUI ---
+            // Vincula o mapa completo do primeiro paciente para o Pop-up usar
+            pacienteSelecionado = _pacientes[0]; 
+          } else {
+            // Caso já exista um ID selecionado (ex: via Dropdown), 
+            // garantimos que o mapa 'pacienteSelecionado' acompanhe essa escolha
+            pacienteSelecionado = _pacientes.firstWhere(
+              (p) => p['id'] == _selectedChildId,
+              orElse: () => _pacientes[0],
             );
           }
 
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      dev.log(
-        "Erro ao carregar pacientes: $e",
-        name: 'UPLOAD_PHOTOS',
-        error: e,
-      );
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+          dev.log(
+            "Paciente ativo para análise: ${pacienteSelecionado?['nome']}",
+            name: 'UPLOAD_PHOTOS',
+          );
+        }
+
+        _isLoading = false;
+      });
+    }
+  } catch (e) {
+    dev.log(
+      "Erro ao carregar pacientes: $e",
+      name: 'UPLOAD_PHOTOS',
+      error: e,
+    );
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
-
+}
   void _mostrarAvisoSemCrianca() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -228,151 +249,188 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   void _mostrarResultado(Map<String, dynamic> data) {
-    const Color backgroundColor = Color(0xFFF9F4F0); 
-    const Color primaryOrange = Color(0xFFE35D33);
+  const Color backgroundColor = Color(0xFFF9F4F0);
+  const Color primaryOrange = Color(0xFFE35D33);
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setPopupState) {
-            List analise = data['analise'] ?? [];
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setPopupState) {
+          // Lista de análise vinda da sua IA YOLO
+          List analise = data['analise'] ?? [];
 
-            int bemAceitos = 0;
-            int parciais = 0;
-            int rejeitados = 0;
+          int bemAceitos = 0;
+          int parciais = 0;
+          int rejeitados = 0;
 
-            for (var item in analise) {
-              double porc = (item['porcentagem_consumida'] as num).toDouble();
-              if (porc >= 80) bemAceitos++;
-              else if (porc >= 40) parciais++;
-              else rejeitados++;
-            }
+          // Cálculo do resumo baseado nas porcentagens da IA
+          for (var item in analise) {
+            double porc = (item['porcentagem_consumida'] as num).toDouble();
+            if (porc >= 80) bemAceitos++;
+            else if (porc >= 40) parciais++;
+            else rejeitados++;
+          }
 
-            return Dialog(
-              backgroundColor: backgroundColor,
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Análise concluída",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Alimentos identificados",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 16),
-
-                    ...analise.map((res) {
-                      double porc = (res['porcentagem_consumida'] as num).toDouble();
-                      Color cardFillColor;
-                      Color cardBorderColor;
-
-                      if (porc >= 80) {
-                        cardFillColor = const Color(0xFFE8F5E9);
-                        cardBorderColor = const Color(0xFF81C784);
-                      } else if (porc >= 40) {
-                        cardFillColor = const Color(0xFFFFF9C4);
-                        cardBorderColor = const Color(0xFFFFD54F);
-                      } else {
-                        cardFillColor = const Color(0xFFFFEBEE);
-                        cardBorderColor = const Color(0xFFE57373);
-                      }
-
-                      return GestureDetector(
-                        onTap: () async {
-                          String? novoNome = await _dialogEditarNome(res['alimento']);
-                          if (novoNome != null && novoNome.isNotEmpty) {
-                            setPopupState(() {
-                              res['alimento'] = novoNome;
-                            });
-                          }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: cardFillColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: cardBorderColor, width: 1.2),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.edit_outlined, size: 18, color: Colors.black87),
-                              const SizedBox(width: 12),
-                              Text(
-                                res['alimento'].toString().toUpperCase(),
-                                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
-                              ),
-                              const Spacer(),
-                              Text(
-                                "${porc.toInt()}%",
-                                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-
-                    const SizedBox(height: 20),
-                    const Text("Resumo", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildSummaryBox(bemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
-                        _buildSummaryBox(parciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
-                        _buildSummaryBox(rejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
-                      ],
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
+          return Dialog(
+            backgroundColor: backgroundColor,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Análise concluída",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
                         onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryOrange,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          elevation: 0,
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Alimentos identificados",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Listagem dos alimentos identificados
+                  ...analise.map((res) {
+                    double porc = (res['porcentagem_consumida'] as num).toDouble();
+                    Color cardFillColor;
+                    Color cardBorderColor;
+
+                    if (porc >= 80) {
+                      cardFillColor = const Color(0xFFE8F5E9);
+                      cardBorderColor = const Color(0xFF81C784);
+                    } else if (porc >= 40) {
+                      cardFillColor = const Color(0xFFFFF9C4);
+                      cardBorderColor = const Color(0xFFFFD54F);
+                    } else {
+                      cardFillColor = const Color(0xFFFFEBEE);
+                      cardBorderColor = const Color(0xFFE57373);
+                    }
+
+                    return GestureDetector(
+                      onTap: () async {
+                        // Permite editar o nome caso a IA identifique errado
+                        String? novoNome = await _dialogEditarNome(res['alimento']);
+                        if (novoNome != null && novoNome.isNotEmpty) {
+                          setPopupState(() {
+                            res['alimento'] = novoNome;
+                          });
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: cardFillColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: cardBorderColor, width: 1.2),
                         ),
-                        child: const Text(
-                          "Concluído",
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit_outlined, size: 18, color: Colors.black87),
+                            const SizedBox(width: 12),
+                            Text(
+                              res['alimento'].toString().toUpperCase(),
+                              style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                            ),
+                            const Spacer(),
+                            Text(
+                              "${porc.toInt()}%",
+                              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+                    );
+                  }).toList(),
 
+                  const SizedBox(height: 20),
+                  const Text("Resumo", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSummaryBox(bemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
+                      _buildSummaryBox(parciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
+                      _buildSummaryBox(rejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // BOTÃO CONCLUÍDO
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // 1. Converter análise da IA para AlimentoModel
+                        List<AlimentoModel> listaParaSalvar = analise.map((item) {
+                          return AlimentoModel(
+                            nome: item['alimento'].toString(),
+                            porcentagem: (item['porcentagem_consumida'] as num).toInt().toString(),
+                          );
+                        }).toList();
+
+                        // 2. Criar a RefeicaoModel usando os dados reais
+                        final novaRefeicao = RefeicaoModel(
+                          // Puxa o nome da variável que definimos no topo da classe
+                          pacienteNome: pacienteSelecionado?['nome'] ?? "Sofia", 
+                          data: DateTime.now(),
+                          alimentos: listaParaSalvar,
+                          fotoAntes: data['foto_antes_path'] ?? "",
+                          fotoDepois: data['foto_depois_path'] ?? "",
+                        );
+
+                        // 3. Salvar no Provider (Disponibiliza para o Dashboard)
+                        Provider.of<RefeicaoProvider>(context, listen: false)
+                            .salvarRefeicao(novaRefeicao);
+
+                        // 4. Fechar o Modal
+                        Navigator.pop(context);
+
+                        // Feedback de sucesso
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Análise salva com sucesso!"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryOrange,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        "Concluído",
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
   Widget _buildSummaryBox(String valor, String label, Color borderColor, Color fillColor) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.22,
@@ -553,79 +611,83 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   Widget _buildChildDropdown() {
-    if (_pacientes.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            const Text(
-              "Nenhuma criança cadastrada nesta conta.",
-              textAlign: TextAlign.center,
+  if (_pacientes.isEmpty) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.05), // Atualizado para evitar depreciação
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            "Nenhuma criança cadastrada nesta conta.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _fetchPacientes,
+            child: const Text(
+              "Tentar novamente",
               style: TextStyle(
-                color: Colors.redAccent,
+                color: Color(0xFFF67B55),
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _fetchPacientes,
-              child: const Text(
-                "Tentar novamente",
-                style: TextStyle(
-                  color: Color(0xFFF67B55),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.5)),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedChildId,
-          isExpanded: true,
-          dropdownColor: Colors.white,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-          items: _pacientes.map((paciente) {
-            return DropdownMenuItem<String>(
-              value: paciente['id'],
-              child: Text(
-                paciente['nome'],
-                style: const TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            );
-          }).toList(),
-          onChanged: (val) {
-            setState(() {
-              _selectedChildId = val;
-              _selectedChildNome = _pacientes.firstWhere(
-                (p) => p['id'] == val,
-              )['nome'];
-              dev.log(
-                "Paciente selecionado: $_selectedChildNome",
-                name: 'UPLOAD_PHOTOS',
-              );
-            });
-          },
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(color: const Color(0xFFF67B55).withValues(alpha: 0.3)),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: _selectedChildId,
+        isExpanded: true,
+        hint: const Text("Selecione a criança"),
+        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55)),
+        items: _pacientes.map((paciente) {
+          return DropdownMenuItem<String>(
+            value: paciente['id'].toString(),
+            child: Text(
+              paciente['nome'],
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            setState(() {
+              _selectedChildId = newValue;
+              
+              // --- CRUCIAL: Atualiza o paciente selecionado para o Pop-up ---
+              pacienteSelecionado = _pacientes.firstWhere(
+                (p) => p['id'].toString() == newValue,
+              );
+              
+              _selectedChildNome = pacienteSelecionado!['nome'];
+              
+              debugPrint("Criança selecionada: $_selectedChildNome");
+            });
+          }
+        },
+      ),
+    ),
+  );
+}
 
   Widget _buildInstructionCard() {
     return Container(
