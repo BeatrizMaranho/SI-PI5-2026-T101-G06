@@ -21,18 +21,22 @@ class _MainScreenAdminState extends State<MainScreenAdmin> {
 
   // Transformado em um 'get' para podermos passar a função _onItemTapped para a HomeScreen
   List<Widget> get _telas => [
-    // Substituímos o Center de aviso pela HomeScreen real passando a função
+    // CORRIGIDO: Agora passando todos os 4 argumentos obrigatórios que a HomeScreen exige
     HomeScreen(
-  onNavigateToManageChildren: () {
-    // Aqui você chama a função que muda a aba nesse arquivo.
-    // Provavelmente é _onItemTapped(1); igual no admin
-    _onItemTapped(1); 
-  },
-  onNavigateToProfile: () {  // <-- NOVA FUNÇÃO DE REDIRECIONAMENTO AQUI
-        _onItemTapped(4); // 4 é o índice da const ProfileScreen() na lista abaixo
+      onNavigateToManageChildren: () {
+        _onItemTapped(1); // Índice 1: Crianças
       },
-),
-    const Center(child: Text("Tela Crianças")), // Aqui no futuro você vai colocar sua ManageChildrenScreen()
+      onNavigateToProfile: () {
+        _onItemTapped(4); // Índice 4: Perfil
+      },
+      onNavigateToUploadPhotos: () {
+        _onItemTapped(2); // Índice 2: Câmera/Fotos
+      },
+      onNavigateToDocuments: () {
+        _onItemTapped(3); // Índice 3: Arquivos/Relatórios
+      },
+    ),
+    const Center(child: Text("Tela Crianças")), // No futuro: ManageChildrenScreen()
     const Center(child: Text("Tela Câmera")),
     const Center(child: Text("Tela Arquivos")),
     const ProfileScreen(),

@@ -6,11 +6,17 @@ import 'package:project_appetit/dataconnect_generated/generated.dart';
 class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToManageChildren;
   final VoidCallback onNavigateToProfile;
+  
+  // NOVOS CALLBACKS: Para acionar a mudança de aba ou tela via Menu Inferior
+  final VoidCallback onNavigateToUploadPhotos;
+  final VoidCallback onNavigateToDocuments;
 
   const HomeScreen({
     super.key, 
     required this.onNavigateToManageChildren,
     required this.onNavigateToProfile,
+    required this.onNavigateToUploadPhotos,
+    required this.onNavigateToDocuments,
   });
 
   // Cores baseadas no seu protótipo
@@ -76,7 +82,6 @@ class HomeScreen extends StatelessWidget {
               FutureBuilder<List<dynamic>>(
                 future: _buscarCriancasDoBanco(),
                 builder: (context, snapshot) {
-                  // Mostra loading enquanto busca
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32.0),
@@ -84,7 +89,6 @@ class HomeScreen extends StatelessWidget {
                     );
                   }
 
-                  // Tratamento de erro
                   if (snapshot.hasError) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -94,7 +98,6 @@ class HomeScreen extends StatelessWidget {
 
                   final criancas = snapshot.data ?? [];
 
-                  // Se não tiver filhos cadastrados
                   if (criancas.isEmpty) {
                     return Container(
                       width: double.infinity,
@@ -119,7 +122,6 @@ class HomeScreen extends StatelessWidget {
                     );
                   }
 
-                  // Renderiza um card para cada criança que voltou do banco
                   return Column(
                     children: criancas.map((crianca) {
                       final nome = crianca.nome ?? 'Sem nome';
@@ -127,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                       
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
-                        child: _buildChildCard(nome, idadeStr),
+                        child: _buildChildCard(context, nome, idadeStr),
                       );
                     }).toList(),
                   );
@@ -190,7 +192,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChildCard(String name, String age) {
+  // Injetado o 'BuildContext' para suportar navegações nomeadas/tradicionais caso necessário
+  Widget _buildChildCard(BuildContext context, String name, String age) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -223,7 +226,13 @@ class HomeScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Executa a alteração reativa de aba do menu principal
+                    onNavigateToUploadPhotos();
+
+                    // CASO SEU APP NÃO USE ABAS PARA ESSA TELA, DESCOMENTE A LINHA ABAIXO:
+                    // Navigator.pushNamed(context, '/upload_photos');
+                  },
                   icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
                   label: const Text('Foto', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
@@ -237,7 +246,13 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Executa a alteração reativa de aba do menu principal
+                    onNavigateToDocuments();
+
+                    // CASO SEU APP NÃO USE ABAS PARA ESSA TELA, DESCOMENTE A LINHA ABAIXO:
+                    // Navigator.pushNamed(context, '/documents');
+                  },
                   icon: const Icon(Icons.post_add, color: Colors.white),
                   label: const Text('Relatório', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
@@ -314,7 +329,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// --- WIDGET DO EFEITO DE CLIQUE E MOUSE ---
 class _BouncingButton extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
