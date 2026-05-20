@@ -24,11 +24,13 @@ class DocumentsScreen extends StatefulWidget {
 class _DocumentsScreenState extends State<DocumentsScreen> {
   List<Map<String, dynamic>> pacientes = [];
   
-  // Armazena apenas o ID da criança selecionada (Garante estabilidade no Dropdown)
+  // Armazena as variáveis reativas da criança selecionada
   String? idCriancaSelecionada; 
   String nomeCriancaSelecionada = "";
   String alergiasCriancaSelecionada = "Não";
-  
+  String pesoCriancaSelecionada = "-- kg";
+  String idadeCriancaSelecionada = "--";
+
   bool carregando = true;
   int diasSelecionados = 7; // Padrão: 1 semana
 
@@ -36,6 +38,38 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   void initState() {
     super.initState();
     _fetchPacientesDashboard();
+  }
+
+  // Função auxiliar para calcular a idade amigável (Anos e Meses) a partir do DateTime do banco
+  String _calcularIdade(dynamic nascimento) {
+    if (nascimento == null) return "Não informada";
+    try {
+      DateTime dataNasc;
+      if (nascimento is DateTime) {
+        dataNasc = nascimento;
+      } else {
+        dataNasc = DateTime.parse(nascimento.toString());
+      }
+      
+      DateTime hoje = DateTime.now();
+      int anos = hoje.year - dataNasc.year;
+      int meses = hoje.month - dataNasc.month;
+      
+      if (meses < 0) {
+        anos--;
+        meses += 12;
+      }
+      
+      if (anos == 0) {
+        return "$meses ${meses == 1 ? 'mês' : 'meses'}";
+      } else if (meses == 0) {
+        return "$anos ${anos == 1 ? 'ano' : 'anos'}";
+      } else {
+        return "$anos ${anos == 1 ? 'ano' : 'anos'} e $meses ${meses == 1 ? 'mês' : 'meses'}";
+      }
+    } catch (e) {
+      return "Não informada";
+    }
   }
 
   Future<void> _fetchPacientesDashboard() async {
@@ -59,6 +93,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 'id': p.id.toString(), 
                 'nome': p.nome, 
                 'nascimento': p.nascimento,
+                'peso': p.peso, 
                 'alergias': (p.alergias == null || p.alergias!.isEmpty) ? "Não" : p.alergias, 
               })
           .toList();
@@ -69,10 +104,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         setState(() {
           pacientes = dadosDoBanco;
           if (pacientes.isNotEmpty) {
-            // Inicializa com os dados do primeiro paciente da lista de forma explícita
-            idCriancaSelecionada = pacientes.first['id'];
-            nomeCriancaSelecionada = pacientes.first['nome'];
-            alergiasCriancaSelecionada = pacientes.first['alergias'];
+            final primeiro = pacientes.first;
+            idCriancaSelecionada = primeiro['id'];
+            nomeCriancaSelecionada = primeiro['nome'];
+            alergiasCriancaSelecionada = primeiro['alergias'];
+            pesoCriancaSelecionada = primeiro['peso'] != null ? "${primeiro['peso']} kg" : "Não informado";
+            idadeCriancaSelecionada = _calcularIdade(primeiro['nascimento']);
           }
           carregando = false;
         });
@@ -86,6 +123,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   // Função interna para construir a estrutura do documento PDF
   Future<void> _gerarPdfRelatorio({
     required String nomeCrianca,
+    required String idade,
+    required String peso,
     required String alergias,
     required String periodo,
     required int bemAceitos,
@@ -122,7 +161,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 pw.Text("Período: $periodo", style: textStyle),
               ],
             ),
-            pw.SizedBox(height: 8),
+            pw.SizedBox(height: 6),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("Idade: $idade", style: textStyle),
+                pw.Text("Peso: $peso", style: textStyle),
+              ],
+            ),
+            pw.SizedBox(height: 6),
             pw.Text("Intolerância/Alergia: $alergias", style: boldStyle),
             pw.SizedBox(height: 25),
 
@@ -153,7 +200,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     await Printing.sharePdf(bytes: await pdf.save(), filename: 'relatorio_${nomeCrianca.toLowerCase()}.pdf');
   }
 
-  // Componente de seção de lista para o PDF estruturado
   pw.Widget _buildPdfCategorySection(String titulo, List<AlimentoModel> itens, pw.TextStyle tituloStyle, pw.TextStyle itemStyle) {
     return pw.Container(
       width: double.infinity,
@@ -196,7 +242,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Widget build(BuildContext context) {
     const Color highlightOrange = Color(0xFFF67B55);
     
-    // Se ainda está carregando o banco, mostra o progresso imediatamente
     if (carregando) {
       return const Scaffold(
         backgroundColor: AppConstants.backgroundColor,
@@ -204,18 +249,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       );
     }
 
-    // Se o banco carregou mas a lista veio vazia, mostra aviso amigável impedindo quebras de layout
     if (pacientes.isEmpty) {
       return Scaffold(
         backgroundColor: AppConstants.backgroundColor,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
-            onPressed: () => Navigator.pop(context),
-          ),
           title: const Text("Relatório", style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
+          centerTitle: true,
         ),
         body: Center(
           child: Padding(
@@ -245,20 +286,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       );
     }
 
-    // Escuta o Provider reativamente
     final provider = context.watch<RefeicaoProvider>();
-    
-    // 1. Filtra as refeições pelo período de dias selecionado
     final refeicoesDoPeriodo = provider.filtrarPorPeriodo(diasSelecionados);
-
-    // 2. Filtra comparando o nome de forma limpa e segura
     String nomeBusca = nomeCriancaSelecionada.trim().toLowerCase();
     
     final listaFiltrada = refeicoesDoPeriodo.where((r) {
       return r.pacienteNome.trim().toLowerCase() == nomeBusca;
     }).toList();
 
-    // --- Cálculos baseados na lista filtrada ---
     int totalBemAceitos = 0;
     int totalParciais = 0;
     int totalRejeitados = 0;
@@ -271,7 +306,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
     final todosAlimentos = listaFiltrada.expand((r) => r.alimentos).toList();
     
-    // Filtros de aceitação baseados nos limites de % (IA)
     final baixos = todosAlimentos.where((a) {
       int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
       return p < 40;
@@ -293,21 +327,27 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text("Relatório", style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           children: [
-            // Dropdown de Crianças baseado no ID (String)
+            // Dropdown de Crianças baseado no ID
             _buildCriancaDropdown(),
             const SizedBox(height: 14),
 
-            // Info de Alergia atualizado reativamente
+            // Idade e Peso integrados na identidade visual
+            Row(
+              children: [
+                Expanded(child: _buildInfoRow("Idade:", idadeCriancaSelecionada)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildInfoRow("Peso:", pesoCriancaSelecionada)),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Info de Alergia
             _buildInfoRow("Intolerância/Alergia:", alergiasCriancaSelecionada),
             const SizedBox(height: 14),
 
@@ -315,10 +355,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             _buildPeriodoDropdown(),
             const SizedBox(height: 20),
 
-            // Botão de Exportar PDF com os parâmetros do build injetados
+            // Botão de Exportar PDF modificado para Laranja Sólido com pdf.svg
             _buildPdfButton(
               nome: nomeCriancaSelecionada,
-              alergia: alergiasCriancaSelecionada, // Combinando perfeitamente com os parâmetros abaixo
+              idade: idadeCriancaSelecionada,
+              peso: pesoCriancaSelecionada,
+              alergia: alergiasCriancaSelecionada,
               bemAceitos: totalBemAceitos,
               parciais: totalParciais,
               rejeitados: totalRejeitados,
@@ -328,7 +370,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Cards de Resumo dinâmicos e estilizados igual ao modal
+            // Cards de Resumo dinâmicos
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -339,11 +381,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Listas do Histórico
+            // Listas do Histórico modificadas com fundo colorido pastel igual ao protótipo
             _buildCategoryList(
               title: "Alimentos com baixa aceitação", 
               itens: baixos, 
               borderColor: const Color(0xFFE57373), 
+              fillColor: const Color(0xFFFFEBEE), // Fundo Vermelho Pastel
               titleColor: Colors.black,
             ),
             const SizedBox(height: 16),
@@ -352,6 +395,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: "Alimentos parcialmente aceitos", 
               itens: parciais, 
               borderColor: const Color(0xFFFFD54F), 
+              fillColor: const Color(0xFFFFF9C4), // Fundo Amarelo Pastel
               titleColor: Colors.black,
             ),
             const SizedBox(height: 16),
@@ -360,6 +404,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: "Alimentos bem aceitos", 
               itens: aceitos, 
               borderColor: const Color(0xFF81C784), 
+              fillColor: const Color(0xFFE8F5E9), // Fundo Verde Pastel
               titleColor: Colors.black,
             ),
             
@@ -399,6 +444,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 idCriancaSelecionada = newValue;
                 nomeCriancaSelecionada = pacienteMap['nome'];
                 alergiasCriancaSelecionada = pacienteMap['alergias'];
+                pesoCriancaSelecionada = pacienteMap['peso'] != null ? "${pacienteMap['peso']} kg" : "Não informado";
+                idadeCriancaSelecionada = _calcularIdade(pacienteMap['nascimento']);
               });
             }
           },
@@ -454,9 +501,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  // CORREÇÃO: Parâmetro 'allergy' renomeado para 'alergia' para corresponder perfeitamente com a chamada do build
+  // MODIFICADO: Botão preenchido em Laranja com texto branco e pdf.svg
   Widget _buildPdfButton({
     required String nome,
+    required String idade,
+    required String peso,
     required String alergia, 
     required int bemAceitos,
     required int parciais,
@@ -477,10 +526,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: OutlinedButton(
+      child: ElevatedButton(
         onPressed: () async {
           await _gerarPdfRelatorio(
             nomeCrianca: nome,
+            idade: idade,
+            peso: peso,
             alergias: alergia,
             periodo: labelPeriodo,
             bemAceitos: bemAceitos,
@@ -491,23 +542,25 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             listaAceitos: listaAceitos,
           );
         },
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFF67B55), width: 1.2),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppConstants.primaryOrange, // Laranja sólido do app
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          backgroundColor: Colors.white,
           elevation: 0,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              'assets/icons/file-plus.svg', 
+              'assets/icons/pdf.svg', // Atualizado para o seu ícone pdf.svg
               width: 20, 
-              colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
-              placeholderBuilder: (BuildContext context) => const Icon(Icons.insert_drive_file_outlined, color: Colors.black, size: 20),
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn), // Ícone Branco
+              placeholderBuilder: (BuildContext context) => const Icon(Icons.picture_as_pdf, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 8),
-            const Text("Exportar PDF", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              "Exportar PDF", 
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16), // Texto Branco
+            ),
           ],
         ),
       ),
@@ -533,17 +586,19 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
+  // MODIFICADO: Agora aceita o parâmetro 'fillColor' para preencher o fundo seguindo o padrão dos cards
   Widget _buildCategoryList({
     required String title, 
     required List<AlimentoModel> itens, 
     required Color borderColor,
+    required Color fillColor, // Inserido para colorir o fundo do container
     required Color titleColor,
   }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white, 
+        color: fillColor, // Modificado para preencher o fundo com a cor pastel
         borderRadius: BorderRadius.circular(25),
         border: Border.all(color: borderColor.withOpacity(0.7), width: 1.5), 
       ),
