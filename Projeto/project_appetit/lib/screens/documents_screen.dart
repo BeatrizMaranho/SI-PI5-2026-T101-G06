@@ -501,7 +501,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              'assets/icons/document.svg', 
+              'assets/icons/file-plus.svg', 
               width: 20, 
               colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
               placeholderBuilder: (BuildContext context) => const Icon(Icons.insert_drive_file_outlined, color: Colors.black, size: 20),
