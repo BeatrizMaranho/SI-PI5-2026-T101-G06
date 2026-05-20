@@ -1404,6 +1404,14 @@ class AtualizarPacienteVariablesBuilder {
    _nascimento.value = t;
    return this;
   }
+  AtualizarPacienteVariablesBuilder peso(double? t) {
+   _peso.value = t;
+   return this;
+  }
+  AtualizarPacienteVariablesBuilder alergias(String? t) {
+   _alergias.value = t;
+   return this;
+  }
 
   ...
 }
@@ -1412,6 +1420,8 @@ ExampleConnector.instance.atualizarPaciente(
 )
 .nome(nome)
 .nascimento(nascimento)
+.peso(peso)
+.alergias(alergias)
 .execute();
 ```
 

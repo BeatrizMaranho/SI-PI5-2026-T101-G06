@@ -5,12 +5,23 @@ import 'child_registration_screen.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'dart:developer' as dev;
 import 'package:intl/intl.dart';
+import 'package:project_appetit/screens/edit_child_info.dart';
 
-class ManageChildrenScreen extends StatelessWidget {
+
+class ManageChildrenScreen extends StatefulWidget {
   final String userId;
 
-  const ManageChildrenScreen({super.key, required this.userId});
+  const ManageChildrenScreen({
+    super.key,
+    required this.userId,
+  });
 
+  @override
+    State<ManageChildrenScreen> createState() =>
+        _ManageChildrenScreenState();
+  }
+
+  class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,11 +34,11 @@ class ManageChildrenScreen extends StatelessWidget {
       ),
       body: FutureBuilder(
         future: ExampleConnector.instance
-            .listarMeusPacientes(responsavelId: userId)
+            .listarMeusPacientes(responsavelId: widget.userId)
             .execute(),
         builder: (context, snapshot) {
           dev.log(
-            'Buscando pacientes para o userId: $userId',
+            'Buscando pacientes para o userId: $widget.userId',
             name: 'MANAGE_CHILDREN',
           );
 
@@ -131,6 +142,23 @@ class ManageChildrenScreen extends StatelessWidget {
                           },
                         );
                       },
+                      onEditInfosTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditChildInfoScreen(
+                                childId: paciente.id,
+                                nomeInicial: paciente.nome,
+                                nascimentoInicial:
+                                    paciente.nascimento ?? DateTime.now(),
+                                pesoInicial: paciente.peso ?? 0.0,
+                                alergiasInicial: paciente.alergias ?? '',
+                              ),
+                            ),
+                          );
+
+                          setState(() {});
+                        },
                     );
                   },
                 ),
@@ -205,6 +233,7 @@ class ManageChildrenScreen extends StatelessWidget {
     Color statsColor,
     Color actionColor, {
     required VoidCallback onCameraTap,
+    required VoidCallback onEditInfosTap,
   }) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
@@ -256,7 +285,7 @@ class ManageChildrenScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               actionButton(Icons.camera_alt, actionColor, onTap: onCameraTap),
-              actionButton(Icons.edit, actionColor),
+              actionButton(Icons.edit, actionColor, onTap: onEditInfosTap),
               actionButton(Icons.delete, actionColor),
             ],
           ),
@@ -303,18 +332,25 @@ class ManageChildrenScreen extends StatelessWidget {
     );
   }
 
-  Widget actionButton(IconData icon, Color actionColor, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 80,
-        height: 45,
-        decoration: BoxDecoration(
-          color: actionColor,
+  Widget actionButton(IconData icon, Color actionColor, {VoidCallback? onTap,}) {
+  return SizedBox(
+    width: 80,
+    height: 45,
+    child: ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: actionColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppConstants.iconLight, size: 20),
       ),
-    );
-  }
+      child: Icon(
+        icon,
+        color: AppConstants.iconLight,
+        size: 20,
+      ),
+    ),
+  );
+}
 }

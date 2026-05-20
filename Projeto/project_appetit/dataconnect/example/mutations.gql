@@ -68,12 +68,16 @@ mutation AtualizarPaciente(
   $id: UUID!
   $nome: String
   $nascimento: Date
+  $peso: Float
+  $alergias: String
 ) @auth(level: USER) {
   paciente_update(
     id: $id
     data: {
       nome: $nome
       nascimento: $nascimento
+      peso: $peso
+      alergias: $alergias
     }
   )
 }
