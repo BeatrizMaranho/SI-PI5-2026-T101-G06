@@ -15,7 +15,8 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: AppConstants.navBarHeight,
+      // Aumentamos ligeiramente a altura caso precise acomodar melhor o texto com segurança
+      height: AppConstants.navBarHeight + 10,
       decoration: BoxDecoration(
         color: AppConstants.cardWhite,
         boxShadow: [
@@ -41,10 +42,18 @@ class CustomBottomNavBar extends StatelessWidget {
 
   Widget _buildNavItem({required String name, required int index}) {
     final isSelected = selectedIndex == index;
-    
-    // AJUSTE AQUI: Como você não tem os arquivos 'w', 
-    // usamos o mesmo arquivo sempre.
     final String assetPath = 'assets/icons/$name.svg';
+
+    // Mapeia o nome do asset interno para a legenda correspondente visível
+    final Map<String, String> legendas = {
+      'home': 'Início',
+      'kids': 'Crianças',
+      'camera': 'Imagens',
+      'arquivo': 'Relatório',
+      'user': 'Perfil',
+    };
+
+    final String textoLegenda = legendas[name] ?? '';
 
     return Expanded(
       child: InkWell(
@@ -54,8 +63,8 @@ class CustomBottomNavBar extends StatelessWidget {
         child: Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
-            width: 55,
-            height: 55,
+            width: 60, // Ligeiramente ajustado para o layout vertical do texto
+            height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               gradient: isSelected ? const LinearGradient(
@@ -75,21 +84,37 @@ class CustomBottomNavBar extends StatelessWidget {
               ] : [],
             ),
             child: Center(
-              child: SvgPicture.asset(
-                assetPath,
-                width: 24,
-                height: 24,
-                // O segredo está aqui: o código pinta de branco se estiver selecionado
-                colorFilter: ColorFilter.mode(
-                  isSelected ? Colors.white : const Color(0xFF2D2D2D), 
-                  BlendMode.srcIn
-                ),
-                // Se der erro, mostraremos o ícone de erro padrão do Material
-                placeholderBuilder: (context) => Icon(
-                  Icons.error_outline, 
-                  size: 18, 
-                  color: isSelected ? Colors.white : Colors.red
-                ),
+              // Alterado para um Column para empilhar Ícone + Legenda perfeitamente
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assetPath,
+                    width: 22,
+                    height: 22,
+                    colorFilter: ColorFilter.mode(
+                      isSelected ? Colors.white : const Color(0xFF2D2D2D), 
+                      BlendMode.srcIn
+                    ),
+                    placeholderBuilder: (context) => Icon(
+                      Icons.error_outline, 
+                      size: 18, 
+                      color: isSelected ? Colors.white : Colors.red
+                    ),
+                  ),
+                  const SizedBox(height: 3), // Espaçamento fino entre o ícone e o texto
+                  Text(
+                    textoLegenda,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      // O texto herda a mesma lógica de cor do ícone
+                      color: isSelected ? Colors.white : const Color(0xFF2D2D2D),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
