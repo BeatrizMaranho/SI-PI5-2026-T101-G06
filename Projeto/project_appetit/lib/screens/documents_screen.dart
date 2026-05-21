@@ -11,6 +11,7 @@ import 'package:project_appetit/models/refeicao_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:project_appetit/utils/pdf_report_generator.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final String userId;
@@ -120,121 +121,75 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     }
   }
 
-  // Função interna para construir a estrutura do documento PDF
+  // Função para construir a estrutura do documento PDF
   Future<void> _gerarPdfRelatorio({
     required String nomeCrianca,
     required String idade,
     required String peso,
     required String alergias,
     required String periodo,
-    required int bemAceitos,
-    required int parciais,
-    required int rejeitados,
-    required List<AlimentoModel> listaBaixos,
-    required List<AlimentoModel> listaParciais,
-    required List<AlimentoModel> listaAceitos,
+    required List<RefeicaoModel> todasRefeicoes,
   }) async {
+    // Coleta dados para análise
+    final evolucaoAlimentos = PdfReportGenerator.calcularEvolucaoAlimentos(todasRefeicoes);
+    final diasAgrupados = PdfReportGenerator.agruparPorDia(todasRefeicoes);
+    final estatisticas = PdfReportGenerator.calcularEstatisticas(todasRefeicoes);
+
     final pdf = pw.Document();
 
-    final titleStyle = pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
-    final subtitleStyle = pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
-    final textStyle = pw.TextStyle(fontSize: 14, color: PdfColors.black);
-    final boldStyle = pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.black);
-
+    // Página 1: Resumo Executivo
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return [
-            // Cabeçalho do Relatório
-            pw.Center(child: pw.Text("Relatório de Acompanhamento", style: titleStyle)),
-            pw.SizedBox(height: 20),
-            pw.Divider(color: PdfColors.orange),
-            pw.SizedBox(height: 15),
-
-            // Informações de Contexto
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("Criança: $nomeCrianca", style: boldStyle),
-                pw.Text("Período: $periodo", style: textStyle),
-              ],
+            PdfReportGenerator.gerarPaginaResume(
+              nomeCrianca,
+              idade,
+              peso,
+              alergias,
+              periodo,
+              estatisticas,
             ),
-            pw.SizedBox(height: 6),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("Idade: $idade", style: textStyle),
-                pw.Text("Peso: $peso", style: textStyle),
-              ],
-            ),
-            pw.SizedBox(height: 6),
-            pw.Text("Intolerância/Alergia: $alergias", style: boldStyle),
-            pw.SizedBox(height: 25),
-
-            // Seção de Resumo Quantitativo
-            pw.Text("Resumo de Aceitação", style: subtitleStyle),
-            pw.SizedBox(height: 10),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("Bem aceitos: $bemAceitos", style: textStyle),
-                pw.Text("Parciais: $parciais", style: textStyle),
-                pw.Text("Rejeitados: $rejeitados", style: textStyle),
-              ],
-            ),
-            pw.SizedBox(height: 25),
-
-            // Categorias de alimentos no PDF
-            _buildPdfCategorySection("Alimentos com baixa aceitação", listaBaixos, boldStyle, textStyle),
-            pw.SizedBox(height: 15),
-            _buildPdfCategorySection("Alimentos parcialmente aceitos", listaParciais, boldStyle, textStyle),
-            pw.SizedBox(height: 15),
-            _buildPdfCategorySection("Alimentos bem aceitos", listaAceitos, boldStyle, textStyle),
           ];
         },
       ),
     );
 
-    await Printing.sharePdf(bytes: await pdf.save(), filename: 'relatorio_${nomeCrianca.toLowerCase()}.pdf');
-  }
+    // Página 2+: Histórico Detalhado
+    if (diasAgrupados.isNotEmpty) {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) {
+            return [
+              pw.SizedBox(height: 20),
+              PdfReportGenerator.gerarTabelaHistorico(diasAgrupados),
+            ];
+          },
+        ),
+      );
 
-  pw.Widget _buildPdfCategorySection(String titulo, List<AlimentoModel> itens, pw.TextStyle tituloStyle, pw.TextStyle itemStyle) {
-    return pw.Container(
-      width: double.infinity,
-      padding: const pw.EdgeInsets.all(12),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.grey300, width: 1),
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start, 
-        children: [
-          pw.Text(titulo, style: tituloStyle),
-          pw.SizedBox(height: 8),
-          if (itens.isEmpty)
-            pw.Text("Nenhum registro no período.", style: itemStyle.copyWith(fontStyle: pw.FontStyle.italic))
-          else
-            pw.ListView.builder(
-              itemCount: itens.length,
-              itemBuilder: (context, index) {
-                final a = itens[index];
-                final porc = a.porcentagem.contains('%') ? a.porcentagem : "${a.porcentagem}%";
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(a.nome[0].toUpperCase() + a.nome.substring(1).toLowerCase(), style: itemStyle),
-                      pw.Text(porc, style: itemStyle.copyWith(fontWeight: pw.FontWeight.bold)),
-                    ],
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
+      // Página 3+: Análise de Evolução
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) {
+            return [
+              pw.SizedBox(height: 20),
+              PdfReportGenerator.gerarAnaliseEvolucao(evolucaoAlimentos),
+            ];
+          },
+        ),
+      );
+    }
+
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'relatorio_${nomeCrianca.toLowerCase().replaceAll(' ', '_')}.pdf',
     );
   }
 
@@ -361,12 +316,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               idade: idadeCriancaSelecionada,
               peso: pesoCriancaSelecionada,
               alergia: alergiasCriancaSelecionada,
-              bemAceitos: totalBemAceitos,
-              parciais: totalParciais,
-              rejeitados: totalRejeitados,
-              listaBaixos: baixos,
-              listaParciais: parciais,
-              listaAceitos: aceitos,
+              refeicoes: listaFiltrada,
             ),
             const SizedBox(height: 24),
 
@@ -506,13 +456,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     required String nome,
     required String idade,
     required String peso,
-    required String alergia, 
-    required int bemAceitos,
-    required int parciais,
-    required int rejeitados,
-    required List<AlimentoModel> listaBaixos,
-    required List<AlimentoModel> listaParciais,
-    required List<AlimentoModel> listaAceitos,
+    required String alergia,
+    required List<RefeicaoModel> refeicoes,
   }) {
     String labelPeriodo = "1 semana";
     if (diasSelecionados == 1) labelPeriodo = "Hoje";
@@ -534,16 +479,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             peso: peso,
             alergias: alergia,
             periodo: labelPeriodo,
-            bemAceitos: bemAceitos,
-            parciais: parciais,
-            rejeitados: rejeitados,
-            listaBaixos: listaBaixos,
-            listaParciais: listaParciais,
-            listaAceitos: listaAceitos,
+            todasRefeicoes: refeicoes,
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppConstants.primaryOrange, // Laranja sólido do app
+          backgroundColor: AppConstants.primaryOrange,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 0,
         ),
@@ -551,15 +491,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              'assets/icons/pdf.svg', // Atualizado para o seu ícone pdf.svg
-              width: 20, 
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn), // Ícone Branco
+              'assets/icons/pdf.svg',
+              width: 20,
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
               placeholderBuilder: (BuildContext context) => const Icon(Icons.picture_as_pdf, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 8),
             const Text(
-              "Exportar PDF", 
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16), // Texto Branco
+              "Exportar PDF",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ],
         ),
