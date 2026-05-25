@@ -70,7 +70,7 @@ query ObterPacienteComRefeicoes($pacienteId: UUID!) {
   }
 }
 
-query ObterPacienteCompleto($pacienteId: UUID!) {
+query ObterPacienteCompleto($pacienteId: UUID!) @auth(level: USER) {
   paciente(id: $pacienteId) {
     id
     nome
