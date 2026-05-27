@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // Importe o arquivo gerado pelo seu Data Connect
 import 'package:project_appetit/dataconnect_generated/generated.dart'; 
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToManageChildren;
@@ -104,7 +105,7 @@ class HomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(24),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.transparent,
                         border: Border.all(color: lightOrangeBorder),
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -192,12 +193,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Injetado o 'BuildContext' para suportar navegações nomeadas/tradicionais caso necessário
   Widget _buildChildCard(BuildContext context, String name, String age) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent,
         border: Border.all(color: lightOrangeBorder),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -205,11 +205,13 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 24,
                 backgroundColor: Colors.transparent,
-                foregroundColor: Colors.black,
-                child: Icon(Icons.account_circle_outlined, size: 48),
+                child: SvgPicture.asset(
+                  'assets/icons/user-img.svg', // CORRIGIDO: Alterado para user-img.svg conforme solicitado
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(width: 16),
               Column(
@@ -227,11 +229,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    // Executa a alteração reativa de aba do menu principal
                     onNavigateToUploadPhotos();
-
-                    // CASO SEU APP NÃO USE ABAS PARA ESSA TELA, DESCOMENTE A LINHA ABAIXO:
-                    // Navigator.pushNamed(context, '/upload_photos');
                   },
                   icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
                   label: const Text('Foto', style: TextStyle(color: Colors.white)),
@@ -247,11 +245,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    // Executa a alteração reativa de aba do menu principal
                     onNavigateToDocuments();
-
-                    // CASO SEU APP NÃO USE ABAS PARA ESSA TELA, DESCOMENTE A LINHA ABAIXO:
-                    // Navigator.pushNamed(context, '/documents');
                   },
                   icon: const Icon(Icons.post_add, color: Colors.white),
                   label: const Text('Relatório', style: TextStyle(color: Colors.white)),
@@ -298,12 +292,12 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white, 
+          color: Colors.transparent,
           border: Border.all(color: lightOrangeBorder),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: primaryOrange.withOpacity(0.15),
+              color: primaryOrange.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

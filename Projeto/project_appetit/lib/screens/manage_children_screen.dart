@@ -7,7 +7,6 @@ import 'dart:developer' as dev;
 import 'package:intl/intl.dart';
 import 'package:project_appetit/screens/edit_child_info.dart';
 
-
 class ManageChildrenScreen extends StatefulWidget {
   final String userId;
 
@@ -17,11 +16,10 @@ class ManageChildrenScreen extends StatefulWidget {
   });
 
   @override
-    State<ManageChildrenScreen> createState() =>
-        _ManageChildrenScreenState();
-  }
+  State<ManageChildrenScreen> createState() => _ManageChildrenScreenState();
+}
 
-  class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
+class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +36,7 @@ class ManageChildrenScreen extends StatefulWidget {
             .execute(),
         builder: (context, snapshot) {
           dev.log(
-            'Buscando pacientes para o userId: $widget.userId',
+            'Buscando pacientes para o userId: ${widget.userId}',
             name: 'MANAGE_CHILDREN',
           );
 
@@ -105,7 +103,7 @@ class ManageChildrenScreen extends StatefulWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pacientes.length,
                   separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppConstants.elementSpacing),
+                      SizedBox(height: AppConstants.elementSpacing),
                   itemBuilder: (context, index) {
                     final paciente = pacientes[index];
 
@@ -143,22 +141,22 @@ class ManageChildrenScreen extends StatefulWidget {
                         );
                       },
                       onEditInfosTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditChildInfoScreen(
-                                childId: paciente.id,
-                                nomeInicial: paciente.nome,
-                                nascimentoInicial:
-                                    paciente.nascimento ?? DateTime.now(),
-                                pesoInicial: paciente.peso ?? 0.0,
-                                alergiasInicial: paciente.alergias ?? '',
-                              ),
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditChildInfoScreen(
+                              childId: paciente.id,
+                              nomeInicial: paciente.nome,
+                              nascimentoInicial:
+                                  paciente.nascimento ?? DateTime.now(),
+                              pesoInicial: paciente.peso ?? 0.0,
+                              alergiasInicial: paciente.alergias ?? '',
                             ),
-                          );
+                          ),
+                        );
 
-                          setState(() {});
-                        },
+                        setState(() {});
+                      },
                     );
                   },
                 ),
@@ -238,7 +236,7 @@ class ManageChildrenScreen extends StatefulWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: AppConstants.cardWhite,
+        color: Colors.transparent, // Transparente para herdar o fundo laranja claro e sumir o card branco
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         border: Border.all(color: statsColor.withOpacity(0.3), width: 1.2),
       ),
@@ -304,7 +302,7 @@ class ManageChildrenScreen extends StatefulWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: statsColor,
+          color: statsColor, // Devolvido o preenchimento laranja sólido idêntico ao protótipo
           borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
         ),
         child: Column(
@@ -312,16 +310,23 @@ class ManageChildrenScreen extends StatefulWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 14, color: AppConstants.iconLight),
+                Icon(icon, size: 14, color: AppConstants.iconLight), // Devolvido o ícone branco
                 const SizedBox(width: 5),
-                Text(label, style: AppConstants.lightLabelStyle),
+                Text(
+                  label, 
+                  style: const TextStyle(
+                    color: AppConstants.iconLight, // Devolvido o texto descritivo branco
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w500,
+                  ),
+                ), 
               ],
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: const TextStyle(
-                color: AppConstants.iconLight,
+                color: AppConstants.iconLight, // Devolvido o valor em destaque (número/data) branco
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -332,25 +337,25 @@ class ManageChildrenScreen extends StatefulWidget {
     );
   }
 
-  Widget actionButton(IconData icon, Color actionColor, {VoidCallback? onTap,}) {
-  return SizedBox(
-    width: 80,
-    height: 45,
-    child: ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: actionColor,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  Widget actionButton(IconData icon, Color actionColor, {VoidCallback? onTap}) {
+    return SizedBox(
+      width: 80,
+      height: 45,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: actionColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: AppConstants.iconLight,
+          size: 20,
         ),
       ),
-      child: Icon(
-        icon,
-        color: AppConstants.iconLight,
-        size: 20,
-      ),
-    ),
-  );
-}
+    );
+  }
 }

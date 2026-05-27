@@ -130,14 +130,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     required String periodo,
     required List<RefeicaoModel> todasRefeicoes,
   }) async {
-    // Coleta dados para análise
     final evolucaoAlimentos = PdfReportGenerator.calcularEvolucaoAlimentos(todasRefeicoes);
     final diasAgrupados = PdfReportGenerator.agruparPorDia(todasRefeicoes);
     final estatisticas = PdfReportGenerator.calcularEstatisticas(todasRefeicoes);
 
     final pdf = pw.Document();
 
-    // Página 1: Resumo Executivo
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -157,7 +155,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       ),
     );
 
-    // Página 2+: Histórico Detalhado
     if (diasAgrupados.isNotEmpty) {
       pdf.addPage(
         pw.MultiPage(
@@ -172,7 +169,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ),
       );
 
-      // Página 3+: Análise de Evolução
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -288,11 +284,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           children: [
-            // Dropdown de Crianças baseado no ID
             _buildCriancaDropdown(),
             const SizedBox(height: 14),
 
-            // Idade e Peso integrados na identidade visual
             Row(
               children: [
                 Expanded(child: _buildInfoRow("Idade:", idadeCriancaSelecionada)),
@@ -302,15 +296,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             const SizedBox(height: 14),
 
-            // Info de Alergia
             _buildInfoRow("Intolerância/Alergia:", alergiasCriancaSelecionada),
             const SizedBox(height: 14),
 
-            // Dropdown do Período
             _buildPeriodoDropdown(),
             const SizedBox(height: 20),
 
-            // Botão de Exportar PDF modificado para Laranja Sólido com pdf.svg
             _buildPdfButton(
               nome: nomeCriancaSelecionada,
               idade: idadeCriancaSelecionada,
@@ -320,23 +311,21 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Cards de Resumo dinâmicos
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSummaryCard(totalBemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
                 _buildSummaryCard(totalParciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
-                _buildSummaryCard(totalRejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
+                _buildSummaryBox(totalRejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
               ],
             ),
             const SizedBox(height: 24),
 
-            // Listas do Histórico modificadas com fundo colorido pastel igual ao protótipo
             _buildCategoryList(
               title: "Alimentos com baixa aceitação", 
               itens: baixos, 
               borderColor: const Color(0xFFE57373), 
-              fillColor: const Color(0xFFFFEBEE), // Fundo Vermelho Pastel
+              fillColor: const Color(0xFFFFEBEE), 
               titleColor: Colors.black,
             ),
             const SizedBox(height: 16),
@@ -345,7 +334,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: "Alimentos parcialmente aceitos", 
               itens: parciais, 
               borderColor: const Color(0xFFFFD54F), 
-              fillColor: const Color(0xFFFFF9C4), // Fundo Amarelo Pastel
+              fillColor: const Color(0xFFFFF9C4), 
               titleColor: Colors.black,
             ),
             const SizedBox(height: 16),
@@ -354,7 +343,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: "Alimentos bem aceitos", 
               itens: aceitos, 
               borderColor: const Color(0xFF81C784), 
-              fillColor: const Color(0xFFE8F5E9), // Fundo Verde Pastel
+              fillColor: const Color(0xFFE8F5E9), 
               titleColor: Colors.black,
             ),
             
@@ -365,19 +354,20 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  // --- COMPONENTES VISUAIS FIÉIS AO PROTÓTIPO ---
+  // --- COMPONENTES VISUAIS MODIFICADOS (REMOÇÃO DO PREENCHIMENTO BRANCO) ---
 
   Widget _buildCriancaDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente para herdar o fundo laranja/creme
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: idCriancaSelecionada,
+          dropdownColor: AppConstants.backgroundColor, // Garante que o menu suspenso também use a cor oficial do fundo
           isExpanded: true,
           hint: const Text("Sofia"),
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
@@ -408,13 +398,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: diasSelecionados,
+          dropdownColor: AppConstants.backgroundColor, // Fundo do menu suspenso em harmonia com a tela
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: const [
@@ -437,7 +428,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
@@ -451,7 +442,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  // MODIFICADO: Botão preenchido em Laranja com texto branco e pdf.svg
   Widget _buildPdfButton({
     required String nome,
     required String idade,
@@ -526,20 +516,38 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  // MODIFICADO: Agora aceita o parâmetro 'fillColor' para preencher o fundo seguindo o padrão dos cards
+  Widget _buildSummaryBox(String valor, String label, Color borderColor, Color fillColor) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.26,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: fillColor,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: borderColor, width: 1.2),
+      ),
+      child: Column(
+        children: [
+          Text(valor, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCategoryList({
     required String title, 
     required List<AlimentoModel> itens, 
     required Color borderColor,
-    required Color fillColor, // Inserido para colorir o fundo do container
+    required Color fillColor, 
     required Color titleColor,
   }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: fillColor, // Modificado para preencher o fundo com a cor pastel
-        borderRadius: BorderRadius.circular(25),
+        color: fillColor, 
+        borderRadius: BorderRadius.circular(15), // Ajustado para 15 para seguir o padrão suavizado
         border: Border.all(color: borderColor.withOpacity(0.7), width: 1.5), 
       ),
       child: Column(
