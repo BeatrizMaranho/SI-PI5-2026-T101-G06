@@ -48,6 +48,7 @@ def obter_dados_segmentacao(pil_image):
     results = model.predict(source=img_padronizada, conf=0.30, verbose=False)
 
     relatorio_pixels = {}
+    maior_area = 0  # A maior área detectada (usada como referência do prato)
 
     if results[0].masks is not None:
         masks = results[0].masks.data.cpu().numpy()
@@ -56,9 +57,14 @@ def obter_dados_segmentacao(pil_image):
         for mask, cls_idx in zip(masks, classes):
             nome_classe = model.names[int(cls_idx)]
             contagem = np.count_nonzero(mask > 0.5)
+            
+            # Usar a maior área detectada como referência (é o prato)
+            if contagem > maior_area:
+                maior_area = contagem
+            
             relatorio_pixels[nome_classe] = relatorio_pixels.get(nome_classe, 0) + contagem
 
-    return relatorio_pixels
+    return relatorio_pixels, maior_area
 
 # --- ✅ ROTA: LISTAR PACIENTES (DATA CONNECT) ---
 @app.get("/pacientes/{responsavel_id}")
@@ -113,8 +119,15 @@ async def analisar_refeicao(
     img_antes = Image.open(io.BytesIO(await file_antes.read()))
     img_depois = Image.open(io.BytesIO(await file_depois.read()))
 
-    pixels_antes = obter_dados_segmentacao(img_antes)
-    pixels_depois = obter_dados_segmentacao(img_depois)
+    pixels_antes, area_prato_antes = obter_dados_segmentacao(img_antes)
+    pixels_depois, area_prato_depois = obter_dados_segmentacao(img_depois)
+
+    # Calcular ratio de escala usando a maior área detectada como referência
+    # Se a maior área não foi detectada, usar ratio = 1.0 (sem ajuste)
+    if area_prato_antes > 0 and area_prato_depois > 0:
+        ratio_escala = area_prato_antes / area_prato_depois
+    else:
+        ratio_escala = 1.0
 
     todas_classes = set(list(pixels_antes.keys()) + list(pixels_depois.keys()))
 
@@ -124,9 +137,12 @@ async def analisar_refeicao(
         p_antes = pixels_antes.get(item, 0)
         p_depois = pixels_depois.get(item, 0)
 
-        # Cálculo da porcentagem consumida baseado na área de pixels
+        # Cálculo da porcentagem consumida COM NORMALIZAÇÃO DO PRATO
+        # Ajusta p_depois pela escala para compensar mudança de ângulo
+        p_depois_normalizado = p_depois * ratio_escala
+        
         if p_antes > 0:
-            porc = (max(0, p_antes - p_depois) / p_antes * 100)
+            porc = (max(0, p_antes - p_depois_normalizado) / p_antes * 100)
         else:
             porc = 0.0
 
@@ -138,7 +154,8 @@ async def analisar_refeicao(
     return {
         "paciente": nome_crianca,
         "analise": lista_analise,
-        "status": "sucesso"
+        "status": "sucesso",
+        "ratio_escala": round(ratio_escala, 4)  # Incluir para debug
     }
 
 if __name__ == "__main__":
