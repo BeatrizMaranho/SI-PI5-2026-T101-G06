@@ -425,7 +425,7 @@ for (var r in refeicoesDoBanco) {
                 child: LinearProgressIndicator(color: highlightOrange, backgroundColor: Colors.black12),
               ),
 
-            Row(
+           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSummaryCard(totalBemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
@@ -435,7 +435,7 @@ for (var r in refeicoesDoBanco) {
             ),
             const SizedBox(height: 24),
 
-            _buildCategoryList(
+           _buildCategoryList(
               title: "Alimentos com baixa aceitação", 
               itens: baixos, 
               borderColor: const Color(0xFFE57373), 
@@ -462,7 +462,7 @@ for (var r in refeicoesDoBanco) {
             ),
             
             const SizedBox(height: 30),
-          ],
+          ], 
         ),
       ),
     );
@@ -472,13 +472,14 @@ for (var r in refeicoesDoBanco) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente para herdar o fundo laranja/creme
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: idCriancaSelecionada,
+          dropdownColor: AppConstants.backgroundColor, // Garante que o menu suspenso também use a cor oficial do fundo
           isExpanded: true,
           hint: const Text("Selecione"),
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
@@ -510,13 +511,14 @@ for (var r in refeicoesDoBanco) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: diasSelecionados,
+          dropdownColor: AppConstants.backgroundColor, // Fundo do menu suspenso em harmonia com a tela
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: const [
@@ -532,7 +534,6 @@ for (var r in refeicoesDoBanco) {
           onChanged: (val) {
             if (val != null) {
               setState(() => diasSelecionados = val);
-              _fetchRefeicoesDoBanco();
             }
           },
         ),
@@ -544,7 +545,7 @@ for (var r in refeicoesDoBanco) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent, // Ajustado para transparente
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
