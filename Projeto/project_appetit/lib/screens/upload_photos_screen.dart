@@ -216,8 +216,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 ),
                 const SizedBox(height: 32),
                 Center(
-                  child: Image.asset(
-                    'assets/imgs/image-tip.png',
+                  child: SvgPicture.asset(
+                    'assets/icons/top-picture.svg',
                     height: 150,
                     fit: BoxFit.contain,
                   ),
