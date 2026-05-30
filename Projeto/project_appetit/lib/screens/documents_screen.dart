@@ -288,16 +288,32 @@ for (var r in refeicoesDoBanco) {
       DateTime dataRefeicao;
 
       try {
-        if (r.dataHora == null) {
+        final dynamic t = r.dataHora;
+
+        if (t == null) {
           dataRefeicao = DateTime.now().toUtc();
-        } else if (r.dataHora is DateTime) {
-          dataRefeicao = (r.dataHora as DateTime).toUtc();
+        } else if (t is DateTime) {
+          dataRefeicao = t.toUtc();
+        } else if (t is String) {
+          dataRefeicao = DateTime.parse(t).toUtc();
         } else {
-          try {
-            dataRefeicao = (r.dataHora as dynamic).toDate().toUtc();
-          } catch (_) {
-            dataRefeicao = DateTime.parse(r.dataHora.toString()).toUtc();
+          DateTime? dataExtraida;
+          
+          try { dataExtraida = t.toDateTime(); } catch (_) {}
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = DateTime.parse(t.toJson().toString()); } catch (_) {}
           }
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = t.toDate(); } catch (_) {}
+          }
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = t.value is DateTime ? t.value : DateTime.parse(t.value.toString()); } catch (_) {}
+          }
+
+          dataRefeicao = (dataExtraida ?? DateTime.now()).toUtc();
         }
       } catch (e) {
         dataRefeicao = DateTime.now().toUtc();
@@ -326,7 +342,7 @@ for (var r in refeicoesDoBanco) {
           final alimentoModel = AlimentoModel(
             nome: nomeAlimento,
             porcentagem: "$p%",
-            urlFotoAlimento: d.urlFoto,
+            // urlFotoAlimento: d.urlFoto,
           );
           
           alimentosDaRefeicao.add(alimentoModel);
