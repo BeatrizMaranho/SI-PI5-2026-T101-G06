@@ -5,7 +5,6 @@ import 'package:project_appetit/constants.dart';
 import 'dart:io';
 import 'package:project_appetit/service/api_service.dart';
 
-// 🔥 Firebase (NOVO)
 import 'package:firebase_auth/firebase_auth.dart';
 
 class GaleriaFotosScreen extends StatefulWidget {
@@ -43,10 +42,8 @@ class _GaleriaFotosScreenState extends State<GaleriaFotosScreen> {
 
   Future<void> _fetchMyChildren() async {
     try {
-      // ✅ PEGA UID REAL (corrige problema de pegar criança errada)
       String? meuResponsavelId = FirebaseAuth.instance.currentUser?.uid;
 
-      // 🔥 fallback com ID correto (COM ZERO, não letra O)
       meuResponsavelId ??= "l6T5V8ODQZdTnnLI55BrNF2QhH02";
 
       //print("UID usado: $meuResponsavelId");

@@ -19,9 +19,7 @@ class _MainScreenAdminState extends State<MainScreenAdmin> {
     });
   }
 
-  // Transformado em um 'get' para podermos passar a função _onItemTapped para a HomeScreen
   List<Widget> get _telas => [
-    // CORRIGIDO: Agora passando todos os 4 argumentos obrigatórios que a HomeScreen exige
     HomeScreen(
       onNavigateToManageChildren: () {
         _onItemTapped(1); // Índice 1: Crianças
@@ -36,7 +34,7 @@ class _MainScreenAdminState extends State<MainScreenAdmin> {
         _onItemTapped(3); // Índice 3: Arquivos/Relatórios
       },
     ),
-    const Center(child: Text("Tela Crianças")), // No futuro: ManageChildrenScreen()
+    const Center(child: Text("Tela Crianças")),
     const Center(child: Text("Tela Câmera")),
     const Center(child: Text("Tela Arquivos")),
     const ProfileScreen(),

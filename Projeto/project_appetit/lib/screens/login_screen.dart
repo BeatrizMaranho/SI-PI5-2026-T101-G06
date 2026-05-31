@@ -114,24 +114,20 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Opcional: Feedback visual de carregamento
     setState(() => _isLoading = true);
 
     try {
-      // 2. Chama o ApiService para ver se o email existe no seu banco
       bool emailExiste = await ApiService.verificarEmailExistente(email);
 
       if (!mounted) return;
 
       if (emailExiste) {
-        // 3. Se existe no banco, dispara o email pelo Firebase Auth
         await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Link de recuperação enviado para $email')),
         );
       } else {
-        // 4. Se não existe no banco, avisa o usuário
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('E-mail não cadastrado no sistema.')),
         );

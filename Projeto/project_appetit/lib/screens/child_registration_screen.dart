@@ -20,7 +20,6 @@ class _ChildRegistrationScreenState extends State<ChildRegistrationScreen> {
   DateTime? _selectedDate;
   bool _isLoading = false;
 
-  // Função para selecionar a data via calendário
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,

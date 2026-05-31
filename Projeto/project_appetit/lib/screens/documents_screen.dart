@@ -7,7 +7,6 @@ import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:provider/provider.dart';
 import 'package:project_appetit/models/refeicao_model.dart';
 
-// Imports adicionados para funcionamento do relatório em PDF
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -25,7 +24,6 @@ class DocumentsScreen extends StatefulWidget {
 class _DocumentsScreenState extends State<DocumentsScreen> {
   List<Map<String, dynamic>> pacientes = [];
   
-  // Armazena as variáveis reativas da criança selecionada
   String? idCriancaSelecionada; 
   String nomeCriancaSelecionada = "";
   String alergiasCriancaSelecionada = "Não";
@@ -33,7 +31,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   String idadeCriancaSelecionada = "--";
 
   bool carregando = true;
-  int diasSelecionados = 7; // Padrão: 1 semana
+  int diasSelecionados = 7; 
 
   @override
   void initState() {
@@ -41,7 +39,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     _fetchPacientesDashboard();
   }
 
-  // Função auxiliar para calcular a idade amigável (Anos e Meses) a partir do DateTime do banco
   String _calcularIdade(dynamic nascimento) {
     if (nascimento == null) return "Não informada";
     try {
@@ -121,7 +118,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     }
   }
 
-  // Função para construir a estrutura do documento PDF
   Future<void> _gerarPdfRelatorio({
     required String nomeCrianca,
     required String idade,
@@ -354,7 +350,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  // --- COMPONENTES VISUAIS MODIFICADOS (REMOÇÃO DO PREENCHIMENTO BRANCO) ---
 
   Widget _buildCriancaDropdown() {
     return Container(
@@ -547,7 +542,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: fillColor, 
-        borderRadius: BorderRadius.circular(15), // Ajustado para 15 para seguir o padrão suavizado
+        borderRadius: BorderRadius.circular(15), 
         border: Border.all(color: borderColor.withOpacity(0.7), width: 1.5), 
       ),
       child: Column(

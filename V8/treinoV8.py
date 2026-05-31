@@ -72,11 +72,11 @@ def iniciar_projeto():
         if file_path:
             results = model.predict(source=file_path, conf=0.3)
             res_plotted = results[0].plot()
-            cv2.imshow("Segmentacao YOLO - Pressione tecla para fechar", res_plotted)
+            cv2.imshow("Segmentação YOLOvsseg - Pressione tecla para fechar", res_plotted)
             cv2.waitKey(0) 
             cv2.destroyAllWindows()
     else:
-        print(f"Erro: O arquivo de pesos não foi gerado em {weights_path}")
+        print(f"Erro: O arquivo de pesos não foi gerado no caminho: {weights_path}")
 
 if __name__ == '__main__':
     iniciar_projeto()

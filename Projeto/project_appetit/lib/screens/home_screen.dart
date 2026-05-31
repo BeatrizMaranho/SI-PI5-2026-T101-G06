@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// Importe o arquivo gerado pelo seu Data Connect
 import 'package:project_appetit/dataconnect_generated/generated.dart'; 
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -8,7 +7,6 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToManageChildren;
   final VoidCallback onNavigateToProfile;
   
-  // NOVOS CALLBACKS: Para acionar a mudança de aba ou tela via Menu Inferior
   final VoidCallback onNavigateToUploadPhotos;
   final VoidCallback onNavigateToDocuments;
 
@@ -20,18 +18,15 @@ class HomeScreen extends StatelessWidget {
     required this.onNavigateToDocuments,
   });
 
-  // Cores baseadas no seu protótipo
   final Color primaryOrange = const Color(0xFFF27E53);
   final Color lightOrangeBorder = const Color(0xFFF5AC88);
   final Color backgroundColor = const Color(0xFFFCF8F5);
 
-  // --- FUNÇÃO PARA BUSCAR AS CRIANÇAS NO BANCO ---
   Future<List<dynamic>> _buscarCriancasDoBanco() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return []; // Retorna vazio se não estiver logado
 
-      // Chama a query existente no seu projeto passando o ID do usuário logado
       final response = await ExampleConnector.instance.listarMeusPacientes(responsavelId: user.uid).execute();
       
       return response.data.pacientes; 
@@ -41,12 +36,10 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  // --- FUNÇÃO PARA CALCULAR A IDADE ---
   String _calcularIdade(String? dataNascimentoStr) {
     if (dataNascimentoStr == null || dataNascimentoStr.isEmpty) return 'Idade indisp.';
     
     try {
-      // O banco retorna algo como "2020-04-29"
       DateTime dataNascimento = DateTime.parse(dataNascimentoStr);
       DateTime hoje = DateTime.now();
       
@@ -79,7 +72,6 @@ class HomeScreen extends StatelessWidget {
               _buildWelcomeCard(),
               const SizedBox(height: 16),
               
-              // --- BUSCA DINÂMICA NO BANCO ---
               FutureBuilder<List<dynamic>>(
                 future: _buscarCriancasDoBanco(),
                 builder: (context, snapshot) {
@@ -145,7 +137,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // --- FUNÇÕES DE CONSTRUÇÃO DOS COMPONENTES DA TELA ---
 
   Widget _buildHeader() {
     return Column(

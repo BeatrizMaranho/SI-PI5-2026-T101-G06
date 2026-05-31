@@ -6,9 +6,9 @@ import numpy as np
 from PIL import Image
 import cv2
 import os
-import httpx  # Importante: pip install httpx
+import httpx  
 
-# 🔥 Firebase Admin (Opcional se usar apenas Data Connect nesta rota)
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -22,14 +22,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 🚀 CONFIGURAÇÕES ---
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# URL do Firebase Data Connect (Ajuste para produção se necessário)
-# Se estiver usando o emulador local, a porta padrão é 9399
 DATA_CONNECT_URL = "http://127.0.0.1:9399/graphql/endpoints/pi-v-appetit-service" 
 
-# Setup Firebase Admin
 cred_path = os.path.join(BASE_DIR, "serviceAccountKey.json")
 if os.path.exists(cred_path):
     cred = credentials.Certificate(cred_path)
@@ -37,8 +34,6 @@ if os.path.exists(cred_path):
         firebase_admin.initialize_app(cred)
     db = firestore.client()
 
-# --- 🧠 MODELO YOLO ---
-# Caminho ajustado para o seu peso de segmentação
 weights_path = os.path.join(BASE_DIR, '..', '..', 'V7', 'runs', 'segment', 'treino_comida_seg', 'weights', 'best.pt')
 model = YOLO(weights_path)
 
@@ -48,7 +43,7 @@ def obter_dados_segmentacao(pil_image):
     results = model.predict(source=img_padronizada, conf=0.30, verbose=False)
 
     relatorio_pixels = {}
-    maior_area = 0  # A maior área detectada (usada como referência do prato)
+    maior_area = 0  
 
     if results[0].masks is not None:
         masks = results[0].masks.data.cpu().numpy()
@@ -58,7 +53,6 @@ def obter_dados_segmentacao(pil_image):
             nome_classe = model.names[int(cls_idx)]
             contagem = np.count_nonzero(mask > 0.5)
             
-            # Usar a maior área detectada como referência (é o prato)
             if contagem > maior_area:
                 maior_area = contagem
             
@@ -66,10 +60,8 @@ def obter_dados_segmentacao(pil_image):
 
     return relatorio_pixels, maior_area
 
-# --- ✅ ROTA: LISTAR PACIENTES (DATA CONNECT) ---
 @app.get("/pacientes/{responsavel_id}")
 async def listar_pacientes(responsavel_id: str):
-    # Ajustado para usar o plural 'pacientes' e filtro 'eq' conforme o Data Connect
     query = """
     query ListPacientes($responsavelId: String!) {
       pacientes(where: { responsavelId: { eq: $responsavelId } }) {
@@ -105,11 +97,8 @@ async def listar_pacientes(responsavel_id: str):
             
         except Exception as e:
             print(f" Erro Data Connect: {e}")
-            # IMPORTANTE: Retornar uma lista vazia [] em vez de um dicionário de erro
-            # Isso evita o erro de tipagem no Flutter
             return []
 
-# --- 📸 ROTA: ANÁLISE DE REFEIÇÃO ---
 @app.post("/analisar")
 async def analisar_refeicao(
     file_antes: UploadFile = File(...), 
@@ -122,8 +111,6 @@ async def analisar_refeicao(
     pixels_antes, area_prato_antes = obter_dados_segmentacao(img_antes)
     pixels_depois, area_prato_depois = obter_dados_segmentacao(img_depois)
 
-    # Calcular ratio de escala usando a maior área detectada como referência
-    # Se a maior área não foi detectada, usar ratio = 1.0 (sem ajuste)
     if area_prato_antes > 0 and area_prato_depois > 0:
         ratio_escala = area_prato_antes / area_prato_depois
     else:
@@ -137,8 +124,6 @@ async def analisar_refeicao(
         p_antes = pixels_antes.get(item, 0)
         p_depois = pixels_depois.get(item, 0)
 
-        # Cálculo da porcentagem consumida COM NORMALIZAÇÃO DO PRATO
-        # Ajusta p_depois pela escala para compensar mudança de ângulo
         p_depois_normalizado = p_depois * ratio_escala
         
         if p_antes > 0:
@@ -155,10 +140,9 @@ async def analisar_refeicao(
         "paciente": nome_crianca,
         "analise": lista_analise,
         "status": "sucesso",
-        "ratio_escala": round(ratio_escala, 4)  # Incluir para debug
+        "ratio_escala": round(ratio_escala, 4)  
     }
 
 if __name__ == "__main__":
     import uvicorn
-    # Mude para 0.0.0.0 para garantir que o Windows não bloqueie a rota
     uvicorn.run(app, host="0.0.0.0", port=8000)

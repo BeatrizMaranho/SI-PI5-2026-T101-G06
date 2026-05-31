@@ -49,7 +49,6 @@ class _CadastroScreenState extends State<CadastroScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Cria o usuário no Firebase passando a senha em texto plano
       final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: senha,

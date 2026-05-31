@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // --- CORES ---
   static const Color backgroundColor = Color(0xFFFFF8F5);
   static const Color primaryOrange = Color(0xFFE35D33);
   static const Color borderOrange = Color(0xFFF7A082); 
   static const Color textBlack = Color(0xFF231F20);
   static const Color textGrey = Color(0xFF757575);
   static const Color iconLight = Colors.white;
-  static const Color cardWhite = Colors.white; // Adicionado para corrigir o erro nas outras telas
+  static const Color cardWhite = Colors.white; 
 
-  // --- ESTILOS DE TEXTO ---
 
   static const TextStyle titleStyle = TextStyle(
     fontSize: 22,
@@ -36,7 +34,6 @@ class AppConstants {
     color: iconLight,
   );
 
-  // --- DIMENSÕES E ESPAÇAMENTOS ---
   static const double defaultPadding = 20.0;
   static const double cardPadding = 18.0;
   static const double elementSpacing = 25.0;
