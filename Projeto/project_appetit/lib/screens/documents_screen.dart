@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
-import 'package:provider/provider.dart';
 import 'package:project_appetit/models/refeicao_model.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -31,12 +29,24 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   String idadeCriancaSelecionada = "--";
 
   bool carregando = true;
-  int diasSelecionados = 7; 
+  bool carregandoRefeicoes = false;
+  int diasSelecionados = 7;
+
+  List<dynamic> refeicoesDoBanco = [];
+  String erroBancoDeDados = "";
 
   @override
   void initState() {
     super.initState();
     _fetchPacientesDashboard();
+  }
+
+  String _formatarUUID(String id) {
+    final limpo = id.replaceAll('-', '').trim();
+    if (limpo.length == 32) {
+      return "${limpo.substring(0, 8)}-${limpo.substring(8, 12)}-${limpo.substring(12, 16)}-${limpo.substring(16, 20)}-${limpo.substring(20)}";
+    }
+    return id;
   }
 
   String _calcularIdade(dynamic nascimento) {
@@ -74,13 +84,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        dev.log("Usuário não autenticado no Firebase", name: 'DASHBOARD');
         setState(() => carregando = false);
         return;
       }
 
       final String meuResponsavelId = user.uid;
-      dev.log("Dashboard carregando dados para o UID: $meuResponsavelId", name: 'DASHBOARD');
 
       final resultado = await ExampleConnector.instance
           .listarMeusPacientes(responsavelId: meuResponsavelId)
@@ -96,8 +104,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               })
           .toList();
 
-      dev.log("Pacientes recuperados no Dashboard: ${dadosDoBanco.length}", name: 'DASHBOARD');
-
       if (mounted) {
         setState(() {
           pacientes = dadosDoBanco;
@@ -111,10 +117,44 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           }
           carregando = false;
         });
+
+        if (idCriancaSelecionada != null) {
+          _fetchRefeicoesDoBanco();
+        }
       }
     } catch (e) {
-      dev.log("Erro crítico ao buscar pacientes no dashboard: $e", name: 'DASHBOARD', error: e);
       if (mounted) setState(() => carregando = false);
+    }
+  }
+
+  Future<void> _fetchRefeicoesDoBanco() async {
+    if (idCriancaSelecionada == null) return;
+
+    setState(() {
+      carregandoRefeicoes = true;
+      erroBancoDeDados = "";
+    });
+
+    try {
+      final uuidFormatado = _formatarUUID(idCriancaSelecionada!);
+      final resultado = await ExampleConnector.instance
+          .obterPacienteCompleto(pacienteId: uuidFormatado)
+          .execute();
+
+      if (mounted) {
+        setState(() {
+          refeicoesDoBanco = resultado.data.paciente?.refeicoes ?? [];
+          carregandoRefeicoes = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          refeicoesDoBanco = [];
+          carregandoRefeicoes = false;
+          erroBancoDeDados = e.toString();
+        });
+      }
     }
   }
 
@@ -233,40 +273,96 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       );
     }
 
-    final provider = context.watch<RefeicaoProvider>();
-    final refeicoesDoPeriodo = provider.filtrarPorPeriodo(diasSelecionados);
-    String nomeBusca = nomeCriancaSelecionada.trim().toLowerCase();
-    
-    final listaFiltrada = refeicoesDoPeriodo.where((r) {
-      return r.pacienteNome.trim().toLowerCase() == nomeBusca;
-    }).toList();
-
     int totalBemAceitos = 0;
     int totalParciais = 0;
     int totalRejeitados = 0;
 
-    for (var r in listaFiltrada) {
-      totalBemAceitos += r.bemAceitos;
-      totalParciais += r.parciais;
-      totalRejeitados += r.rejeitados;
-    }
+    List<AlimentoModel> baixos = [];
+    List<AlimentoModel> parciaisList = [];
+    List<AlimentoModel> aceitos = [];
+    List<RefeicaoModel> listaRefeicoesParaPdf = [];
 
-    final todosAlimentos = listaFiltrada.expand((r) => r.alimentos).toList();
-    
-    final baixos = todosAlimentos.where((a) {
-      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
-      return p < 40;
-    }).toList();
-    
-    final parciais = todosAlimentos.where((a) {
-      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
-      return p >= 40 && p < 80;
-    }).toList();
-    
-    final aceitos = todosAlimentos.where((a) {
-      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
-      return p >= 80;
-    }).toList();
+    final DateTime dataLimite = DateTime.now().subtract(Duration(days: diasSelecionados)).toUtc();
+
+for (var r in refeicoesDoBanco) {
+      DateTime dataRefeicao;
+
+      try {
+        final dynamic t = r.dataHora;
+
+        if (t == null) {
+          dataRefeicao = DateTime.now().toUtc();
+        } else if (t is DateTime) {
+          dataRefeicao = t.toUtc();
+        } else if (t is String) {
+          dataRefeicao = DateTime.parse(t).toUtc();
+        } else {
+          DateTime? dataExtraida;
+          
+          try { dataExtraida = t.toDateTime(); } catch (_) {}
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = DateTime.parse(t.toJson().toString()); } catch (_) {}
+          }
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = t.toDate(); } catch (_) {}
+          }
+          
+          if (dataExtraida == null) {
+            try { dataExtraida = t.value is DateTime ? t.value : DateTime.parse(t.value.toString()); } catch (_) {}
+          }
+
+          dataRefeicao = (dataExtraida ?? DateTime.now()).toUtc();
+        }
+      } catch (e) {
+        dataRefeicao = DateTime.now().toUtc();
+      }
+      
+      if (dataRefeicao.isBefore(dataLimite)) {
+        continue;
+      }
+
+      final String statusMeal = (r.status ?? '').toString().toLowerCase().trim();
+      if (statusMeal.contains('bem aceito') || statusMeal == 'aceito' || statusMeal == 'bom') {
+        totalBemAceitos++;
+      } else if (statusMeal.contains('parcial') || statusMeal == 'regular') {
+        totalParciais++;
+      } else if (statusMeal.contains('rejeitado') || statusMeal == 'ruim') {
+        totalRejeitados++;
+      }
+
+      List<AlimentoModel> alimentosDaRefeicao = [];
+
+      if (r.deteccoes != null) {
+        for (var d in r.deteccoes) {
+          final String nomeAlimento = d.alimento?.label ?? 'Alimento';
+          final int p = int.tryParse(d.percentualConsumido?.toString() ?? '0') ?? 0;
+          
+          final alimentoModel = AlimentoModel(
+            nome: nomeAlimento,
+            porcentagem: "$p%",
+            // urlFotoAlimento: d.urlFoto,
+          );
+          
+          alimentosDaRefeicao.add(alimentoModel);
+
+          if (p < 40) {
+            baixos.add(alimentoModel);
+          } else if (p >= 40 && p < 80) {
+            parciaisList.add(alimentoModel);
+          } else {
+            aceitos.add(alimentoModel);
+          }
+        }
+      }
+
+      listaRefeicoesParaPdf.add(RefeicaoModel(
+        pacienteNome: nomeCriancaSelecionada,
+        data: dataRefeicao,
+        alimentos: alimentosDaRefeicao,
+      ));
+    }
 
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
@@ -300,24 +396,46 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
             _buildPdfButton(
               nome: nomeCriancaSelecionada,
-              idade: idadeCriancaSelecionada,
+              idade: idadeCriancaSelecionada, 
               peso: pesoCriancaSelecionada,
               alergia: alergiasCriancaSelecionada,
-              refeicoes: listaFiltrada,
+              refeicoes: listaRefeicoesParaPdf,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 14),
 
-            Row(
+            if (erroBancoDeDados.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.red, width: 1.5)
+                ),
+                child: Text(
+                  "Erro no GraphQL:\n$erroBancoDeDados", 
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              ),
+
+            if (carregandoRefeicoes)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16.0),
+                child: LinearProgressIndicator(color: highlightOrange, backgroundColor: Colors.black12),
+              ),
+
+           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSummaryCard(totalBemAceitos.toString(), "Bem aceitos", const Color(0xFF81C784), const Color(0xFFE8F5E9)),
                 _buildSummaryCard(totalParciais.toString(), "Parciais", const Color(0xFFFFD54F), const Color(0xFFFFF9C4)),
-                _buildSummaryBox(totalRejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
+                _buildSummaryCard(totalRejeitados.toString(), "Rejeitados", const Color(0xFFE57373), const Color(0xFFFFEBEE)),
               ],
             ),
             const SizedBox(height: 24),
 
-            _buildCategoryList(
+           _buildCategoryList(
               title: "Alimentos com baixa aceitação", 
               itens: baixos, 
               borderColor: const Color(0xFFE57373), 
@@ -328,7 +446,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             
             _buildCategoryList(
               title: "Alimentos parcialmente aceitos", 
-              itens: parciais, 
+              itens: parciaisList, 
               borderColor: const Color(0xFFFFD54F), 
               fillColor: const Color(0xFFFFF9C4), 
               titleColor: Colors.black,
@@ -344,12 +462,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             
             const SizedBox(height: 30),
-          ],
+          ], 
         ),
       ),
     );
   }
-
 
   Widget _buildCriancaDropdown() {
     return Container(
@@ -364,7 +481,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           value: idCriancaSelecionada,
           dropdownColor: AppConstants.backgroundColor, // Garante que o menu suspenso também use a cor oficial do fundo
           isExpanded: true,
-          hint: const Text("Sofia"),
+          hint: const Text("Selecione"),
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: pacientes.map((paciente) {
             return DropdownMenuItem<String>(
@@ -382,6 +499,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 pesoCriancaSelecionada = pacienteMap['peso'] != null ? "${pacienteMap['peso']} kg" : "Não informado";
                 idadeCriancaSelecionada = _calcularIdade(pacienteMap['nascimento']);
               });
+              _fetchRefeicoesDoBanco();
             }
           },
         ),
@@ -413,7 +531,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             DropdownMenuItem(value: 180, child: Text("6 meses", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
             DropdownMenuItem(value: 365, child: Text("1 ano", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16))),
           ],
-          onChanged: (val) => setState(() => diasSelecionados = val ?? 7),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => diasSelecionados = val);
+            }
+          },
         ),
       ),
     );
@@ -431,7 +553,16 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -444,14 +575,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     required String alergia,
     required List<RefeicaoModel> refeicoes,
   }) {
-    String labelPeriodo = "1 semana";
-    if (diasSelecionados == 1) labelPeriodo = "Hoje";
-    if (diasSelecionados == 15) labelPeriodo = "15 dias";
-    if (diasSelecionados == 30) labelPeriodo = "1 mês";
-    if (diasSelecionados == 60) labelPeriodo = "2 meses";
-    if (diasSelecionados == 90) labelPeriodo = "3 meses";
-    if (diasSelecionados == 180) labelPeriodo = "6 meses";
-    if (diasSelecionados == 365) labelPeriodo = "1 ano";
+    String labelPeriodo = "1 week";
+    if (diasSelecionados == 1) labelPeriodo = "Today";
+    if (diasSelecionados == 15) labelPeriodo = "15 days";
+    if (diasSelecionados == 30) labelPeriodo = "1 month";
+    if (diasSelecionados == 60) labelPeriodo = "2 months";
+    if (diasSelecionados == 90) labelPeriodo = "3 months";
+    if (diasSelecionados == 180) labelPeriodo = "6 months";
+    if (diasSelecionados == 365) labelPeriodo = "1 year";
 
     return SizedBox(
       width: double.infinity,
@@ -511,25 +642,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  Widget _buildSummaryBox(String valor, String label, Color borderColor, Color fillColor) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.26,
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: fillColor,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: borderColor, width: 1.2),
-      ),
-      child: Column(
-        children: [
-          Text(valor, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildCategoryList({
     required String title, 
     required List<AlimentoModel> itens, 
@@ -542,7 +654,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: fillColor, 
-        borderRadius: BorderRadius.circular(15), 
+        borderRadius: BorderRadius.circular(25),
         border: Border.all(color: borderColor.withOpacity(0.7), width: 1.5), 
       ),
       child: Column(
