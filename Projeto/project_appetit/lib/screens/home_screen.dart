@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart'; 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:project_appetit/models/refeicao_model.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToManageChildren;
   final VoidCallback onNavigateToProfile;
-  
   final VoidCallback onNavigateToUploadPhotos;
   final VoidCallback onNavigateToDocuments;
 
@@ -25,10 +26,9 @@ class HomeScreen extends StatelessWidget {
   Future<List<dynamic>> _buscarCriancasDoBanco() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return []; // Retorna vazio se não estiver logado
+      if (user == null) return []; 
 
       final response = await ExampleConnector.instance.listarMeusPacientes(responsavelId: user.uid).execute();
-      
       return response.data.pacientes; 
     } catch (e) {
       debugPrint('Erro ao buscar crianças: $e');
@@ -71,7 +71,6 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildWelcomeCard(),
               const SizedBox(height: 16),
-              
               FutureBuilder<List<dynamic>>(
                 future: _buscarCriancasDoBanco(),
                 builder: (context, snapshot) {
@@ -117,18 +116,18 @@ class HomeScreen extends StatelessWidget {
 
                   return Column(
                     children: criancas.map((crianca) {
+                      final id = crianca.id.toString();
                       final nome = crianca.nome ?? 'Sem nome';
                       final idadeStr = _calcularIdade(crianca.nascimento?.toString());
                       
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
-                        child: _buildChildCard(context, nome, idadeStr),
+                        child: _buildChildCard(context, id, nome, idadeStr),
                       );
                     }).toList(),
                   );
                 },
               ),
-
               _buildManagementSection(),
             ],
           ),
@@ -136,7 +135,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildHeader() {
     return Column(
@@ -184,7 +182,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChildCard(BuildContext context, String name, String age) {
+  Widget _buildChildCard(BuildContext context, String id, String name, String age) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -200,7 +198,7 @@ class HomeScreen extends StatelessWidget {
                 radius: 24,
                 backgroundColor: Colors.transparent,
                 child: SvgPicture.asset(
-                  'assets/icons/user-img.svg', // CORRIGIDO: Alterado para user-img.svg conforme solicitado
+                  'assets/icons/user-img.svg', 
                   fit: BoxFit.contain,
                 ),
               ),
@@ -220,6 +218,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    Provider.of<RefeicaoProvider>(context, listen: false).selecionarCrianca(id, name);
                     onNavigateToUploadPhotos();
                   },
                   icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
@@ -236,6 +235,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    Provider.of<RefeicaoProvider>(context, listen: false).selecionarCrianca(id, name);
                     onNavigateToDocuments();
                   },
                   icon: const Icon(Icons.post_add, color: Colors.white),

@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:provider/provider.dart';
 import 'package:project_appetit/models/refeicao_model.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -23,13 +22,6 @@ class DocumentsScreen extends StatefulWidget {
 
 class _DocumentsScreenState extends State<DocumentsScreen> {
   List<Map<String, dynamic>> pacientes = [];
-  
-  String? idCriancaSelecionada; 
-  String nomeCriancaSelecionada = "";
-  String alergiasCriancaSelecionada = "Não";
-  String pesoCriancaSelecionada = "-- kg";
-  String idadeCriancaSelecionada = "--";
-
   bool carregando = true;
   int diasSelecionados = 7; 
 
@@ -37,6 +29,33 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   void initState() {
     super.initState();
     _fetchPacientesDashboard();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    if (args != null && args.containsKey('selectedChildId')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<RefeicaoProvider>(context, listen: false).selecionarCrianca(
+          args['selectedChildId']!,
+          args['selectedChildName'] ?? "",
+        );
+      });
+    }
+  }
+
+  String _normalizarId(dynamic id) {
+    if (id == null) return "";
+    return id.toString().replaceAll('-', '').trim().toLowerCase();
+  }
+
+  String _formatarUUID(String id) {
+    final limpo = id.replaceAll('-', '').trim();
+    if (limpo.length == 32) {
+      return "${limpo.substring(0, 8)}-${limpo.substring(8, 12)}-${limpo.substring(12, 16)}-${limpo.substring(16, 20)}-${limpo.substring(20)}";
+    }
+    return id;
   }
 
   String _calcularIdade(dynamic nascimento) {
@@ -74,16 +93,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        dev.log("Usuário não autenticado no Firebase", name: 'DASHBOARD');
         setState(() => carregando = false);
         return;
       }
 
-      final String meuResponsavelId = user.uid;
-      dev.log("Dashboard carregando dados para o UID: $meuResponsavelId", name: 'DASHBOARD');
-
       final resultado = await ExampleConnector.instance
-          .listarMeusPacientes(responsavelId: meuResponsavelId)
+          .listarMeusPacientes(responsavelId: user.uid)
           .execute();
 
       final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
@@ -96,24 +111,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               })
           .toList();
 
-      dev.log("Pacientes recuperados no Dashboard: ${dadosDoBanco.length}", name: 'DASHBOARD');
-
       if (mounted) {
         setState(() {
           pacientes = dadosDoBanco;
-          if (pacientes.isNotEmpty) {
-            final primeiro = pacientes.first;
-            idCriancaSelecionada = primeiro['id'];
-            nomeCriancaSelecionada = primeiro['nome'];
-            alergiasCriancaSelecionada = primeiro['alergias'];
-            pesoCriancaSelecionada = primeiro['peso'] != null ? "${primeiro['peso']} kg" : "Não informado";
-            idadeCriancaSelecionada = _calcularIdade(primeiro['nascimento']);
-          }
           carregando = false;
         });
       }
     } catch (e) {
-      dev.log("Erro crítico ao buscar pacientes no dashboard: $e", name: 'DASHBOARD', error: e);
       if (mounted) setState(() => carregando = false);
     }
   }
@@ -234,6 +238,30 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     }
 
     final provider = context.watch<RefeicaoProvider>();
+    
+    Map<String, dynamic>? criancaAtiva;
+    String? idParaBuscar = provider.idCriancaAtiva;
+    
+    if (idParaBuscar != null) {
+      final bool existe = pacientes.any((p) => _normalizarId(p['id']) == _normalizarId(idParaBuscar));
+      if (existe) {
+        criancaAtiva = pacientes.firstWhere((p) => _normalizarId(p['id']) == _normalizarId(idParaBuscar));
+      }
+    }
+    
+    if (criancaAtiva == null && pacientes.isNotEmpty) {
+      criancaAtiva = pacientes.first;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        provider.selecionarCrianca(criancaAtiva!['id'].toString(), criancaAtiva['nome']);
+      });
+    }
+
+    final String idCriancaSelecionada = criancaAtiva?['id'].toString() ?? "";
+    final String nomeCriancaSelecionada = criancaAtiva?['nome'] ?? "";
+    final String alergiasCriancaSelecionada = criancaAtiva?['alergias'] ?? "Não";
+    final String pesoCriancaSelecionada = criancaAtiva?['peso'] != null ? "${criancaAtiva!['peso']} kg" : "Não informado";
+    final String idadeCriancaSelecionada = _calcularIdade(criancaAtiva?['nascimento']);
+
     final refeicoesDoPeriodo = provider.filtrarPorPeriodo(diasSelecionados);
     String nomeBusca = nomeCriancaSelecionada.trim().toLowerCase();
     
@@ -280,7 +308,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           children: [
-            _buildCriancaDropdown(),
+            _buildCriancaDropdown(idCriancaSelecionada, provider),
             const SizedBox(height: 14),
 
             Row(
@@ -300,6 +328,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
             _buildPdfButton(
               nome: nomeCriancaSelecionada,
+              id: idCriancaSelecionada,
               idade: idadeCriancaSelecionada,
               peso: pesoCriancaSelecionada,
               alergia: alergiasCriancaSelecionada,
@@ -350,21 +379,20 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-
-  Widget _buildCriancaDropdown() {
+  Widget _buildCriancaDropdown(String idSelecionado, RefeicaoProvider provider) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Ajustado para transparente para herdar o fundo laranja/creme
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: idCriancaSelecionada,
-          dropdownColor: AppConstants.backgroundColor, // Garante que o menu suspenso também use a cor oficial do fundo
+          value: pacientes.any((p) => p['id'].toString() == idSelecionado) ? idSelecionado : null,
+          dropdownColor: AppConstants.backgroundColor, 
           isExpanded: true,
-          hint: const Text("Sofia"),
+          hint: const Text("Selecione"),
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: pacientes.map((paciente) {
             return DropdownMenuItem<String>(
@@ -374,14 +402,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           }).toList(),
           onChanged: (String? newValue) {
             if (newValue != null) {
-              final pacienteMap = pacientes.firstWhere((p) => p['id'] == newValue);
-              setState(() {
-                idCriancaSelecionada = newValue;
-                nomeCriancaSelecionada = pacienteMap['nome'];
-                alergiasCriancaSelecionada = pacienteMap['alergias'];
-                pesoCriancaSelecionada = pacienteMap['peso'] != null ? "${pacienteMap['peso']} kg" : "Não informado";
-                idadeCriancaSelecionada = _calcularIdade(pacienteMap['nascimento']);
-              });
+              final pacienteMap = pacientes.firstWhere((p) => p['id'].toString() == newValue);
+              provider.selecionarCrianca(newValue, pacienteMap['nome']);
             }
           },
         ),
@@ -393,14 +415,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Ajustado para transparente
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: diasSelecionados,
-          dropdownColor: AppConstants.backgroundColor, // Fundo do menu suspenso em harmonia com a tela
+          dropdownColor: AppConstants.backgroundColor,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: const [
@@ -457,12 +479,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Widget _buildPdfButton({
     required String nome,
+    required String id,
     required String idade,
     required String peso,
     required String alergia,
     required List<RefeicaoModel> refeicoes,
   }) {
-    String labelPeriodo = "1 semana";
+    String labelPeriodo = "1 week";
     if (diasSelecionados == 1) labelPeriodo = "Hoje";
     if (diasSelecionados == 15) labelPeriodo = "15 dias";
     if (diasSelecionados == 30) labelPeriodo = "1 mês";
