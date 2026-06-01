@@ -53,8 +53,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         _selectedChildNome = childName;
         
         // Sincroniza os argumentos recebidos por rota na memória global
-        RefeicaoModel.idCriancaAtiva = childId;
-        RefeicaoModel.nomeCriancaAtiva = childName;
+        //RefeicaoModel.idCriancaAtiva = childId;
+        //RefeicaoModel.nomeCriancaAtiva = childName;
       });
 
       dev.log(
@@ -90,7 +90,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         name: 'UPLOAD_PHOTOS',
       );
 
-      if (mounted) {
+ /*     if (mounted) {
         setState(() {
           _pacientes = dadosDoBanco;
 
@@ -119,13 +119,27 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 orElse: () => _pacientes[0],
               );
             }
+*/
+      if (mounted) {
+        setState(() {
+          _pacientes = dadosDoBanco;
 
+          if (_pacientes.isNotEmpty) {
+            if (_selectedChildId == null) {
+              _selectedChildId = _pacientes[0]['id'];
+              _selectedChildNome = _pacientes[0]['nome'];
+              pacienteSelecionado = _pacientes[0];
+            } else {
+              pacienteSelecionado = _pacientes.firstWhere(
+                (p) => p['id'] == _selectedChildId,
+                orElse: () => _pacientes[0],
+              );
+            }
             dev.log(
               "Paciente ativo para análise: $_selectedChildNome",
               name: 'UPLOAD_PHOTOS',
             );
           }
-
           _isLoading = false;
         });
       }
@@ -962,8 +976,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 _selectedChildNome = pacienteSelecionado!['nome'];
                 
                 // Sincroniza a seleção do Dropdown com a memória global
-                RefeicaoModel.idCriancaAtiva = newValue;
-                RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
+                //RefeicaoModel.idCriancaAtiva = newValue;
+                //RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
               });
             }
           },
