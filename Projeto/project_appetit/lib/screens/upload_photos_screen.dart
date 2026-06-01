@@ -316,6 +316,16 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
+  void _recapturarFoto(bool isAntes) {
+    if (_selectedChildId == null) {
+      _mostrarAvisoSemCrianca();
+      return;
+    }
+
+    // Ambas as fotos (antes e depois) vão direto para a galeria ao clicar em "Anexar"
+    _capturarMedia(isAntes, picker.ImageSource.gallery);
+  }
+
   Future<void> _capturarMedia(bool isAntes, picker.ImageSource source) async {
     try {
       final picker.XFile? picked = await _picker.pickImage(
@@ -787,7 +797,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildCaptureCard(
                               label: "Tirar foto antes da refeição",
                               foto: _fotoAntes,
-                              onTap: () => _iniciarCaptura(true),
+                              onTap: () => _recapturarFoto(true),
                               onRemove: () => setState(() => _fotoAntes = null),
                             ),
                             const SizedBox(height: 20),
@@ -795,9 +805,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildCaptureCard(
                               label: "Tirar foto depois da refeição",
                               foto: _fotoDepois,
-                              onTap: () => _iniciarCaptura(false),
-                              onRemove: () =>
-                                  setState(() => _fotoDepois = null),
+                              onTap: () => _recapturarFoto(false),
+                              onRemove: () => setState(() => _fotoDepois = null),
                             ),
                             const SizedBox(height: 25),
 
