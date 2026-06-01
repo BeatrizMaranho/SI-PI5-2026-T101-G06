@@ -38,6 +38,75 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
     });
   }
 
+  Future<void> _confirmarExclusao(
+      String pacienteId,
+      String nomePaciente,
+    ) async {
+      final confirmar = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Excluir criança"),
+            content: Text(
+              "Tem certeza que deseja excluir $nomePaciente?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancelar"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: const Text(
+                  "Excluir",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmar != true) return;
+
+      try {
+        await ExampleConnector.instance
+            .deletarPaciente(
+              id: pacienteId,
+            )
+            .execute();
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Criança excluída com sucesso"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        _carregarPacientes();
+      } catch (e) {
+        dev.log(
+          "Erro ao excluir paciente: $e",
+          name: 'MANAGE_CHILDREN',
+          error: e,
+        );
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Erro ao excluir: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
   int calcularIdade(dynamic nascimento) {
     if (nascimento == null) return 0;
 
@@ -178,6 +247,17 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
 
                         _carregarPacientes();
                       },
+                       onDeleteTap: () {
+                        dev.log(
+                          "ID do paciente: ${paciente.id}",
+                          name: "MANAGE_CHILDREN",
+                        );
+
+                        _confirmarExclusao(
+                          paciente.id,
+                          paciente.nome,
+                        );
+                      },
                     );
                   },
                 ),
@@ -238,6 +318,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
     Color actionColor, {
     required VoidCallback onCameraTap,
     required VoidCallback onEditInfosTap,
+    required VoidCallback onDeleteTap,
   }) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
@@ -290,7 +371,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
             children: [
               actionButton(Icons.camera_alt, actionColor, onTap: onCameraTap),
               actionButton(Icons.edit, actionColor, onTap: onEditInfosTap),
-              actionButton(Icons.delete, actionColor),
+              actionButton(Icons.delete, actionColor, onTap: onDeleteTap),
             ],
           ),
         ],
