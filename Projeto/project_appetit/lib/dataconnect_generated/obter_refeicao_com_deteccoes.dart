@@ -24,8 +24,8 @@ class ObterRefeicaoComDeteccoesRefeicao {
   final String status;
   final String urlFotoAntes;
   final String? urlFotoDepois;
+  final String? analise;
   final ObterRefeicaoComDeteccoesRefeicaoPaciente paciente;
-  final List<ObterRefeicaoComDeteccoesRefeicaoDeteccoes> deteccoes;
   ObterRefeicaoComDeteccoesRefeicao.fromJson(dynamic json):
   
   id = nativeFromJson<String>(json['id']),
@@ -33,10 +33,8 @@ class ObterRefeicaoComDeteccoesRefeicao {
   status = nativeFromJson<String>(json['status']),
   urlFotoAntes = nativeFromJson<String>(json['urlFotoAntes']),
   urlFotoDepois = json['urlFotoDepois'] == null ? null : nativeFromJson<String>(json['urlFotoDepois']),
-  paciente = ObterRefeicaoComDeteccoesRefeicaoPaciente.fromJson(json['paciente']),
-  deteccoes = (json['deteccoes'] as List<dynamic>)
-        .map((e) => ObterRefeicaoComDeteccoesRefeicaoDeteccoes.fromJson(e))
-        .toList();
+  analise = json['analise'] == null ? null : nativeFromJson<String>(json['analise']),
+  paciente = ObterRefeicaoComDeteccoesRefeicaoPaciente.fromJson(json['paciente']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -52,12 +50,12 @@ class ObterRefeicaoComDeteccoesRefeicao {
     status == otherTyped.status && 
     urlFotoAntes == otherTyped.urlFotoAntes && 
     urlFotoDepois == otherTyped.urlFotoDepois && 
-    paciente == otherTyped.paciente && 
-    deteccoes == otherTyped.deteccoes;
+    analise == otherTyped.analise && 
+    paciente == otherTyped.paciente;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, dataHora.hashCode, status.hashCode, urlFotoAntes.hashCode, urlFotoDepois.hashCode, paciente.hashCode, deteccoes.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, dataHora.hashCode, status.hashCode, urlFotoAntes.hashCode, urlFotoDepois.hashCode, analise.hashCode, paciente.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -69,8 +67,10 @@ class ObterRefeicaoComDeteccoesRefeicao {
     if (urlFotoDepois != null) {
       json['urlFotoDepois'] = nativeToJson<String?>(urlFotoDepois);
     }
+    if (analise != null) {
+      json['analise'] = nativeToJson<String?>(analise);
+    }
     json['paciente'] = paciente.toJson();
-    json['deteccoes'] = deteccoes.map((e) => e.toJson()).toList();
     return json;
   }
 
@@ -80,8 +80,8 @@ class ObterRefeicaoComDeteccoesRefeicao {
     required this.status,
     required this.urlFotoAntes,
     this.urlFotoDepois,
+    this.analise,
     required this.paciente,
-    required this.deteccoes,
   });
 }
 
@@ -116,120 +116,6 @@ class ObterRefeicaoComDeteccoesRefeicaoPaciente {
 
   ObterRefeicaoComDeteccoesRefeicaoPaciente({
     required this.nome,
-  });
-}
-
-@immutable
-class ObterRefeicaoComDeteccoesRefeicaoDeteccoes {
-  final String id;
-  final ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento alimento;
-  final double percentualConsumido;
-  final bool aceito;
-  final String? cor;
-  final String? textura;
-  final Timestamp criadoEm;
-  ObterRefeicaoComDeteccoesRefeicaoDeteccoes.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  alimento = ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento.fromJson(json['alimento']),
-  percentualConsumido = nativeFromJson<double>(json['percentualConsumido']),
-  aceito = nativeFromJson<bool>(json['aceito']),
-  cor = json['cor'] == null ? null : nativeFromJson<String>(json['cor']),
-  textura = json['textura'] == null ? null : nativeFromJson<String>(json['textura']),
-  criadoEm = Timestamp.fromJson(json['criadoEm']);
-  @override
-  bool operator ==(Object other) {
-    if(identical(this, other)) {
-      return true;
-    }
-    if(other.runtimeType != runtimeType) {
-      return false;
-    }
-
-    final ObterRefeicaoComDeteccoesRefeicaoDeteccoes otherTyped = other as ObterRefeicaoComDeteccoesRefeicaoDeteccoes;
-    return id == otherTyped.id && 
-    alimento == otherTyped.alimento && 
-    percentualConsumido == otherTyped.percentualConsumido && 
-    aceito == otherTyped.aceito && 
-    cor == otherTyped.cor && 
-    textura == otherTyped.textura && 
-    criadoEm == otherTyped.criadoEm;
-    
-  }
-  @override
-  int get hashCode => Object.hashAll([id.hashCode, alimento.hashCode, percentualConsumido.hashCode, aceito.hashCode, cor.hashCode, textura.hashCode, criadoEm.hashCode]);
-  
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    json['alimento'] = alimento.toJson();
-    json['percentualConsumido'] = nativeToJson<double>(percentualConsumido);
-    json['aceito'] = nativeToJson<bool>(aceito);
-    if (cor != null) {
-      json['cor'] = nativeToJson<String?>(cor);
-    }
-    if (textura != null) {
-      json['textura'] = nativeToJson<String?>(textura);
-    }
-    json['criadoEm'] = criadoEm.toJson();
-    return json;
-  }
-
-  ObterRefeicaoComDeteccoesRefeicaoDeteccoes({
-    required this.id,
-    required this.alimento,
-    required this.percentualConsumido,
-    required this.aceito,
-    this.cor,
-    this.textura,
-    required this.criadoEm,
-  });
-}
-
-@immutable
-class ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento {
-  final String id;
-  final String label;
-  final String? categoria;
-  ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  label = nativeFromJson<String>(json['label']),
-  categoria = json['categoria'] == null ? null : nativeFromJson<String>(json['categoria']);
-  @override
-  bool operator ==(Object other) {
-    if(identical(this, other)) {
-      return true;
-    }
-    if(other.runtimeType != runtimeType) {
-      return false;
-    }
-
-    final ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento otherTyped = other as ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento;
-    return id == otherTyped.id && 
-    label == otherTyped.label && 
-    categoria == otherTyped.categoria;
-    
-  }
-  @override
-  int get hashCode => Object.hashAll([id.hashCode, label.hashCode, categoria.hashCode]);
-  
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    json['label'] = nativeToJson<String>(label);
-    if (categoria != null) {
-      json['categoria'] = nativeToJson<String?>(categoria);
-    }
-    return json;
-  }
-
-  ObterRefeicaoComDeteccoesRefeicaoDeteccoesAlimento({
-    required this.id,
-    required this.label,
-    this.categoria,
   });
 }
 

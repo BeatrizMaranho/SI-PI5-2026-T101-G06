@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/constants.dart';
@@ -7,8 +8,6 @@ import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:image_picker/image_picker.dart' as picker;
 import 'dart:io';
 import 'package:project_appetit/service/api_service.dart';
-import 'package:provider/provider.dart';
-import 'package:project_appetit/models/refeicao_model.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
@@ -54,8 +53,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         _selectedChildNome = childName;
         
         // Sincroniza os argumentos recebidos por rota na memória global
-        RefeicaoModel.idCriancaAtiva = childId;
-        RefeicaoModel.nomeCriancaAtiva = childName;
+        //RefeicaoModel.idCriancaAtiva = childId;
+        //RefeicaoModel.nomeCriancaAtiva = childName;
       });
 
       dev.log(
@@ -91,7 +90,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         name: 'UPLOAD_PHOTOS',
       );
 
-      if (mounted) {
+ /*     if (mounted) {
         setState(() {
           _pacientes = dadosDoBanco;
 
@@ -120,13 +119,27 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 orElse: () => _pacientes[0],
               );
             }
+*/
+      if (mounted) {
+        setState(() {
+          _pacientes = dadosDoBanco;
 
+          if (_pacientes.isNotEmpty) {
+            if (_selectedChildId == null) {
+              _selectedChildId = _pacientes[0]['id'];
+              _selectedChildNome = _pacientes[0]['nome'];
+              pacienteSelecionado = _pacientes[0];
+            } else {
+              pacienteSelecionado = _pacientes.firstWhere(
+                (p) => p['id'] == _selectedChildId,
+                orElse: () => _pacientes[0],
+              );
+            }
             dev.log(
               "Paciente ativo para análise: $_selectedChildNome",
               name: 'UPLOAD_PHOTOS',
             );
           }
-
           _isLoading = false;
         });
       }
@@ -574,46 +587,57 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: () {
-                          List<AlimentoModel> listaParaSalvar = analise.map((
-                            item,
-                          ) {
-                            return AlimentoModel(
-                              nome: item['alimento'].toString(),
-                              porcentagem:
-                                  (item['porcentagem_consumida'] as num)
-                                      .toInt()
-                                      .toString(),
+                        onPressed: () async {
+                          try {
+                            String statusGeral = "bem aceito";
+                            if (rejeitados > bemAceitos) {
+                              statusGeral = "rejeitado";
+                            } else if (parciais > bemAceitos) {
+                              statusGeral = "parcial";
+                            }
+
+                            if (_selectedChildId == null) {
+                              throw Exception("Nenhuma criança selecionada.");
+                            }
+
+                            await ExampleConnector.instance
+                                .criarRefeicao(
+                                  pacienteId: _selectedChildId!,
+                                  status: statusGeral,
+                                  urlFotoAntes: data['foto_antes_path'] ?? "",
+                                  urlFotoDepois: data['foto_depois_path'] ?? "",
+                                )
+                                .analise(jsonEncode(data['analise']))
+                                .execute();
+
+                            setState(() {
+                              _fotoAntes = null;
+                              _fotoDepois = null;
+                            });
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Refeição salva com sucesso no banco!",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
                             );
-                          }).toList();
-
-                          final novaRefeicao = RefeicaoModel(
-                            pacienteNome:
-                                pacienteSelecionado?['nome'] ?? "Sofia",
-                            data: DateTime.now(),
-                            alimentos: listaParaSalvar,
-                            fotoAntes: data['foto_antes_path'] ?? "",
-                            fotoDepois: data['foto_depois_path'] ?? "",
-                          );
-
-                          Provider.of<RefeicaoProvider>(
-                            context,
-                            listen: false,
-                          ).salvarRefeicao(novaRefeicao);
-
-                          setState(() {
-                            _fotoAntes = null;
-                            _fotoDepois = null;
-                          });
-
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Análise salva com sucesso!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          } catch (e) {
+                            dev.log(
+                              "Erro ao salvar no Cloud SQL: $e",
+                              name: 'UPLOAD_PHOTOS',
+                              error: e,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Erro ao salvar dados: $e"),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryOrange,
@@ -952,8 +976,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 _selectedChildNome = pacienteSelecionado!['nome'];
                 
                 // Sincroniza a seleção do Dropdown com a memória global
-                RefeicaoModel.idCriancaAtiva = newValue;
-                RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
+                //RefeicaoModel.idCriancaAtiva = newValue;
+                //RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
               });
             }
           },

@@ -8,9 +8,9 @@ ExampleConnector.instance.AtualizarSenha(atualizarSenhaVariables).execute();
 ExampleConnector.instance.CriarPaciente(criarPacienteVariables).execute();
 ExampleConnector.instance.AtualizarPaciente(atualizarPacienteVariables).execute();
 ExampleConnector.instance.DeletarPaciente(deletarPacienteVariables).execute();
-ExampleConnector.instance.VincularNutricionista(vincularNutricionistaVariables).execute();
-ExampleConnector.instance.DesvincularNutricionista(desvincularNutricionistaVariables).execute();
-ExampleConnector.instance.VincularNutricionistaComPaciente(vincularNutricionistaComPacienteVariables).execute();
+ExampleConnector.instance.CriarRefeicao(criarRefeicaoVariables).execute();
+ExampleConnector.instance.AtualizarRefeicao(atualizarRefeicaoVariables).execute();
+ExampleConnector.instance.DeletarRefeicao(deletarRefeicaoVariables).execute();
 
 ```
 
@@ -23,8 +23,8 @@ Optional fields can be discovered based on classes that have `Optional` object t
 This is an example of a mutation with an optional field:
 
 ```dart
-await ExampleConnector.instance.ListarRelatorioPaciente({ ... })
-.limite(...)
+await ExampleConnector.instance.ListarRefeicoesPaciente({ ... })
+.status(...)
 .execute();
 ```
 

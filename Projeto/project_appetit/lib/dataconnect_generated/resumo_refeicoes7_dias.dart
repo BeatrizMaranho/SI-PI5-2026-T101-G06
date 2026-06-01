@@ -23,15 +23,11 @@ class ResumoRefeicoes7DiasRefeicaos {
   final String id;
   final Timestamp dataHora;
   final String status;
-  final List<ResumoRefeicoes7DiasRefeicaosDeteccoes> deteccoes;
   ResumoRefeicoes7DiasRefeicaos.fromJson(dynamic json):
   
   id = nativeFromJson<String>(json['id']),
   dataHora = Timestamp.fromJson(json['dataHora']),
-  status = nativeFromJson<String>(json['status']),
-  deteccoes = (json['deteccoes'] as List<dynamic>)
-        .map((e) => ResumoRefeicoes7DiasRefeicaosDeteccoes.fromJson(e))
-        .toList();
+  status = nativeFromJson<String>(json['status']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -44,12 +40,11 @@ class ResumoRefeicoes7DiasRefeicaos {
     final ResumoRefeicoes7DiasRefeicaos otherTyped = other as ResumoRefeicoes7DiasRefeicaos;
     return id == otherTyped.id && 
     dataHora == otherTyped.dataHora && 
-    status == otherTyped.status && 
-    deteccoes == otherTyped.deteccoes;
+    status == otherTyped.status;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, dataHora.hashCode, status.hashCode, deteccoes.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, dataHora.hashCode, status.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -57,7 +52,6 @@ class ResumoRefeicoes7DiasRefeicaos {
     json['id'] = nativeToJson<String>(id);
     json['dataHora'] = dataHora.toJson();
     json['status'] = nativeToJson<String>(status);
-    json['deteccoes'] = deteccoes.map((e) => e.toJson()).toList();
     return json;
   }
 
@@ -65,82 +59,6 @@ class ResumoRefeicoes7DiasRefeicaos {
     required this.id,
     required this.dataHora,
     required this.status,
-    required this.deteccoes,
-  });
-}
-
-@immutable
-class ResumoRefeicoes7DiasRefeicaosDeteccoes {
-  final ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento alimento;
-  final double percentualConsumido;
-  ResumoRefeicoes7DiasRefeicaosDeteccoes.fromJson(dynamic json):
-  
-  alimento = ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento.fromJson(json['alimento']),
-  percentualConsumido = nativeFromJson<double>(json['percentualConsumido']);
-  @override
-  bool operator ==(Object other) {
-    if(identical(this, other)) {
-      return true;
-    }
-    if(other.runtimeType != runtimeType) {
-      return false;
-    }
-
-    final ResumoRefeicoes7DiasRefeicaosDeteccoes otherTyped = other as ResumoRefeicoes7DiasRefeicaosDeteccoes;
-    return alimento == otherTyped.alimento && 
-    percentualConsumido == otherTyped.percentualConsumido;
-    
-  }
-  @override
-  int get hashCode => Object.hashAll([alimento.hashCode, percentualConsumido.hashCode]);
-  
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json['alimento'] = alimento.toJson();
-    json['percentualConsumido'] = nativeToJson<double>(percentualConsumido);
-    return json;
-  }
-
-  ResumoRefeicoes7DiasRefeicaosDeteccoes({
-    required this.alimento,
-    required this.percentualConsumido,
-  });
-}
-
-@immutable
-class ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento {
-  final String? categoria;
-  ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento.fromJson(dynamic json):
-  
-  categoria = json['categoria'] == null ? null : nativeFromJson<String>(json['categoria']);
-  @override
-  bool operator ==(Object other) {
-    if(identical(this, other)) {
-      return true;
-    }
-    if(other.runtimeType != runtimeType) {
-      return false;
-    }
-
-    final ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento otherTyped = other as ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento;
-    return categoria == otherTyped.categoria;
-    
-  }
-  @override
-  int get hashCode => categoria.hashCode;
-  
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    if (categoria != null) {
-      json['categoria'] = nativeToJson<String?>(categoria);
-    }
-    return json;
-  }
-
-  ResumoRefeicoes7DiasRefeicaosDeteccoesAlimento({
-    this.categoria,
   });
 }
 

@@ -116,7 +116,7 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
 query ListarRefeicoesPaciente(
   $pacienteId: UUID!
   $status: String
-) {
+) @auth(level: USER) {
   refeicaos(
     where: { 
       pacienteId: { eq: $pacienteId }
@@ -135,13 +135,14 @@ query ListarRefeicoesPaciente(
   }
 }
 
-query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) {
+query ObterRefeicaoComDeteccoes($refeicaoId: UUID!) @auth(level: USER) {
   refeicao(id: $refeicaoId) {
     id
     dataHora
     status
     urlFotoAntes
     urlFotoDepois
+    analise
     paciente {
       nome
     }

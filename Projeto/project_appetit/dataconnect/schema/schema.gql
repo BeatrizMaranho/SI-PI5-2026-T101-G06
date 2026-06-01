@@ -26,4 +26,5 @@ type Refeicao @table {
   status: String!
   urlFotoAntes: String!
   urlFotoDepois: String
+  analise: String
 }

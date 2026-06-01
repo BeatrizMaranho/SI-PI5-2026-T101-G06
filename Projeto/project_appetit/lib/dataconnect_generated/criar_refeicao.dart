@@ -2,15 +2,17 @@ part of 'generated.dart';
 
 class CriarRefeicaoVariablesBuilder {
   String pacienteId;
+  String status;
   String urlFotoAntes;
-  Optional<String> _status = Optional.optional(nativeFromJson, nativeToJson);
+  String urlFotoDepois;
+  Optional<String> _analise = Optional.optional(nativeFromJson, nativeToJson);
 
-  final FirebaseDataConnect _dataConnect;  CriarRefeicaoVariablesBuilder status(String? t) {
-   _status.value = t;
+  final FirebaseDataConnect _dataConnect;  CriarRefeicaoVariablesBuilder analise(String? t) {
+   _analise.value = t;
    return this;
   }
 
-  CriarRefeicaoVariablesBuilder(this._dataConnect, {required  this.pacienteId,required  this.urlFotoAntes,});
+  CriarRefeicaoVariablesBuilder(this._dataConnect, {required  this.pacienteId,required  this.status,required  this.urlFotoAntes,required  this.urlFotoDepois,});
   Deserializer<CriarRefeicaoData> dataDeserializer = (dynamic json)  => CriarRefeicaoData.fromJson(jsonDecode(json));
   Serializer<CriarRefeicaoVariables> varsSerializer = (CriarRefeicaoVariables vars) => jsonEncode(vars.toJson());
   Future<OperationResult<CriarRefeicaoData, CriarRefeicaoVariables>> execute() {
@@ -18,7 +20,7 @@ class CriarRefeicaoVariablesBuilder {
   }
 
   MutationRef<CriarRefeicaoData, CriarRefeicaoVariables> ref() {
-    CriarRefeicaoVariables vars= CriarRefeicaoVariables(pacienteId: pacienteId,urlFotoAntes: urlFotoAntes,status: _status,);
+    CriarRefeicaoVariables vars= CriarRefeicaoVariables(pacienteId: pacienteId,status: status,urlFotoAntes: urlFotoAntes,urlFotoDepois: urlFotoDepois,analise: _analise,);
     return _dataConnect.mutation("CriarRefeicao", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -94,19 +96,25 @@ class CriarRefeicaoData {
 @immutable
 class CriarRefeicaoVariables {
   final String pacienteId;
+  final String status;
   final String urlFotoAntes;
-  late final Optional<String>status;
+  final String urlFotoDepois;
+  late final Optional<String>analise;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   CriarRefeicaoVariables.fromJson(Map<String, dynamic> json):
   
   pacienteId = nativeFromJson<String>(json['pacienteId']),
-  urlFotoAntes = nativeFromJson<String>(json['urlFotoAntes']) {
+  status = nativeFromJson<String>(json['status']),
+  urlFotoAntes = nativeFromJson<String>(json['urlFotoAntes']),
+  urlFotoDepois = nativeFromJson<String>(json['urlFotoDepois']) {
   
   
   
   
-    status = Optional.optional(nativeFromJson, nativeToJson);
-    status.value = json['status'] == null ? null : nativeFromJson<String>(json['status']);
+  
+  
+    analise = Optional.optional(nativeFromJson, nativeToJson);
+    analise.value = json['analise'] == null ? null : nativeFromJson<String>(json['analise']);
   
   }
   @override
@@ -120,28 +128,34 @@ class CriarRefeicaoVariables {
 
     final CriarRefeicaoVariables otherTyped = other as CriarRefeicaoVariables;
     return pacienteId == otherTyped.pacienteId && 
+    status == otherTyped.status && 
     urlFotoAntes == otherTyped.urlFotoAntes && 
-    status == otherTyped.status;
+    urlFotoDepois == otherTyped.urlFotoDepois && 
+    analise == otherTyped.analise;
     
   }
   @override
-  int get hashCode => Object.hashAll([pacienteId.hashCode, urlFotoAntes.hashCode, status.hashCode]);
+  int get hashCode => Object.hashAll([pacienteId.hashCode, status.hashCode, urlFotoAntes.hashCode, urlFotoDepois.hashCode, analise.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json['pacienteId'] = nativeToJson<String>(pacienteId);
+    json['status'] = nativeToJson<String>(status);
     json['urlFotoAntes'] = nativeToJson<String>(urlFotoAntes);
-    if(status.state == OptionalState.set) {
-      json['status'] = status.toJson();
+    json['urlFotoDepois'] = nativeToJson<String>(urlFotoDepois);
+    if(analise.state == OptionalState.set) {
+      json['analise'] = analise.toJson();
     }
     return json;
   }
 
   CriarRefeicaoVariables({
     required this.pacienteId,
-    required this.urlFotoAntes,
     required this.status,
+    required this.urlFotoAntes,
+    required this.urlFotoDepois,
+    required this.analise,
   });
 }
 
