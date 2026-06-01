@@ -774,14 +774,14 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildActionButton(
                               label: "Tirar foto agora",
                               iconPath: "assets/icons/camera.svg",
-                              onTap: () => _iniciarCaptura(true),
+                              onTap: () => _capturarMedia(true, picker.ImageSource.camera),
                             ),
                             const SizedBox(height: 20),
 
                             _buildActionButton(
                               label: "Escolher da galeria",
                               iconPath: "assets/icons/upload.svg",
-                              onTap: () => _iniciarCaptura(true),
+                              onTap: () => _capturarMedia(true, picker.ImageSource.gallery),
                             ),
                           ] else ...[
                             _buildCaptureCard(
