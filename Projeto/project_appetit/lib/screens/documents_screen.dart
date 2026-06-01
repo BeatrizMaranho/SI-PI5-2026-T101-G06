@@ -39,6 +39,25 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     _fetchPacientesDashboard();
   }
 
+  // Captura os argumentos de navegação direta via rota, caso existam
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    if (args != null && args.containsKey('selectedChildId')) {
+      idCriancaSelecionada = args['selectedChildId'];
+      nomeCriancaSelecionada = args['selectedChildName'] ?? "";
+    }
+  }
+
+  String _formatarUUID(String id) {
+    final limpo = id.replaceAll('-', '').trim();
+    if (limpo.length == 32) {
+      return "${limpo.substring(0, 8)}-${limpo.substring(8, 12)}-${limpo.substring(12, 16)}-${limpo.substring(16, 20)}-${limpo.substring(20)}";
+    }
+    return id;
+  }
+
   String _calcularIdade(dynamic nascimento) {
     if (nascimento == null) return "Não informada";
     try {
@@ -102,12 +121,24 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         setState(() {
           pacientes = dadosDoBanco;
           if (pacientes.isNotEmpty) {
-            final primeiro = pacientes.first;
-            idCriancaSelecionada = primeiro['id'];
-            nomeCriancaSelecionada = primeiro['nome'];
-            alergiasCriancaSelecionada = primeiro['alergias'];
-            pesoCriancaSelecionada = primeiro['peso'] != null ? "${primeiro['peso']} kg" : "Não informado";
-            idadeCriancaSelecionada = _calcularIdade(primeiro['nascimento']);
+            // Prioriza argumentos de rota, depois checa a memória global estática
+            String? idParaBuscar = idCriancaSelecionada ?? RefeicaoModel.idCriancaAtiva;
+
+            final bool jaSelecionada = pacientes.any((p) => p['id'] == idParaBuscar);
+            
+            final alvo = jaSelecionada 
+                ? pacientes.firstWhere((p) => p['id'] == idParaBuscar)
+                : pacientes.first;
+
+            idCriancaSelecionada = alvo['id'];
+            nomeCriancaSelecionada = alvo['nome'];
+            alergiasCriancaSelecionada = alvo['alergias'];
+            pesoCriancaSelecionada = alvo['peso'] != null ? "${alvo['peso']} kg" : "Não informado";
+            idadeCriancaSelecionada = _calcularIdade(alvo['nascimento']);
+
+            // Sincroniza de volta para garantir estabilidade entre abas
+            RefeicaoModel.idCriancaAtiva = idCriancaSelecionada;
+            RefeicaoModel.nomeCriancaAtiva = nomeCriancaSelecionada;
           }
           carregando = false;
         });
@@ -350,21 +381,20 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-
   Widget _buildCriancaDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Ajustado para transparente para herdar o fundo laranja/creme
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: idCriancaSelecionada,
-          dropdownColor: AppConstants.backgroundColor, // Garante que o menu suspenso também use a cor oficial do fundo
+          dropdownColor: AppConstants.backgroundColor, 
           isExpanded: true,
-          hint: const Text("Sofia"),
+          hint: const Text("Selecione"),
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: pacientes.map((paciente) {
             return DropdownMenuItem<String>(
@@ -381,6 +411,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 alergiasCriancaSelecionada = pacienteMap['alergias'];
                 pesoCriancaSelecionada = pacienteMap['peso'] != null ? "${pacienteMap['peso']} kg" : "Não informado";
                 idadeCriancaSelecionada = _calcularIdade(pacienteMap['nascimento']);
+                
+                // Mantém a memória global atualizada ao trocar manualmente no dropdown
+                RefeicaoModel.idCriancaAtiva = idCriancaSelecionada;
+                RefeicaoModel.nomeCriancaAtiva = nomeCriancaSelecionada;
               });
             }
           },
@@ -393,14 +427,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Ajustado para transparente
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: diasSelecionados,
-          dropdownColor: AppConstants.backgroundColor, // Fundo do menu suspenso em harmonia com a tela
+          dropdownColor: AppConstants.backgroundColor,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: const [
