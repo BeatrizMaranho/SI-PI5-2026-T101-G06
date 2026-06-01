@@ -33,6 +33,8 @@ part 'buscar_usuario_por_email.dart';
 
 part 'obter_usuario_por_id.dart';
 
+part 'contar_refeicoes_paciente.dart';
+
 part 'listar_meus_pacientes.dart';
 
 part 'obter_paciente_com_refeicoes.dart';
@@ -130,6 +132,11 @@ class ExampleConnector {
   
   ObterUsuarioPorIdVariablesBuilder obterUsuarioPorId ({required String id, }) {
     return ObterUsuarioPorIdVariablesBuilder(dataConnect, id: id,);
+  }
+  
+  
+  ContarRefeicoesPacienteVariablesBuilder contarRefeicoesPaciente ({required String pacienteId, }) {
+    return ContarRefeicoesPacienteVariablesBuilder(dataConnect, pacienteId: pacienteId,);
   }
   
   

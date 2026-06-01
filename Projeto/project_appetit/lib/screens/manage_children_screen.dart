@@ -3,25 +3,21 @@ import 'package:project_appetit/constants.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'child_registration_screen.dart';
 import 'package:project_appetit/dataconnect_generated/generated.dart';
-import 'dart:developer' as dev;
 import 'package:intl/intl.dart';
 import 'package:project_appetit/screens/edit_child_info.dart';
 
 class ManageChildrenScreen extends StatefulWidget {
   final String userId;
 
-  const ManageChildrenScreen({
-    super.key,
-    required this.userId,
-  });
+  const ManageChildrenScreen({super.key, required this.userId});
 
   @override
   State<ManageChildrenScreen> createState() => _ManageChildrenScreenState();
 }
 
 class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
-  // Variável para fixar o estado do Future e evitar recarregamentos indesejados
   late Future<dynamic> _pacientesFuture;
+  Map<String, int> _contagemRefeicoes = {};
 
   @override
   void initState() {
@@ -29,83 +25,99 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
     _carregarPacientes();
   }
 
-  // Função centralizada para disparar a busca no Firebase Data Connect
   void _carregarPacientes() {
     setState(() {
       _pacientesFuture = ExampleConnector.instance
           .listarMeusPacientes(responsavelId: widget.userId)
-          .execute();
+          .execute()
+          .then((resultado) async {
+            final pacientes = resultado.data.pacientes;
+
+            final contagens = await Future.wait(
+              pacientes.map((p) async {
+                try {
+                  print("Buscando contagem para ID: ${p.id}");
+                  final res = await ExampleConnector.instance
+                      .contarRefeicoesPaciente(pacienteId: p.id)
+                      .execute();
+                  print(
+                    "Contagem para ${p.nome}: ${res.data.refeicaos.length}",
+                  );
+                  return MapEntry(p.id, res.data.refeicaos.length);
+                } catch (e) {
+                  print("Erro ao contar refeicoes de ${p.id}: $e");
+                  return MapEntry(p.id, 0);
+                }
+              }),
+            );
+
+            if (mounted) {
+              setState(() {
+                _contagemRefeicoes = Map.fromEntries(contagens);
+              });
+            }
+
+            return resultado;
+          });
     });
   }
 
   Future<void> _confirmarExclusao(
-      String pacienteId,
-      String nomePaciente,
-    ) async {
-      final confirmar = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Excluir criança"),
-            content: Text(
-              "Tem certeza que deseja excluir $nomePaciente?",
+    String pacienteId,
+    String nomePaciente,
+  ) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Excluir criança"),
+          content: Text("Tem certeza que deseja excluir $nomePaciente?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancelar"),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancelar"),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text(
+                "Excluir",
+                style: TextStyle(color: Colors.white),
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-                child: const Text(
-                  "Excluir",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          );
-        },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      await ExampleConnector.instance.deletarPaciente(id: pacienteId).execute();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Criança excluída com sucesso"),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      if (confirmar != true) return;
+      _carregarPacientes();
+    } catch (e) {
+      print("Erro ao excluir paciente: $e");
 
-      try {
-        await ExampleConnector.instance
-            .deletarPaciente(
-              id: pacienteId,
-            )
-            .execute();
+      if (!mounted) return;
 
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Criança excluída com sucesso"),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        _carregarPacientes();
-      } catch (e) {
-        dev.log(
-          "Erro ao excluir paciente: $e",
-          name: 'MANAGE_CHILDREN',
-          error: e,
-        );
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Erro ao excluir: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro ao excluir: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
 
   int calcularIdade(dynamic nascimento) {
     if (nascimento == null) return 0;
@@ -138,11 +150,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
       body: FutureBuilder(
         future: _pacientesFuture,
         builder: (context, snapshot) {
-          dev.log(
-            'Buscando pacientes para o userId: ${widget.userId}',
-            name: 'MANAGE_CHILDREN',
-          );
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
@@ -152,11 +159,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
           }
 
           if (snapshot.hasError) {
-            dev.log(
-              'ERRO NO FUTUREBUILDER: ${snapshot.error}',
-              name: 'MANAGE_CHILDREN',
-              error: snapshot.error,
-            );
+            print("ERRO NO FUTUREBUILDER: ${snapshot.error}");
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -209,11 +212,14 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                       paciente.nascimento,
                     );
 
+                    final int totalRefeicoes =
+                        _contagemRefeicoes[paciente.id] ?? 0;
+
                     return childCard(
                       context,
                       paciente.nome,
                       "$idadeCalculada anos",
-                      '0',
+                      totalRefeicoes.toString(),
                       DateFormat(
                         'dd/MM/yyyy',
                       ).format(paciente.criadoEm.toDateTime()),
@@ -230,7 +236,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                         );
                       },
                       onEditInfosTap: () async {
-                        // Aguarda o retorno da tela de edição para recarregar a lista
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -247,16 +252,9 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
 
                         _carregarPacientes();
                       },
-                       onDeleteTap: () {
-                        dev.log(
-                          "ID do paciente: ${paciente.id}",
-                          name: "MANAGE_CHILDREN",
-                        );
-
-                        _confirmarExclusao(
-                          paciente.id,
-                          paciente.nome,
-                        );
+                      onDeleteTap: () {
+                        print("ID do paciente: ${paciente.id}");
+                        _confirmarExclusao(paciente.id, paciente.nome);
                       },
                     );
                   },
@@ -269,14 +267,13 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                   height: 55,
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      // Aguarda o retorno da tela de cadastro e força o recarregamento instantâneo
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ChildRegistrationScreen(),
                         ),
                       );
-                      
+
                       _carregarPacientes();
                     },
                     icon: const Icon(Icons.add, color: AppConstants.iconLight),
@@ -437,11 +434,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Icon(
-          icon,
-          color: AppConstants.iconLight,
-          size: 20,
-        ),
+        child: Icon(icon, color: AppConstants.iconLight, size: 20),
       ),
     );
   }

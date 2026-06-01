@@ -41,8 +41,9 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
   }
 
   void _verificarArgumentos() {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    final args = Map<String, String>.from(
+      ModalRoute.of(context)?.settings.arguments as Map? ?? {},
+    );
 
     if (args != null && args.containsKey('selectedChildId')) {
       final childId = args['selectedChildId'];
@@ -78,7 +79,13 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           .execute();
 
       final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
-          .map((p) => {'id': p.id.toString(), 'nome': p.nome, 'nascimento': p.nascimento})
+          .map(
+            (p) => {
+              'id': p.id.toString(),
+              'nome': p.nome,
+              'nascimento': p.nascimento,
+            },
+          )
           .toList();
 
       dev.log(
@@ -801,7 +808,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildActionButton(
                               label: "Tirar foto agora",
                               iconPath: "assets/icons/camera.svg",
-                              onTap: () => _iniciarCaptura(true, source: picker.ImageSource.camera),
+                              onTap: () => _iniciarCaptura(
+                                true,
+                                source: picker.ImageSource.camera,
+                              ),
                             ),
                             const SizedBox(height: 20),
 
@@ -809,7 +819,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildActionButton(
                               label: "Escolher da galeria",
                               iconPath: "assets/icons/upload.svg",
-                              onTap: () => _iniciarCaptura(true, source: picker.ImageSource.gallery),
+                              onTap: () => _iniciarCaptura(
+                                true,
+                                source: picker.ImageSource.gallery,
+                              ),
                             ),
                           ] else ...[
                             _buildCaptureCard(
@@ -824,7 +837,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                               label: "Tirar foto depois da refeição",
                               foto: _fotoDepois,
                               onTap: () => _recapturarFoto(false),
-                              onRemove: () => setState(() => _fotoDepois = null),
+                              onRemove: () =>
+                                  setState(() => _fotoDepois = null),
                             ),
                             const SizedBox(height: 25),
 
@@ -967,7 +981,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         border: Border.all(
           color: AppConstants.primaryOrange.withOpacity(0.3),
           width: 1.5,
-         ),
+        ),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

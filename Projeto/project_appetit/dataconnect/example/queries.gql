@@ -33,6 +33,16 @@ query ObterUsuarioPorId($id: String!) @auth(level: USER) {
   }
 }
 
+query ContarRefeicoesPaciente($pacienteId: UUID!) @auth(level: USER) {
+  refeicaos(
+    where: {
+      pacienteId: { eq: $pacienteId }
+    }
+  ) {
+    id
+  }
+}
+
 query ListarMeusPacientes($responsavelId: String!) @auth(level: USER) {
   pacientes(
     where: {
