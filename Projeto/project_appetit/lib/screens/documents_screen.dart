@@ -421,17 +421,35 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Widget _buildInfoRow(String label, String value) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Ajustado para transparente
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFF67B55).withOpacity(0.6), width: 1.2),
+        border: Border.all(
+          color: const Color(0xFFF67B55).withOpacity(0.6),
+          width: 1.2,
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
         ],
       ),
     );
