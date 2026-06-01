@@ -20,6 +20,42 @@ class ManageChildrenScreen extends StatefulWidget {
 }
 
 class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
+  // Variável para fixar o estado do Future e evitar recarregamentos indesejados
+  late Future<dynamic> _pacientesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarPacientes();
+  }
+
+  // Função centralizada para disparar a busca no Firebase Data Connect
+  void _carregarPacientes() {
+    setState(() {
+      _pacientesFuture = ExampleConnector.instance
+          .listarMeusPacientes(responsavelId: widget.userId)
+          .execute();
+    });
+  }
+
+  int calcularIdade(dynamic nascimento) {
+    if (nascimento == null) return 0;
+
+    DateTime dataNasc = nascimento is String
+        ? DateTime.parse(nascimento)
+        : nascimento;
+
+    DateTime hoje = DateTime.now();
+    int idade = hoje.year - dataNasc.year;
+
+    if (hoje.month < dataNasc.month ||
+        (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) {
+      idade--;
+    }
+
+    return idade;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,9 +67,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
         title: const Text('Gerenciar crianças', style: AppConstants.titleStyle),
       ),
       body: FutureBuilder(
-        future: ExampleConnector.instance
-            .listarMeusPacientes(responsavelId: widget.userId)
-            .execute(),
+        future: _pacientesFuture,
         builder: (context, snapshot) {
           dev.log(
             'Buscando pacientes para o userId: ${widget.userId}',
@@ -69,11 +103,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
             );
           }
 
-          dev.log(
-            'Dados recebidos: ${snapshot.data?.data.pacientes}',
-            name: 'MANAGE_CHILDREN',
-          );
-
           final pacientes = snapshot.data?.data.pacientes ?? [];
 
           return SingleChildScrollView(
@@ -107,11 +136,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                   itemBuilder: (context, index) {
                     final paciente = pacientes[index];
 
-                    dev.log(
-                      'Processando paciente: ${paciente.nome}, ID: ${paciente.id}',
-                      name: 'MANAGE_CHILDREN',
-                    );
-
                     final int idadeCalculada = calcularIdade(
                       paciente.nascimento,
                     );
@@ -127,10 +151,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                       AppConstants.borderOrange,
                       AppConstants.primaryOrange,
                       onCameraTap: () {
-                        dev.log(
-                          'Clicou em câmera - Navegando para UploadPhotosScreen com paciente: ${paciente.nome}',
-                          name: 'MANAGE_CHILDREN',
-                        );
                         Navigator.pushNamed(
                           context,
                           '/upload-photos',
@@ -141,6 +161,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                         );
                       },
                       onEditInfosTap: () async {
+                        // Aguarda o retorno da tela de edição para recarregar a lista
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -155,7 +176,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                           ),
                         );
 
-                        setState(() {});
+                        _carregarPacientes();
                       },
                     );
                   },
@@ -167,13 +188,16 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      // Aguarda o retorno da tela de cadastro e força o recarregamento instantâneo
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ChildRegistrationScreen(),
                         ),
                       );
+                      
+                      _carregarPacientes();
                     },
                     icon: const Icon(Icons.add, color: AppConstants.iconLight),
                     label: const Text(
@@ -204,24 +228,6 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
     );
   }
 
-  int calcularIdade(dynamic nascimento) {
-    if (nascimento == null) return 0;
-
-    DateTime dataNasc = nascimento is String
-        ? DateTime.parse(nascimento)
-        : nascimento;
-
-    DateTime hoje = DateTime.now();
-    int idade = hoje.year - dataNasc.year;
-
-    if (hoje.month < dataNasc.month ||
-        (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) {
-      idade--;
-    }
-
-    return idade;
-  }
-
   Widget childCard(
     BuildContext context,
     String nome,
@@ -236,7 +242,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
     return Container(
       padding: const EdgeInsets.all(AppConstants.cardPadding),
       decoration: BoxDecoration(
-        color: Colors.transparent, // Transparente para herdar o fundo laranja claro e sumir o card branco
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         border: Border.all(color: statsColor.withOpacity(0.3), width: 1.2),
       ),
@@ -302,7 +308,7 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: statsColor, // Devolvido o preenchimento laranja sólido idêntico ao protótipo
+          color: statsColor,
           borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
         ),
         child: Column(
@@ -310,23 +316,23 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 14, color: AppConstants.iconLight), // Devolvido o ícone branco
+                Icon(icon, size: 14, color: AppConstants.iconLight),
                 const SizedBox(width: 5),
                 Text(
-                  label, 
+                  label,
                   style: const TextStyle(
-                    color: AppConstants.iconLight, // Devolvido o texto descritivo branco
-                    fontSize: 12, 
+                    color: AppConstants.iconLight,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
-                ), 
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: const TextStyle(
-                color: AppConstants.iconLight, // Devolvido o valor em destaque (número/data) branco
+                color: AppConstants.iconLight,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
