@@ -334,17 +334,51 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
     final todosAlimentos = listaFiltrada.expand((r) => r.alimentos).toList();
 
-    final baixos = todosAlimentos.where((a) {
+    // --- CÁLCULO DA MÉDIA PARA EVITAR REPETIÇÕES ---
+    final Map<String, List<int>> valoresPorAlimento = {};
+    for (var a in todosAlimentos) {
+      final nomeChave = a.nome.trim().toLowerCase();
+      int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
+      valoresPorAlimento.putIfAbsent(nomeChave, () => []).add(p);
+    }
+
+    final List<AlimentoModel> alimentosConsolidados = [];
+    final Set<String> nomesProcessados = {};
+
+    for (var a in todosAlimentos) {
+      final nomeChave = a.nome.trim().toLowerCase();
+      if (!nomesProcessados.contains(nomeChave)) {
+        nomesProcessados.add(nomeChave);
+        
+        final valores = valoresPorAlimento[nomeChave] ?? [];
+        int media = 0;
+        if (valores.isNotEmpty) {
+          media = (valores.reduce((x, y) => x + y) / valores.length).round();
+        }
+
+        // Reconstrói o objeto AlimentoModel com a média consolidada mantendo a estrutura original
+        alimentosConsolidados.add(
+          AlimentoModel(
+            nome: a.nome,
+            porcentagem: "$media%",
+          ),
+        );
+      }
+    }
+
+    // Classificação com base na lista de alimentos sem duplicatas e com médias calculadas
+    final baixos = alimentosConsolidados.where((a) {
       int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
       return p < 40;
     }).toList();
 
-    final parciais = todosAlimentos.where((a) {
+    final parciais = alimentosConsolidados.where((a) {
+      
       int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
       return p >= 40 && p < 80;
     }).toList();
 
-    final aceitos = todosAlimentos.where((a) {
+    final aceitos = alimentosConsolidados.where((a) {
       int p = int.tryParse(a.porcentagem.replaceAll('%', '').trim()) ?? 0;
       return p >= 80;
     }).toList();

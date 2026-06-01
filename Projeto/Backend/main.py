@@ -108,26 +108,21 @@ async def analisar_refeicao(
     img_antes = Image.open(io.BytesIO(await file_antes.read()))
     img_depois = Image.open(io.BytesIO(await file_depois.read()))
 
-    pixels_antes, area_prato_antes = obter_dados_segmentacao(img_antes)
-    pixels_depois, area_prato_depois = obter_dados_segmentacao(img_depois)
-
-    if area_prato_antes > 0 and area_prato_depois > 0:
-        ratio_escala = area_prato_antes / area_prato_depois
-    else:
-        ratio_escala = 1.0
+    pixels_antes, _ = obter_dados_segmentacao(img_antes)
+    pixels_depois, _ = obter_dados_segmentacao(img_depois)
 
     todas_classes = set(list(pixels_antes.keys()) + list(pixels_depois.keys()))
-
     lista_analise = []
 
     for item in todas_classes:
         p_antes = pixels_antes.get(item, 0)
         p_depois = pixels_depois.get(item, 0)
 
-        p_depois_normalizado = p_depois * ratio_escala
-        
         if p_antes > 0:
-            porc = (max(0, p_antes - p_depois_normalizado) / p_antes * 100)
+            consumido = max(0, p_antes - p_depois)
+            porc = (consumido / p_antes) * 100
+            if porc > 98: 
+                porc = 100.0
         else:
             porc = 0.0
 
@@ -139,10 +134,9 @@ async def analisar_refeicao(
     return {
         "paciente": nome_crianca,
         "analise": lista_analise,
-        "status": "sucesso",
-        "ratio_escala": round(ratio_escala, 4)  
+        "status": "sucesso"
     }
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

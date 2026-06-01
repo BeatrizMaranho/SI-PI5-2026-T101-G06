@@ -51,10 +51,6 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       setState(() {
         _selectedChildId = childId;
         _selectedChildNome = childName;
-        
-        // Sincroniza os argumentos recebidos por rota na memória global
-        //RefeicaoModel.idCriancaAtiva = childId;
-        //RefeicaoModel.nomeCriancaAtiva = childName;
       });
 
       dev.log(
@@ -90,36 +86,6 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         name: 'UPLOAD_PHOTOS',
       );
 
- /*     if (mounted) {
-        setState(() {
-          _pacientes = dadosDoBanco;
-
-          if (_pacientes.isNotEmpty) {
-            // Verifica se alguma aba anterior (como Relatórios) já marcou uma criança ativa globalmente
-            if (RefeicaoModel.idCriancaAtiva != null && _selectedChildId == null) {
-              _selectedChildId = RefeicaoModel.idCriancaAtiva;
-              pacienteSelecionado = _pacientes.firstWhere(
-                (p) => p['id'].toString() == _selectedChildId,
-                orElse: () => _pacientes[0],
-              );
-              _selectedChildId = pacienteSelecionado?['id'].toString();
-              _selectedChildNome = pacienteSelecionado?['nome'] ?? '';
-              RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
-            } else if (_selectedChildId == null) {
-              // Se não houver nada salvo, usa o primeiro da lista e inicia as variáveis estáticas
-              _selectedChildId = _pacientes[0]['id'].toString();
-              _selectedChildNome = _pacientes[0]['nome'];
-              pacienteSelecionado = _pacientes[0];
-              
-              RefeicaoModel.idCriancaAtiva = _selectedChildId;
-              RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
-            } else {
-              pacienteSelecionado = _pacientes.firstWhere(
-                (p) => p['id'].toString() == _selectedChildId,
-                orElse: () => _pacientes[0],
-              );
-            }
-*/
       if (mounted) {
         setState(() {
           _pacientes = dadosDoBanco;
@@ -179,7 +145,8 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     );
   }
 
-  void _iniciarCaptura(bool isAntes) {
+  // Modificado para aceitar opcionalmente a origem da mídia selecionada diretamente na UI
+  void _iniciarCaptura(bool isAntes, {picker.ImageSource? source}) {
     if (_selectedChildId == null) {
       _mostrarAvisoSemCrianca();
       return;
@@ -191,13 +158,18 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
     }
 
     if (!_dicaMostrada) {
-      _mostrarDicaImportante(isAntes);
+      _mostrarDicaImportante(isAntes, source: source);
     } else {
-      _abrirOpcoesMidia(isAntes);
+      if (source != null) {
+        _capturarMedia(isAntes, source);
+      } else {
+        _abrirOpcoesMidia(isAntes);
+      }
     }
   }
 
-  void _mostrarDicaImportante(bool isAntes) {
+  // Modificado para propagar a origem da imagem após fechar o diálogo de dica
+  void _mostrarDicaImportante(bool isAntes, {picker.ImageSource? source}) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -248,7 +220,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                 const SizedBox(height: 32),
                 Center(
                   child: SvgPicture.asset(
-                    'assets/icons/top-picture.svg',
+                    'assets/icons/top-picture.svg', // Adaptado com o nome correto do asset Svg
                     height: 150,
                     fit: BoxFit.contain,
                   ),
@@ -273,7 +245,11 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                         _dicaMostrada = true;
                       });
                       Navigator.of(context).pop();
-                      _abrirOpcoesMidia(isAntes);
+                      if (source != null) {
+                        _capturarMedia(isAntes, source);
+                      } else {
+                        _abrirOpcoesMidia(isAntes);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE25B36),
@@ -352,9 +328,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       _mostrarAvisoSemCrianca();
       return;
     }
-
-    // Ambas as fotos (antes e depois) vão direto para a galeria ao clicar em "Anexar"
-    _capturarMedia(isAntes, picker.ImageSource.gallery);
+    _iniciarCaptura(isAntes, source: picker.ImageSource.gallery);
   }
 
   Future<void> _capturarMedia(bool isAntes, picker.ImageSource source) async {
@@ -475,7 +449,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      "Alimentos identificados",
+                      "Alimentos identified",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -823,17 +797,19 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                             _buildInstructionCard(),
                             const SizedBox(height: 20),
 
+                            // Corrigido para passar pela validação do Popup antes de abrir a câmera
                             _buildActionButton(
                               label: "Tirar foto agora",
                               iconPath: "assets/icons/camera.svg",
-                              onTap: () => _capturarMedia(true, picker.ImageSource.camera),
+                              onTap: () => _iniciarCaptura(true, source: picker.ImageSource.camera),
                             ),
                             const SizedBox(height: 20),
 
+                            // Corrigido para passar pela validação do Popup antes de abrir a galeria
                             _buildActionButton(
                               label: "Escolher da galeria",
                               iconPath: "assets/icons/upload.svg",
-                              onTap: () => _capturarMedia(true, picker.ImageSource.gallery),
+                              onTap: () => _iniciarCaptura(true, source: picker.ImageSource.gallery),
                             ),
                           ] else ...[
                             _buildCaptureCard(
@@ -974,10 +950,6 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                   (p) => p['id'].toString() == newValue,
                 );
                 _selectedChildNome = pacienteSelecionado!['nome'];
-                
-                // Sincroniza a seleção do Dropdown com a memória global
-                //RefeicaoModel.idCriancaAtiva = newValue;
-                //RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
               });
             }
           },
