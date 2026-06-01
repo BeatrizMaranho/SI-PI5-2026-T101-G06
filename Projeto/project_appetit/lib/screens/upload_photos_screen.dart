@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_appetit/constants.dart';
@@ -7,8 +8,6 @@ import 'package:project_appetit/dataconnect_generated/generated.dart';
 import 'package:image_picker/image_picker.dart' as picker;
 import 'dart:io';
 import 'package:project_appetit/service/api_service.dart';
-import 'package:provider/provider.dart';
-import 'package:project_appetit/models/refeicao_model.dart';
 
 class UploadPhotosScreen extends StatefulWidget {
   const UploadPhotosScreen({super.key});
@@ -546,46 +545,57 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: () {
-                          List<AlimentoModel> listaParaSalvar = analise.map((
-                            item,
-                          ) {
-                            return AlimentoModel(
-                              nome: item['alimento'].toString(),
-                              porcentagem:
-                                  (item['porcentagem_consumida'] as num)
-                                      .toInt()
-                                      .toString(),
+                        onPressed: () async {
+                          try {
+                            String statusGeral = "bem aceito";
+                            if (rejeitados > bemAceitos) {
+                              statusGeral = "rejeitado";
+                            } else if (parciais > bemAceitos) {
+                              statusGeral = "parcial";
+                            }
+
+                            if (_selectedChildId == null) {
+                              throw Exception("Nenhuma criança selecionada.");
+                            }
+
+                            await ExampleConnector.instance
+                                .criarRefeicao(
+                                  pacienteId: _selectedChildId!,
+                                  status: statusGeral,
+                                  urlFotoAntes: data['foto_antes_path'] ?? "",
+                                  urlFotoDepois: data['foto_depois_path'] ?? "",
+                                )
+                                .analise(jsonEncode(data['analise']))
+                                .execute();
+
+                            setState(() {
+                              _fotoAntes = null;
+                              _fotoDepois = null;
+                            });
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Refeição salva com sucesso no banco!",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
                             );
-                          }).toList();
-
-                          final novaRefeicao = RefeicaoModel(
-                            pacienteNome:
-                                pacienteSelecionado?['nome'] ?? "Sofia",
-                            data: DateTime.now(),
-                            alimentos: listaParaSalvar,
-                            fotoAntes: data['foto_antes_path'] ?? "",
-                            fotoDepois: data['foto_depois_path'] ?? "",
-                          );
-
-                          Provider.of<RefeicaoProvider>(
-                            context,
-                            listen: false,
-                          ).salvarRefeicao(novaRefeicao);
-
-                          setState(() {
-                            _fotoAntes = null;
-                            _fotoDepois = null;
-                          });
-
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Análise salva com sucesso!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          } catch (e) {
+                            dev.log(
+                              "Erro ao salvar no Cloud SQL: $e",
+                              name: 'UPLOAD_PHOTOS',
+                              error: e,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Erro ao salvar dados: $e"),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryOrange,

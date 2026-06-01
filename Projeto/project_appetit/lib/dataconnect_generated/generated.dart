@@ -17,12 +17,6 @@ part 'atualizar_paciente.dart';
 
 part 'deletar_paciente.dart';
 
-part 'vincular_nutricionista.dart';
-
-part 'desvincular_nutricionista.dart';
-
-part 'vincular_nutricionista_com_paciente.dart';
-
 part 'criar_refeicao.dart';
 
 part 'atualizar_refeicao.dart';
@@ -32,24 +26,6 @@ part 'deletar_refeicao.dart';
 part 'marcar_refeicao_analisada.dart';
 
 part 'rejeitar_refeicao.dart';
-
-part 'criar_deteccao.dart';
-
-part 'atualizar_deteccao.dart';
-
-part 'deletar_deteccao.dart';
-
-part 'criar_alimento.dart';
-
-part 'atualizar_alimento.dart';
-
-part 'deletar_alimento.dart';
-
-part 'criar_relatorio.dart';
-
-part 'atualizar_relatorio.dart';
-
-part 'deletar_relatorio.dart';
 
 part 'obter_usuario_atual.dart';
 
@@ -63,8 +39,6 @@ part 'obter_paciente_com_refeicoes.dart';
 
 part 'obter_paciente_completo.dart';
 
-part 'listar_pacientes_vinculados.dart';
-
 part 'obter_paciente_para_nutricionista.dart';
 
 part 'listar_refeicoes_paciente.dart';
@@ -73,25 +47,7 @@ part 'obter_refeicao_com_deteccoes.dart';
 
 part 'listar_refeicoes_pendentes.dart';
 
-part 'listar_deteccoes_por_refeicao.dart';
-
-part 'listar_deteccoes_aceitas_por_refeicao.dart';
-
-part 'obter_relatorio_por_refeicao.dart';
-
-part 'listar_relatorio_paciente.dart';
-
-part 'obter_relatorio_completo.dart';
-
-part 'listar_catalogo_alimentos.dart';
-
-part 'buscar_alimento_por_label.dart';
-
-part 'listar_alimentos_por_categoria.dart';
-
 part 'resumo_refeicoes7_dias.dart';
-
-part 'alimentos_mais_detectados.dart';
 
 
 
@@ -137,23 +93,8 @@ class ExampleConnector {
   }
   
   
-  VincularNutricionistaVariablesBuilder vincularNutricionista ({required String nutricionistaId, required String pacienteId, }) {
-    return VincularNutricionistaVariablesBuilder(dataConnect, nutricionistaId: nutricionistaId,pacienteId: pacienteId,);
-  }
-  
-  
-  DesvincularNutricionistaVariablesBuilder desvincularNutricionista ({required String nutricionistaId, required String pacienteId, }) {
-    return DesvincularNutricionistaVariablesBuilder(dataConnect, nutricionistaId: nutricionistaId,pacienteId: pacienteId,);
-  }
-  
-  
-  VincularNutricionistaComPacienteVariablesBuilder vincularNutricionistaComPaciente ({required String nutricionistaId, required String pacienteId, }) {
-    return VincularNutricionistaComPacienteVariablesBuilder(dataConnect, nutricionistaId: nutricionistaId,pacienteId: pacienteId,);
-  }
-  
-  
-  CriarRefeicaoVariablesBuilder criarRefeicao ({required String pacienteId, required String urlFotoAntes, }) {
-    return CriarRefeicaoVariablesBuilder(dataConnect, pacienteId: pacienteId,urlFotoAntes: urlFotoAntes,);
+  CriarRefeicaoVariablesBuilder criarRefeicao ({required String pacienteId, required String status, required String urlFotoAntes, required String urlFotoDepois, }) {
+    return CriarRefeicaoVariablesBuilder(dataConnect, pacienteId: pacienteId,status: status,urlFotoAntes: urlFotoAntes,urlFotoDepois: urlFotoDepois,);
   }
   
   
@@ -174,51 +115,6 @@ class ExampleConnector {
   
   RejeitarRefeicaoVariablesBuilder rejeitarRefeicao ({required String id, }) {
     return RejeitarRefeicaoVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CriarDeteccaoVariablesBuilder criarDeteccao ({required String refeicaoId, required String alimentoId, required double confidence, required double percentualConsumido, }) {
-    return CriarDeteccaoVariablesBuilder(dataConnect, refeicaoId: refeicaoId,alimentoId: alimentoId,confidence: confidence,percentualConsumido: percentualConsumido,);
-  }
-  
-  
-  AtualizarDeteccaoVariablesBuilder atualizarDeteccao ({required String id, required bool aceito, }) {
-    return AtualizarDeteccaoVariablesBuilder(dataConnect, id: id,aceito: aceito,);
-  }
-  
-  
-  DeletarDeteccaoVariablesBuilder deletarDeteccao ({required String id, }) {
-    return DeletarDeteccaoVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CriarAlimentoVariablesBuilder criarAlimento ({required String label, }) {
-    return CriarAlimentoVariablesBuilder(dataConnect, label: label,);
-  }
-  
-  
-  AtualizarAlimentoVariablesBuilder atualizarAlimento ({required String id, }) {
-    return AtualizarAlimentoVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeletarAlimentoVariablesBuilder deletarAlimento ({required String id, }) {
-    return DeletarAlimentoVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CriarRelatorioVariablesBuilder criarRelatorio ({required String refeicaoId, required String pacienteId, required String conteudo, }) {
-    return CriarRelatorioVariablesBuilder(dataConnect, refeicaoId: refeicaoId,pacienteId: pacienteId,conteudo: conteudo,);
-  }
-  
-  
-  AtualizarRelatorioVariablesBuilder atualizarRelatorio ({required String id, required String conteudo, }) {
-    return AtualizarRelatorioVariablesBuilder(dataConnect, id: id,conteudo: conteudo,);
-  }
-  
-  
-  DeletarRelatorioVariablesBuilder deletarRelatorio ({required String id, }) {
-    return DeletarRelatorioVariablesBuilder(dataConnect, id: id,);
   }
   
   
@@ -252,11 +148,6 @@ class ExampleConnector {
   }
   
   
-  ListarPacientesVinculadosVariablesBuilder listarPacientesVinculados ({required String nutricionistaId, }) {
-    return ListarPacientesVinculadosVariablesBuilder(dataConnect, nutricionistaId: nutricionistaId,);
-  }
-  
-  
   ObterPacienteParaNutricionistaVariablesBuilder obterPacienteParaNutricionista ({required String pacienteId, }) {
     return ObterPacienteParaNutricionistaVariablesBuilder(dataConnect, pacienteId: pacienteId,);
   }
@@ -277,53 +168,8 @@ class ExampleConnector {
   }
   
   
-  ListarDeteccoesPorRefeicaoVariablesBuilder listarDeteccoesPorRefeicao ({required String refeicaoId, }) {
-    return ListarDeteccoesPorRefeicaoVariablesBuilder(dataConnect, refeicaoId: refeicaoId,);
-  }
-  
-  
-  ListarDeteccoesAceitasPorRefeicaoVariablesBuilder listarDeteccoesAceitasPorRefeicao ({required String refeicaoId, }) {
-    return ListarDeteccoesAceitasPorRefeicaoVariablesBuilder(dataConnect, refeicaoId: refeicaoId,);
-  }
-  
-  
-  ObterRelatorioPorRefeicaoVariablesBuilder obterRelatorioPorRefeicao ({required String refeicaoId, }) {
-    return ObterRelatorioPorRefeicaoVariablesBuilder(dataConnect, refeicaoId: refeicaoId,);
-  }
-  
-  
-  ListarRelatorioPacienteVariablesBuilder listarRelatorioPaciente ({required String pacienteId, }) {
-    return ListarRelatorioPacienteVariablesBuilder(dataConnect, pacienteId: pacienteId,);
-  }
-  
-  
-  ObterRelatorioCompletoVariablesBuilder obterRelatorioCompleto ({required String relatorioId, }) {
-    return ObterRelatorioCompletoVariablesBuilder(dataConnect, relatorioId: relatorioId,);
-  }
-  
-  
-  ListarCatalogoAlimentosVariablesBuilder listarCatalogoAlimentos () {
-    return ListarCatalogoAlimentosVariablesBuilder(dataConnect, );
-  }
-  
-  
-  BuscarAlimentoPorLabelVariablesBuilder buscarAlimentoPorLabel ({required String label, }) {
-    return BuscarAlimentoPorLabelVariablesBuilder(dataConnect, label: label,);
-  }
-  
-  
-  ListarAlimentosPorCategoriaVariablesBuilder listarAlimentosPorCategoria ({required String categoria, }) {
-    return ListarAlimentosPorCategoriaVariablesBuilder(dataConnect, categoria: categoria,);
-  }
-  
-  
   ResumoRefeicoes7DiasVariablesBuilder resumoRefeicoes7Dias ({required String pacienteId, required Timestamp dataLimite, }) {
     return ResumoRefeicoes7DiasVariablesBuilder(dataConnect, pacienteId: pacienteId,dataLimite: dataLimite,);
-  }
-  
-  
-  AlimentosMaisDetectadosVariablesBuilder alimentosMaisDetectados ({required String pacienteId, required Timestamp dataLimite, }) {
-    return AlimentosMaisDetectadosVariablesBuilder(dataConnect, pacienteId: pacienteId,dataLimite: dataLimite,);
   }
   
 

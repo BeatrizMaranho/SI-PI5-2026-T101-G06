@@ -90,16 +90,18 @@ mutation DeletarPaciente(
 
 mutation CriarRefeicao(
   $pacienteId: UUID!
+  $status: String!
   $urlFotoAntes: String!
-  $status: String = "pendente"
-) @auth(level: USER) {
-  refeicao_insert(
-    data: {
-      pacienteId: $pacienteId
-      urlFotoAntes: $urlFotoAntes
-      status: $status
-    }
-  )
+  $urlFotoDepois: String!
+  $analise: String
+) @auth(level: USER) {   # ← add this
+  refeicao_insert(data: {
+    pacienteId: $pacienteId
+    status: $status
+    urlFotoAntes: $urlFotoAntes
+    urlFotoDepois: $urlFotoDepois
+    analise: $analise
+  })
 }
 
 mutation AtualizarRefeicao(

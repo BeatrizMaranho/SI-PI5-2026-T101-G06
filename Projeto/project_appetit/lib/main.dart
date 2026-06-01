@@ -18,13 +18,8 @@ Future<void> main() async {
   runApp(
     // 3. MultiProvider adicionado aqui para envolver todo o app
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => RefeicaoProvider()),
-      ],
-      child: DevicePreview(
-        enabled: true,
-        builder: (context) => const MyApp(),
-      ),
+      providers: [ChangeNotifierProvider(create: (_) => RefeicaoProvider())],
+      child: DevicePreview(enabled: true, builder: (context) => const MyApp()),
     ),
   );
 }
