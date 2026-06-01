@@ -18,14 +18,6 @@ type Paciente @table {
   criadoEm: Timestamp! @default(expr: "request.time")
 }
 
-type NutricionistaPaciente @table(key: ["nutricionistaId", "pacienteId"]) {
-  nutricionistaId: String!
-  pacienteId: UUID!
-  nutricionista: Usuario!
-  paciente: Paciente!
-  vinculadoEm: Timestamp! @default(expr: "request.time")
-}
-
 type Refeicao @table {
   id: UUID! @default(expr: "uuidV4()")
   pacienteId: UUID!
@@ -34,34 +26,4 @@ type Refeicao @table {
   status: String!
   urlFotoAntes: String!
   urlFotoDepois: String
-}
-
-type Alimento @table {
-  id: UUID! @default(expr: "uuidV4()")
-  label: String! @unique
-  categoria: String
-}
-
-type DeteccaoAlimento @table {
-  id: UUID! @default(expr: "uuidV4()")
-  refeicaoId: UUID!
-  refeicao: Refeicao!
-  alimentoId: UUID!
-  alimento: Alimento!
-  confidence: Float!
-  percentualConsumido: Float!
-  aceito: Boolean! @default(value: false)
-  cor: String
-  textura: String
-  criadoEm: Timestamp! @default(expr: "request.time")
-}
-
-type Relatorio @table {
-  id: UUID! @default(expr: "uuidV4()")
-  refeicaoId: UUID!
-  refeicao: Refeicao!
-  pacienteId: UUID!
-  paciente: Paciente!
-  dataGeracao: Timestamp! @default(expr: "request.time")
-  conteudo: String!
 }
