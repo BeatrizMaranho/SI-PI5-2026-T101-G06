@@ -52,6 +52,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
       setState(() {
         _selectedChildId = childId;
         _selectedChildNome = childName;
+        
+        // Sincroniza os argumentos recebidos por rota na memória global
+        RefeicaoModel.idCriancaAtiva = childId;
+        RefeicaoModel.nomeCriancaAtiva = childName;
       });
 
       dev.log(
@@ -79,7 +83,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           .execute();
 
       final List<Map<String, dynamic>> dadosDoBanco = resultado.data.pacientes
-          .map((p) => {'id': p.id, 'nome': p.nome, 'nascimento': p.nascimento})
+          .map((p) => {'id': p.id.toString(), 'nome': p.nome, 'nascimento': p.nascimento})
           .toList();
 
       dev.log(
@@ -92,19 +96,33 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
           _pacientes = dadosDoBanco;
 
           if (_pacientes.isNotEmpty) {
-            if (_selectedChildId == null) {
-              _selectedChildId = _pacientes[0]['id'];
+            // Verifica se alguma aba anterior (como Relatórios) já marcou uma criança ativa globalmente
+            if (RefeicaoModel.idCriancaAtiva != null && _selectedChildId == null) {
+              _selectedChildId = RefeicaoModel.idCriancaAtiva;
+              pacienteSelecionado = _pacientes.firstWhere(
+                (p) => p['id'].toString() == _selectedChildId,
+                orElse: () => _pacientes[0],
+              );
+              _selectedChildId = pacienteSelecionado?['id'].toString();
+              _selectedChildNome = pacienteSelecionado?['nome'] ?? '';
+              RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
+            } else if (_selectedChildId == null) {
+              // Se não houver nada salvo, usa o primeiro da lista e inicia as variáveis estáticas
+              _selectedChildId = _pacientes[0]['id'].toString();
               _selectedChildNome = _pacientes[0]['nome'];
               pacienteSelecionado = _pacientes[0];
+              
+              RefeicaoModel.idCriancaAtiva = _selectedChildId;
+              RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
             } else {
               pacienteSelecionado = _pacientes.firstWhere(
-                (p) => p['id'] == _selectedChildId,
+                (p) => p['id'].toString() == _selectedChildId,
                 orElse: () => _pacientes[0],
               );
             }
 
             dev.log(
-              "Paciente ativo para análise: ${pacienteSelecionado?['nome']}",
+              "Paciente ativo para análise: $_selectedChildNome",
               name: 'UPLOAD_PHOTOS',
             );
           }
@@ -923,6 +941,10 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
                   (p) => p['id'].toString() == newValue,
                 );
                 _selectedChildNome = pacienteSelecionado!['nome'];
+                
+                // Sincroniza a seleção do Dropdown com a memória global
+                RefeicaoModel.idCriancaAtiva = newValue;
+                RefeicaoModel.nomeCriancaAtiva = _selectedChildNome;
               });
             }
           },
@@ -940,7 +962,7 @@ class _UploadPhotosScreenState extends State<UploadPhotosScreen> {
         border: Border.all(
           color: AppConstants.primaryOrange.withOpacity(0.3),
           width: 1.5,
-        ),
+         ),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

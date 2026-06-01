@@ -15,6 +15,10 @@ class AlimentoModel {
 // --- 2. MODELO DE REFEIÇÃO ---
 // Representa a análise completa de um prato vinculada a uma criança
 class RefeicaoModel {
+  // === VARIÁVEIS ESTÁTICAS PARA PERSISTIR A CRIANÇA ATIVA ENTRE AS ABAS ===
+  static String? idCriancaAtiva;
+  static String? nomeCriancaAtiva;
+
   final String pacienteNome; // Nome da criança vinculada
   final DateTime data;       // Data para os filtros do dashboard
   final List<AlimentoModel> alimentos;
@@ -31,7 +35,6 @@ class RefeicaoModel {
 
   // --- GETTERS DE RESUMO ---
   // Convertem a string "80%" em número para lógica de aceitação
-  
   int get bemAceitos => alimentos.where((a) {
         final valor = int.tryParse(a.porcentagem.replaceAll('%', '')) ?? 0;
         return valor >= 80;
