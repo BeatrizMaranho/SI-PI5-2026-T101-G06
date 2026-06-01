@@ -38,6 +38,25 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     _fetchPacientesDashboard();
   }
 
+  // Captura os argumentos de navegação direta via rota, caso existam
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    if (args != null && args.containsKey('selectedChildId')) {
+      idCriancaSelecionada = args['selectedChildId'];
+      nomeCriancaSelecionada = args['selectedChildName'] ?? "";
+    }
+  }
+
+  String _formatarUUID(String id) {
+    final limpo = id.replaceAll('-', '').trim();
+    if (limpo.length == 32) {
+      return "${limpo.substring(0, 8)}-${limpo.substring(8, 12)}-${limpo.substring(12, 16)}-${limpo.substring(16, 20)}-${limpo.substring(20)}";
+    }
+    return id;
+  }
+
   String _calcularIdade(dynamic nascimento) {
     if (nascimento == null) return "Nao informada";
     try {
@@ -441,14 +460,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: idCriancaSelecionada,
-          dropdownColor: AppConstants.backgroundColor,
+          dropdownColor: AppConstants.backgroundColor, 
           isExpanded: true,
-          hint: const Text("Sofia"),
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
-            color: Color(0xFFF67B55),
-            size: 28,
-          ),
+          hint: const Text("Selecione"),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF67B55), size: 28),
           items: pacientes.map((paciente) {
             return DropdownMenuItem<String>(
               value: paciente['id'].toString(),
