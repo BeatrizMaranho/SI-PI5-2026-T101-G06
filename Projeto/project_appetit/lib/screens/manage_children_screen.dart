@@ -22,6 +22,9 @@ class ManageChildrenScreen extends StatefulWidget {
 class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
   // Variável para fixar o estado do Future e evitar recarregamentos indesejados
   late Future<dynamic> _pacientesFuture;
+  
+  // Cache para armazenar contagem de refeições
+  final Map<String, Future<int>> _refeicaoCache = {};
 
   @override
   void initState() {
@@ -32,10 +35,74 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
   // Função centralizada para disparar a busca no Firebase Data Connect
   void _carregarPacientes() {
     setState(() {
+      _refeicaoCache.clear(); // Limpa o cache ao recarregar
       _pacientesFuture = ExampleConnector.instance
           .listarMeusPacientes(responsavelId: widget.userId)
           .execute();
     });
+  }
+
+  // Função para contar refeições de um paciente com cache
+  Future<int> _contarRefeicoes(String pacienteId) {
+    if (_refeicaoCache.containsKey(pacienteId)) {
+      return _refeicaoCache[pacienteId]!;
+    }
+
+    final future = _buscarRefeicoes(pacienteId);
+    _refeicaoCache[pacienteId] = future;
+    return future;
+  }
+
+  // Função auxiliar para buscar refeições - tenta usar ObterPacienteComRefeicoes primeiro
+  Future<int> _buscarRefeicoes(String pacienteId) async {
+    try {
+      dev.log(
+        "INICIANDO BUSCA DE REFEIÇÕES PARA PACIENTE: $pacienteId",
+        name: 'MANAGE_CHILDREN',
+      );
+      
+      try {
+        // Tenta buscar com ObterPacienteComRefeicoes que é mais direto
+        final resultado = await ExampleConnector.instance
+            .obterPacienteComRefeicoes(pacienteId: pacienteId)
+            .execute();
+        
+        final count = resultado.data.paciente?.refeicoes?.length ?? 0;
+        
+        dev.log(
+          "REFEIÇÕES ENCONTRADAS (ObterPacienteComRefeicoes) PARA $pacienteId: $count",
+          name: 'MANAGE_CHILDREN',
+        );
+        
+        return count;
+      } catch (e1) {
+        dev.log(
+          "ObterPacienteComRefeicoes falhou, tentando listarRefeicoesPaciente: $e1",
+          name: 'MANAGE_CHILDREN',
+        );
+        
+        // Fallback para listarRefeicoesPaciente
+        final resultado = await ExampleConnector.instance
+            .listarRefeicoesPaciente(pacienteId: pacienteId)
+            .execute();
+        
+        final count = resultado.data.refeicaos.length;
+        
+        dev.log(
+          "REFEIÇÕES ENCONTRADAS (listarRefeicoesPaciente) PARA $pacienteId: $count",
+          name: 'MANAGE_CHILDREN',
+        );
+        
+        return count;
+      }
+    } catch (e, stackTrace) {
+      dev.log(
+        "ERRO ao contar refeições para paciente $pacienteId: $e\n$stackTrace",
+        name: 'MANAGE_CHILDREN',
+        error: e,
+      );
+      return 0;
+    }
   }
 
   Future<void> _confirmarExclusao(
@@ -209,35 +276,46 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                       paciente.nascimento,
                     );
 
-                    return childCard(
-                      context,
-                      paciente.nome,
-                      "$idadeCalculada anos",
-                      '0',
-                      DateFormat(
-                        'dd/MM/yyyy',
-                      ).format(paciente.criadoEm.toDateTime()),
-                      AppConstants.borderOrange,
-                      AppConstants.primaryOrange,
-                      onCameraTap: () {
-                        Navigator.pushNamed(
+                    return FutureBuilder<int>(
+                      future: _contarRefeicoes(paciente.id),
+                      builder: (context, snapshot) {
+                        String refeicoes = '0';
+                        
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          refeicoes = snapshot.data?.toString() ?? '0';
+                        } else {
+                          refeicoes = '...';
+                        }
+
+                        return childCard(
                           context,
-                          '/upload-photos',
-                          arguments: {
-                            'selectedChildId': paciente.id,
-                            'selectedChildName': paciente.nome,
+                          paciente.nome,
+                          "$idadeCalculada anos",
+                          refeicoes,
+                          DateFormat(
+                            'dd/MM/yyyy',
+                          ).format(paciente.criadoEm.toDateTime()),
+                          AppConstants.borderOrange,
+                          AppConstants.primaryOrange,
+                          onCameraTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/upload-photos',
+                              arguments: {
+                                'selectedChildId': paciente.id,
+                                'selectedChildName': paciente.nome,
+                              },
+                            );
                           },
-                        );
-                      },
-                      onEditInfosTap: () async {
-                        // Aguarda o retorno da tela de edição para recarregar a lista
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditChildInfoScreen(
-                              childId: paciente.id,
-                              nomeInicial: paciente.nome,
-                              nascimentoInicial:
+                          onEditInfosTap: () async {
+                            // Aguarda o retorno da tela de edição para recarregar a lista
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditChildInfoScreen(
+                                  childId: paciente.id,
+                                  nomeInicial: paciente.nome,
+                                  nascimentoInicial:
                                   paciente.nascimento ?? DateTime.now(),
                               pesoInicial: paciente.peso ?? 0.0,
                               alergiasInicial: paciente.alergias ?? '',
@@ -257,6 +335,8 @@ class _ManageChildrenScreenState extends State<ManageChildrenScreen> {
                           paciente.id,
                           paciente.nome,
                         );
+                      },
+                    );
                       },
                     );
                   },
