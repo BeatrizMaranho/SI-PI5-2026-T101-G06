@@ -115,12 +115,28 @@ query ObterPacienteParaNutricionista($pacienteId: UUID!) {
 
 query ListarRefeicoesPaciente(
   $pacienteId: UUID!
-  $status: String
 ) @auth(level: USER) {
   refeicaos(
     where: { 
       pacienteId: { eq: $pacienteId }
-      status: { eq: $status }
+    }
+    orderBy: [{ dataHora: DESC }]
+  ) {
+    id
+    dataHora
+    status
+    urlFotoAntes
+    urlFotoDepois
+    paciente {
+      nome
+    }
+  }
+}
+
+query ListarTodasRefeicoesPaciente($pacienteId: UUID!) @auth(level: USER) {
+  refeicaos(
+    where: { 
+      pacienteId: { eq: $pacienteId }
     }
     orderBy: [{ dataHora: DESC }]
   ) {
